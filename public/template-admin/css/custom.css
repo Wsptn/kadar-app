@@ -1,0 +1,225 @@
+/* NAVBAR: biru gradasi */
+.navbar.navbar-bg,
+.navbar.navbar-light.navbar-bg {
+  background: linear-gradient(90deg, #22A932 100%) !important;
+  color: #ffffff !important;
+}
+.navbar .nav-link,
+.navbar .nav-icon,
+.navbar .navbar-brand,
+.navbar .text-dark,
+.navbar [data-feather] {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+.navbar .dropdown-menu {
+  color: inherit;
+}
+
+/* SIDEBAR: latar terang dengan aksen biru pada item aktif/hover */
+.sidebar, #sidebar, .sidebar .sidebar-content {
+  background: #ffffff !important;
+  color: #111827; /* gray-900 */
+}
+.sidebar .sidebar-header,
+.sidebar .sidebar-brand { color: #6b7280; /* gray-500 */ }
+
+.sidebar .sidebar-link,
+.sidebar .sidebar-item > a {
+  color: #111827 !important;
+}
+.sidebar .sidebar-link i,
+.sidebar .sidebar-link span { color: inherit !important; }
+
+/* Hover/Active dengan aksen biru seperti contoh */
+.sidebar .sidebar-link:hover {
+  background-color: rgba(37, 99, 235, 0.10) !important; /* #2563eb 10% */
+  color: #22831C !important;
+}
+.sidebar .sidebar-item.active > a,
+.sidebar .sidebar-item .active > a {
+  background-color: rgba(37, 99, 235, 0.15) !important;
+  color: #22831C !important;
+}
+
+/* Icon (feather) di sidebar lebih jelas warnanya */
+.sidebar [data-feather] {
+  stroke: #065f46 !important; /* hijau gelap untuk kontras lebih jelas */
+  stroke-width: 2.5 !important; /* lebih tebal agar lebih terlihat */
+  width: 18px !important;
+  height: 18px !important;
+}
+/* Icon saat hover lebih jelas */
+.sidebar .sidebar-link:hover [data-feather] {
+  stroke: #047857 !important; /* hijau lebih terang saat hover */
+  stroke-width: 2.5 !important;
+}
+/* Icon saat active lebih jelas */
+.sidebar .sidebar-item.active > a [data-feather],
+.sidebar .sidebar-item.active > .sidebar-link [data-feather] {
+  stroke: #059669 !important; /* hijau lebih terang saat active */
+  stroke-width: 2.5 !important;
+}
+
+/* Garis pemisah opsional mirip contoh */
+.sidebar .sidebar-header { border-bottom: 1px solid #e5e7eb; }
+.sidebar .sidebar-nav { border-right: 1px solid #e5e7eb; } 
+
+/* Perbaikan: jadikan setiap item sidebar defaultnya transparan/putih, bukan gelap */
+.sidebar .sidebar-link,
+a.sidebar-link {
+  background: transparent !important;
+  border-left-color: transparent !important;
+  color: #111827 !important;
+}
+.sidebar .sidebar-link i,
+.sidebar .sidebar-link svg,
+a.sidebar-link i,
+a.sidebar-link svg {
+  color: inherit !important;
+}
+
+/* Hover dan aktif konsisten biru */
+.sidebar .sidebar-link:hover {
+  background-color: rgba(37, 99, 235, 0.10) !important;
+  border-left-color: transparent !important;
+}
+.sidebar .sidebar-item.active > .sidebar-link {
+  background-color: rgba(37, 99, 235, 0.15) !important;
+  border-left-color: #22831C !important;
+  color: #22831C !important;
+} 
+
+/* Sidebar brand sejajar dengan navbar - tinggi, padding, alignment sama */
+.sidebar .sidebar-brand {
+  background: linear-gradient(90deg, #22831C 100%) !important;
+  color: #ffffff !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  max-height: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 1.5rem !important;
+  line-height: 1 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  margin-bottom: 0 !important;
+}
+.sidebar .sidebar-brand:hover { 
+  color: #ffffff !important; 
+}
+.sidebar .sidebar-brand span,
+.sidebar .sidebar-brand * {
+  color: #ffffff !important;
+}
+/* Atur logo agar proporsional */
+.sidebar .sidebar-brand img {
+  width: 32px !important;
+  height: 32px !important;
+  object-fit: contain !important;
+  margin-right: 0.75rem !important;
+  flex-shrink: 0 !important;
+}
+/* Atur font size brand agar sejajar dengan navbar */
+.sidebar .sidebar-brand span {
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+}
+/* Pastikan simplebar content wrapper mendukung sticky */
+.sidebar .sidebar-content.js-simplebar .simplebar-content {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+/* Pastikan sidebar brand tetap di atas saat scroll di dalam simplebar */
+.sidebar .sidebar-content.js-simplebar .simplebar-content-wrapper {
+  overflow-y: auto !important;
+}
+.sidebar .sidebar-content.js-simplebar .simplebar-content .sidebar-brand {
+  position: sticky !important;
+  top: 0 !important;
+}
+
+/* Pastikan card tetap putih di atas latar biru lembut */
+.card,
+.main .card,
+.content .card { background: #ffffff !important; } 
+
+/* Navbar fixed di atas mengikuti lebar area main (bukan menutupi sidebar) */
+.wrapper .main { position: relative; }
+.main .navbar.navbar-bg {
+  position: fixed !important;
+  top: 0 !important;
+  left: 260px; /* lebar sidebar default */
+  width: calc(100% - 260px);
+  z-index: 1050 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  height: 64px !important;
+  min-height: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 1.5rem !important;
+}
+/* Saat sidebar collapsed (atau pada layout mobile) navbar melebar penuh */
+.sidebar.collapsed + .main .navbar.navbar-bg { left: 0; width: 100%; }
+@media (max-width: 991.98px) {
+  .main .navbar.navbar-bg { left: 0; width: 100%; }
+}
+/* Beri ruang pada konten agar tidak tertutup navbar (sesuai tinggi navbar 64px + sedikit margin) */
+.main .content { padding-top: 80px !important; }
+@media (max-width: 767.98px) {
+  .main .content { padding-top: 72px !important; }
+} 
+
+/* Tampilkan highlight background hanya saat item aktif */
+.sidebar .sidebar-item > .sidebar-link { background-color: transparent !important; }
+.sidebar .sidebar-item.active > .sidebar-link {
+  background-color: rgba(37, 99, 235, 0.15) !important;
+  border-left-color: #22831C !important;
+  color: #22831C!important;
+} 
+/* Hamburger (garis 3) putih di navbar */
+.navbar .hamburger,
+.navbar .hamburger:before,
+.navbar .hamburger:after {
+  background: #ffffff !important;
+}
+.navbar .sidebar-toggle:hover .hamburger,
+.navbar .sidebar-toggle:hover .hamburger:before,
+.navbar .sidebar-toggle:hover .hamburger:after {
+  background: #ffffff !important;
+} 
+/* Reset alert-success biar mirip Bootstrap default */
+.alert-success {
+    color: #0f5132 !important;
+    background-color: #d1e7dd !important;
+    border-color: #badbcc !important;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1.25rem;
+}
+
+/* Close button sesuai Bootstrap */
+.alert-success .btn-close {
+    box-sizing: content-box;
+    width: 1em;
+    height: 1em;
+    padding: 0.25em 0.25em;
+    color: #0f5132;
+    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z' fill='%230f5132'/%3e%3c/svg%3e") center/1em auto no-repeat;
+    border: 0;
+    border-radius: 0.25rem;
+    opacity: .5;
+}
+
+.alert-success .btn-close:hover {
+    opacity: .75;
+}
+
+.navbar .dropdown-menu {
+    position: absolute !important;
+    z-index: 2000;
+}
+

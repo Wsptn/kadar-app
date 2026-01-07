@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Login - KADAR</title>
+
+    <link rel="shortcut icon" href="{{ asset('template-admin/img/logo-kadar.png') }}" />
+
+    {{-- CSS Template --}}
+    <link rel="stylesheet" href="{{ asset('template-admin/css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('template-admin/css/custom.css') }}">
+
+    {{-- Bootstrap --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+    {{-- Icon Bootstrap --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        /* === 1. ANIMASI === */
+
+        /* Muncul dari bawah ke atas */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 40px, 0);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        /* Logo berdenyut halus */
+        @keyframes pulseLogo {
+            0% {
+                transform: scale(1.1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* === 2. BACKGROUND & OVERLAY === */
+        body {
+            /* Pastikan path gambar benar */
+            background-image: url("{{ asset('template-admin/img/biktren.JPEG') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+            /* Mencegah scrollbar saat animasi masuk */
+        }
+
+        /* Overlay Putih Transparan (Tipis) agar gambar jelas tapi tidak menabrak teks */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        /* === 3. KOMPONEN === */
+
+        .logo-kadar {
+            /* Animasi Pulse: Berjalan selamanya */
+            animation: pulseLogo 3s infinite ease-in-out;
+            display: inline-block;
+        }
+
+        /* Card Login */
+        .card-login {
+            width: 380px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            /* Putih solid tapi soft */
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+            backdrop-filter: blur(10px);
+
+            /* Animasi Masuk: Fade In Up (0.8 detik) */
+            opacity: 0;
+            /* Mulai sembunyi */
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        /* Teks Footer */
+        .footer-text {
+            color: #ffffff !important;
+            /* Putih Mutlak */
+            font-weight: 400;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+            /* Bayangan Hitam Tebal */
+            margin-top: 1.5rem;
+
+            /* Animasi Masuk: Muncul belakangan (delay 0.5s) */
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+            animation-delay: 0.5s;
+        }
+
+        /* Input Styles */
+        .form-control:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+        }
+
+        .input-group-text {
+            border-color: #dee2e6;
+        }
+
+        .form-control:focus+.input-group-text {
+            border-color: #198754;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column align-items-center justify-content-center">
+
+    {{-- KOTAK LOGIN --}}
+    <div class="card shadow-lg border-0 card-login">
+        <div class="card-body p-4">
+
+            {{-- Header Logo --}}
+            <div class="text-center mb-4">
+                <img src="{{ asset('template-admin/img/logo-kadar.png') }}" alt="Logo Kadar" width="100"
+                    class="mb-2 logo-kadar">
+                <h5 class="mt-3 mb-0 fw-bold text-dark">KADAR</h5>
+                <small class="text-muted">(Kelola Administrasi Data Personalia Pesantren)</small>
+            </div>
+
+            {{-- Notifikasi Error --}}
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div style="font-size: 0.9rem;">
+                        {{ $errors->first() }}
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            {{-- Notifikasi Sukses --}}
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert" style="font-size: 0.9rem;">
+                    <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            {{-- Form Login --}}
+            <form method="POST" action="{{ route('login.process') }}">
+                @csrf
+
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-semibold text-secondary small">Username</label>
+                    <input type="text" name="username" id="username"
+                        class="form-control @error('username') is-invalid @enderror" placeholder="Masukkan Username"
+                        value="{{ old('username') }}" required>
+                </div>
+
+                <div class="mb-3 position-relative">
+                    <label for="password" class="form-label fw-semibold text-secondary small">Kata Sandi</label>
+                    <div class="input-group">
+                        <input type="password" name="password" id="password"
+                            class="form-control @error('password') is-invalid @enderror"
+                            placeholder="Masukkan Kata Sandi" required>
+
+                        <span class="input-group-text bg-white" id="togglePassword" style="cursor: pointer;">
+                            <i class="bi bi-eye-slash" id="toggleIcon"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-success fw-bold py-2">Masuk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- FOOTER --}}
+    <div class="mt-4 text-center footer-text" style="font-size: 0.9rem;">
+        Developed by <strong>Muhammad Babun Waseptian</strong>
+    </div>
+
+    {{-- JS Template --}}
+    <script src="{{ asset('template-admin/js/script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    {{-- Script Show/Hide Password --}}
+    <script>
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+        const icon = document.querySelector('#toggleIcon');
+
+        togglePassword.addEventListener('click', () => {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+
+            icon.classList.toggle('bi-eye');
+            icon.classList.toggle('bi-eye-slash');
+        });
+    </script>
+
+</body>
+
+</html>
