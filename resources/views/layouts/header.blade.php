@@ -21,7 +21,7 @@
                             alt="{{ Auth::user()->name }}" style="width: 40px; height: 40px; object-fit: cover;">
 
                         {{-- NAMA & LEVEL --}}
-                        <div class="d-none d-md-block text-start" style="line-height: 1.2;">
+                        <div class="d-none d-md-block text-start mt-2" style="line-height: 1.2;">
                             {{-- TAMPIL PENUH (Tanpa Limit) --}}
                             <span class="text-dark fw-semibold d-block">
                                 {{ Auth::user()->name }}

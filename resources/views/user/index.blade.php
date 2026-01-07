@@ -38,10 +38,12 @@
             </div>
         @endif
 
-        {{-- Tombol Tambah --}}
+        {{-- TOOLBAR: Tombol Tambah & Pencarian --}}
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <div class="row gy-3 align-items-center">
+
+                    {{-- 1. Tombol Tambah (Kiri) --}}
                     <div class="col-12 col-md-4">
                         @auth
                             @if (auth()->user()->isAdmin() || auth()->user()->isBiktren())
@@ -51,14 +53,26 @@
                             @endif
                         @endauth
                     </div>
-                    <div class="col-12 col-md-8">
-                        {{-- Filter Code (Placeholder) --}}
+
+                    {{-- 2. Form Pencarian (Kanan) --}}
+                    <div class="col-12 col-md-8 d-flex justify-content-md-end">
+                        <form action="{{ route('user.index') }}" method="GET" id="searchForm">
+                            <div class="input-group" style="max-width: 230px;">
+                                <span class="input-group-text bg-white">
+                                    <i data-feather="search" style="width: 16px; height: 16px;"></i>
+                                </span>
+                                <input type="text" name="search" id="searchInput" class="form-control border-start-0"
+                                    placeholder="Cari User..." value="{{ request('search') }}" autocomplete="off">
+                                <button class="btn btn-success" type="submit">Cari</button>
+                            </div>
+                        </form>
                     </div>
+
                 </div>
             </div>
         </div>
 
-        {{-- Tabel User --}}
+        {{-- Tabel User (TAMPILAN TETAP) --}}
         <div class="table-responsive">
             <table class="table table-bordered align-middle">
                 <thead class="table-light">
@@ -80,19 +94,16 @@
                                     <span class="badge bg-secondary status-badge ms-2">Nonaktif</span>
                                 @endif
 
-                                {{-- LOGIKA TAMPILAN LEVEL DISESUAIKAN --}}
+                                {{-- LOGIKA TAMPILAN LEVEL --}}
                                 @if ($user->isWilayah() && $user->wilayah)
-                                    {{-- Jika Level Wilayah -> Tampilkan Nama Wilayah --}}
                                     <span class="badge bg-primary status-badge ms-1">
                                         {{ $user->wilayah->nama_wilayah }}
                                     </span>
                                 @elseif ($user->isDaerah() && $user->daerah)
-                                    {{-- Jika Level Daerah -> Tampilkan Nama Daerah --}}
                                     <span class="badge bg-warning text-dark status-badge ms-1">
                                         {{ $user->daerah->nama_daerah }}
                                     </span>
                                 @else
-                                    {{-- Jika Admin/Biktren -> Tampilkan Level Asli --}}
                                     <span class="badge bg-info status-badge ms-1">{{ $user->level }}</span>
                                 @endif
 
@@ -105,13 +116,13 @@
                             {{-- KOLOM AKSI --}}
                             <td class="text-center">
                                 @if (Auth::user()->isAdmin() || Auth::user()->isBiktren())
-                                    {{-- 1. Tombol Reset Password --}}
+                                    {{-- Reset Password --}}
                                     <a href="{{ route('user.reset-password', $user->id) }}"
-                                        class="btn btn-sm btn-outline-warning me-1" title="Ganti Password User Ini">
+                                        class="btn btn-sm btn-outline-warning me-1" title="Ganti Password">
                                         <i data-feather="key"></i>
                                     </a>
 
-                                    {{-- 2. Tombol Nonaktifkan/Aktifkan --}}
+                                    {{-- Nonaktifkan/Aktifkan --}}
                                     @if (Auth::user()->isAdmin())
                                         @if ($user->id !== Auth::id())
                                             <form action="{{ route('user.toggle-status', $user->id) }}" method="POST"
@@ -133,7 +144,6 @@
                                                 @endif
                                             </form>
                                         @else
-                                            {{-- Jika akun sendiri (Disabled Button) --}}
                                             <button class="btn btn-sm btn-light border" disabled title="Akun Anda Sendiri">
                                                 <i data-feather="user"></i>
                                             </button>
@@ -155,7 +165,8 @@
 
         {{-- PAGINATION --}}
         <div class="d-flex justify-content-end mt-4">
-            {{ $users->links('pagination::bootstrap-5') }}
+            {{-- withQueryString() PENTING agar pencarian tidak hilang saat pindah halaman --}}
+            {{ $users->withQueryString()->links('pagination::bootstrap-5') }}
         </div>
     </div>
 @endsection
@@ -163,7 +174,39 @@
 @section('this-page-scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // Init Icons
             if (typeof feather !== 'undefined') feather.replace();
+
+            // LOGIKA PENCARIAN OTOMATIS
+            const searchInput = document.getElementById('searchInput');
+            const searchForm = document.getElementById('searchForm');
+            let typingTimer;
+            const doneTypingInterval = 800;
+
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    clearTimeout(typingTimer);
+
+                    // Ambil nilai input
+                    const val = searchInput.value;
+
+                    // Jika user selesai mengetik (debounce)
+                    typingTimer = setTimeout(function() {
+                        // Submit jika karakter >= 3 atau kosong (untuk reset)
+                        if (val.length >= 3 || val.length === 0) {
+                            searchForm.submit();
+                        }
+                    }, doneTypingInterval);
+                });
+
+                // Mencegah submit form saat menekan Enter jika karakter kurang dari 3 (Opsional)
+                searchInput.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        searchForm.submit();
+                    }
+                });
+            }
         });
     </script>
 @endsection

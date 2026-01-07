@@ -12,19 +12,36 @@ use App\Http\Controllers\Controller;
 class UserController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
+        // Mulai Query Dasar
+        $query = User::query();
+
+        // LOGIKA PENCARIAN
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('username', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // LOGIKA HAK AKSES DATA (Admin vs Biktren)
         if ($user->isAdmin()) {
-            $users = User::latest()->paginate(10);
+            // Admin bisa melihat semua data (tidak ada filter tambahan)
         } elseif ($user->isBiktren()) {
-            $users = User::whereIn('level', ['Wilayah', 'Daerah'])
-                ->latest()
-                ->paginate(10);
+            // Biktren hanya bisa melihat user level 'Wilayah' dan 'Daerah'
+            $query->whereIn('level', ['Wilayah', 'Daerah']);
         } else {
             abort(403, 'Anda tidak memiliki akses ke halaman manajemen user.');
         }
+
+        // Eksekusi Query dengan Pagination
+        $users = $query->latest()
+            ->paginate(10)
+            ->appends($request->all());
 
         return view('user.index', compact('users'));
     }
