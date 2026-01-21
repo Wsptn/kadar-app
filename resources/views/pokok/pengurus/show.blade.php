@@ -15,29 +15,31 @@
 
             {{-- FOTO & IDENTITAS --}}
             <div class="col-lg-4 mb-4">
-                <div class="card shadow-sm p-4 text-center h-100">
+                {{-- Hapus 'h-100' agar tinggi otomatis (compact), ubah p-4 jadi p-3 --}}
+                <div class="card shadow-sm p-3 text-center border-0">
 
-                    {{-- Foto --}}
-                    @if ($pengurus->foto)
-                        <img src="{{ asset('storage/' . $pengurus->foto) }}" class="rounded mx-auto d-block mb-3 border p-1"
-                            style="width:180px; height:220px; object-fit:cover;"
-                            onerror="this.src='{{ asset('template-admin/img/default-avatar.png') }}'">
-                    @else
-                        <img src="{{ asset('template-admin/img/default-avatar.png') }}"
-                            class="rounded mx-auto d-block mb-3 border p-1"
-                            style="width:180px; height:220px; object-fit:cover;">
-                    @endif
+                    <div class="d-flex flex-column align-items-center">
+                        {{-- Foto --}}
+                        @if ($pengurus->foto)
+                            <img src="{{ asset('storage/' . $pengurus->foto) }}" class="rounded border p-1 mb-3"
+                                style="width:180px; height:220px; object-fit:cover;"
+                                onerror="this.src='{{ asset('template-admin/img/default-avatar.png') }}'">
+                        @else
+                            <img src="{{ asset('template-admin/img/default-avatar.png') }}" class="rounded border p-1 mb-3"
+                                style="width:180px; height:220px; object-fit:cover;">
+                        @endif
 
-                    <h4 class="fw-bold mb-1">{{ $pengurus->nama }}</h4>
-                    <p class="text-muted mb-2">NIUP: <strong>{{ $pengurus->niup }}</strong></p>
+                        <h4 class="fw-bold mb-1">{{ $pengurus->nama }}</h4>
+                        <p class="text-muted mb-3 small">NIUP: <strong>{{ $pengurus->niup }}</strong></p>
 
-                    @php
-                        $statusClass = $pengurus->status == 'aktif' ? 'bg-success' : 'bg-secondary';
-                        $statusText = $pengurus->status == 'aktif' ? 'AKTIF' : 'NON-AKTIF';
-                    @endphp
+                        @php
+                            $statusClass = $pengurus->status == 'aktif' ? 'bg-success' : 'bg-secondary';
+                            $statusText = $pengurus->status == 'aktif' ? 'AKTIF' : 'NON-AKTIF';
+                        @endphp
 
-                    <div>
-                        <span class="badge {{ $statusClass }} px-4 py-2 rounded-pill">
+                        {{-- Status: Diberi width 180px agar sama persis dengan gambar --}}
+                        <span class="badge {{ $statusClass }} py-2 rounded-pill"
+                            style="width: 180px; display: inline-block; font-size: 0.9rem;">
                             {{ $statusText }}
                         </span>
                     </div>
@@ -50,12 +52,13 @@
                 <div class="card shadow-sm p-4 position-relative h-100">
 
                     {{-- Tombol X di pojok kanan atas --}}
-                    <a href="{{ route('pokok.pengurus.index') }}"
-                        class="btn btn-light border position-absolute d-flex align-items-center justify-content-center"
-                        style="top:15px; right:15px; border-radius:50%; width:35px; height:35px; padding:0; font-weight:bold;"
-                        title="Tutup">
-                        <i class="bi bi-x-lg"></i>
-                    </a>
+                    <div class="position-absolute top-0 end-0 p-3">
+                        <a href="{{ route('pokok.pengurus.index') }}"
+                            class="btn btn-light btn-sm shadow-sm border text-secondary" data-bs-toggle="tooltip"
+                            title="Kembali">
+                            <i class="bi bi-x-lg fw-bold"></i> Tutup
+                        </a>
+                    </div>
 
                     <h5 class="fw-bold text-success border-bottom pb-2 mb-3">Informasi Detail</h5>
 
@@ -107,35 +110,29 @@
                                 <div class="flex-grow-1">: {{ $pengurus->sk_kepengurusan ?? '-' }}</div>
                             </div>
 
-                            {{-- !!! BAGIAN PENTING: FUNGSIONAL TUGAS (MULTI) !!! --}}
+                            {{-- !!! BAGIAN PENTING: FUNGSIONAL TUGAS (UPDATED TAMPILAN BADGE) !!! --}}
                             <div class="mb-2 d-flex">
                                 <label class="fw-semibold text-muted" style="width: 200px;">Fungsional Tugas</label>
                                 <div class="flex-grow-1 d-flex align-items-start">
                                     <span class="me-1">:</span>
                                     @if ($pengurus->fungsionalTugas->count() > 0)
-                                        <ul class="list-unstyled mb-0">
+                                        <div class="d-flex flex-wrap gap-1">
                                             @foreach ($pengurus->fungsionalTugas as $ft)
-                                                <li class="mb-1 d-flex align-items-center">
-                                                    <i class="bi bi-check-circle-fill text-success me-2 small"></i>
-                                                    <span class="fw-semibold me-2">{{ $ft->tugas }}</span>
-
-                                                    {{-- Tampilkan Status di Pivot --}}
-                                                    @if ($ft->pivot->status == 'aktif')
-                                                        <span class="badge bg-primary"
-                                                            style="font-size: 0.65rem;">Aktif</span>
-                                                    @else
-                                                        <span class="badge bg-secondary"
-                                                            style="font-size: 0.65rem;">Non-Aktif</span>
+                                                <span
+                                                    class="badge {{ $ft->pivot->status == 'aktif' ? 'bg-primary' : 'bg-secondary' }} bg-opacity-75">
+                                                    {{ $ft->tugas }}
+                                                    @if ($ft->pivot->status != 'aktif')
+                                                        (Non-Aktif)
                                                     @endif
-                                                </li>
+                                                </span>
                                             @endforeach
-                                        </ul>
+                                        </div>
                                     @else
                                         <span class="text-muted fst-italic">Tidak ada tugas fungsional</span>
                                     @endif
                                 </div>
                             </div>
-                            {{-- =============================================== --}}
+                            {{-- ============================================================== --}}
 
                             <div class="mb-2 d-flex">
                                 <label class="fw-semibold text-muted" style="width: 200px;">Rangkap Internal</label>
@@ -175,7 +172,7 @@
                                     :
                                     @if ($path)
                                         <a href="{{ asset('storage/' . $path) }}" target="_blank"
-                                            class="text-decoration-none btn btn-sm btn-outline-primary py-0 px-2 ms-1">
+                                            class="text-decoration-none btn btn-sm btn-outline-success py-0 px-2 ms-1">
                                             <i class="bi bi-file-earmark-text me-1"></i> Lihat File
                                         </a>
                                     @else
