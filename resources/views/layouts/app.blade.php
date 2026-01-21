@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>KADAR</title>
+    <title>KIPER</title>
 
     <link rel="shortcut icon" href="{{ asset('template-admin/img/logo-kadar.png') }}" />
     <link href="{{ asset('template-admin/css/app.css') }}" rel="stylesheet">

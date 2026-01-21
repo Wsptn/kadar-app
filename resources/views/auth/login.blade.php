@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Login - KADAR</title>
+    <title>Login - KIPER</title>
 
     <link rel="shortcut icon" href="{{ asset('template-admin/img/logo-kadar.png') }}" />
 
@@ -139,8 +139,8 @@
             <div class="text-center mb-4">
                 <img src="{{ asset('template-admin/img/logo-kadar.png') }}" alt="Logo Kadar" width="100"
                     class="mb-2 logo-kadar">
-                <h5 class="mt-3 mb-0 fw-bold text-dark">KADAR</h5>
-                <small class="text-muted">(Kelola Administrasi Data Personalia Pesantren)</small>
+                <h5 class="mt-3 mb-0 fw-bold text-dark">KIPER</h5>
+                <small class="text-muted">(Kinerja Pengurus)</small>
             </div>
 
             {{-- Notifikasi Error --}}

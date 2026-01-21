@@ -4,7 +4,7 @@
         <a class="sidebar-brand" href="/dashboard">
             <img src="{{ asset('template-admin/img/logo-kadar.png') }}" alt="Logo"
                 style="width: 50px; height:auto; margin-right: 10px;">
-            <span class="align-middle">KADAR</span>
+            <span class="align-middle">KIPER</span>
         </a>
 
         <ul class="sidebar-nav">
