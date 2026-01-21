@@ -52,7 +52,7 @@
         /* === 2. BACKGROUND & OVERLAY === */
         body {
             /* Pastikan path gambar benar */
-            background-image: url("{{ asset('template-admin/img/biktren.JPEG') }}");
+            background-image: url("{{ asset('template-admin/img/biktren.jpeg') }}");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
