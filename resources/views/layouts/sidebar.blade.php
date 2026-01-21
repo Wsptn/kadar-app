@@ -2,7 +2,7 @@
 <nav id="sidebar" class="sidebar js-sidebar">
     <div class="sidebar-content js-simplebar">
         <a class="sidebar-brand" href="/dashboard">
-            <img src="{{ asset('template-admin/img/logo-kadar.png') }}" alt="Logo"
+            <img src="{{ asset('template-admin/img/logo-kiper.png') }}" alt="Logo"
                 style="width: 50px; height:auto; margin-right: 10px;">
             <span class="align-middle">KIPER</span>
         </a>

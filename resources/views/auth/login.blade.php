@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Login - KIPER</title>
 
-    <link rel="shortcut icon" href="{{ asset('template-admin/img/logo-kadar.png') }}" />
+    <link rel="shortcut icon" href="{{ asset('template-admin/img/logo-kiper.png') }}" />
 
     {{-- CSS Template --}}
     <link rel="stylesheet" href="{{ asset('template-admin/css/app.css') }}">
@@ -76,7 +76,7 @@
 
         /* === 3. KOMPONEN === */
 
-        .logo-kadar {
+        .logo-kiper {
             /* Animasi Pulse: Berjalan selamanya */
             animation: pulseLogo 3s infinite ease-in-out;
             display: inline-block;
@@ -137,8 +137,8 @@
 
             {{-- Header Logo --}}
             <div class="text-center mb-4">
-                <img src="{{ asset('template-admin/img/logo-kadar.png') }}" alt="Logo Kadar" width="100"
-                    class="mb-2 logo-kadar">
+                <img src="{{ asset('template-admin/img/logo-kiper.png') }}" alt="Logo Kadar" width="100"
+                    class="mb-2 logo-kiper">
                 <h5 class="mt-3 mb-0 fw-bold text-dark">KIPER</h5>
                 <small class="text-muted">(Kinerja Pengurus)</small>
             </div>
