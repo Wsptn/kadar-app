@@ -18,6 +18,7 @@ class PengurusExport implements FromCollection, WithHeadings
 
     public function collection()
     {
+        // 1. QUERY UTAMA (Tampilkan Semua Status Pengurus)
         $query = Pengurus::with([
             'wilayah',
             'daerah',
@@ -33,64 +34,47 @@ class PengurusExport implements FromCollection, WithHeadings
             'angkatan',
         ])->orderBy('nama');
 
-        // === FILTER ===
+        // === FILTER BERDASARKAN REQUEST ===
 
-        // 1. Wilayah
         if ($this->request->filled('wilayah')) {
             $query->where('wilayah_id', $this->request->wilayah);
         }
-
-        // 2. Daerah
         if ($this->request->filled('daerah')) {
             $query->where('daerah_id', $this->request->daerah);
         }
-
-        // 3. Entitas Daerah
         if ($this->request->filled('entitas_daerah')) {
             $query->where('entitas_daerah', $this->request->entitas_daerah);
         }
-
-        // 4. Entitas
         if ($this->request->filled('entitas')) {
             $query->where('entitas_id', $this->request->entitas);
         }
-
-        // 5. Jabatan
         if ($this->request->filled('jabatan')) {
             $query->where('jabatan_id', $this->request->jabatan);
         }
-
-        // 6. Fungsional Tugas
+        // Filter Tugas (Mencari orang yang PERNAH punya tugas ini, walau statusnya non-aktif)
         if ($this->request->filled('tugas')) {
-            $query->where('fungsional_tugas_id', $this->request->tugas);
+            $query->whereHas('fungsionalTugas', function ($q) {
+                $q->where('master_fungsional_tugas_id', $this->request->tugas);
+            });
         }
-
-        // 7. Tugas Internal
         if ($this->request->filled('internal')) {
             $query->where('rangkap_internal_id', $this->request->internal);
         }
-
-        // 8. Tugas Eksternal
         if ($this->request->filled('eksternal')) {
             $query->where('rangkap_eksternal_id', $this->request->eksternal);
         }
-
-        // 9. Pendidikan
         if ($this->request->filled('pendidikan')) {
             $query->where('pendidikan_id', $this->request->pendidikan);
         }
-
-        // 10. Angkatan
         if ($this->request->filled('angkatan')) {
             $query->where('angkatan_id', $this->request->angkatan);
         }
 
-        // 11. Status
+        // Filter Status Pengurus (Hanya jika user memilih di dropdown)
         if ($this->request->filled('status')) {
             $query->where('status', $this->request->status);
         }
 
-        // 12. Search
         if ($this->request->filled('search')) {
             $s = $this->request->search;
             $query->where(function ($q) use ($s) {
@@ -101,12 +85,22 @@ class PengurusExport implements FromCollection, WithHeadings
 
         $data = $query->get();
 
+        // === MAPPING DATA ===
         return $data->map(function ($p) {
 
-            // URL file jika ada
+            // Helper URL file
             $file = function ($path) {
                 return $path ? url('storage/' . $path) : null;
             };
+
+            // LOGIKA UTAMA: Hanya ambil tugas yang status PIVOT-nya 'aktif'
+            // Walaupun pengurusnya non-aktif, kita cek history tugasnya yg statusnya aktif (jika ada)
+            $listTugas = $p->fungsionalTugas
+                ->filter(function ($tugas) {
+                    return $tugas->pivot->status == 'aktif';
+                })
+                ->pluck('tugas')
+                ->join(', ');
 
             return [
                 'niup'                => $p->niup,
@@ -122,14 +116,16 @@ class PengurusExport implements FromCollection, WithHeadings
                 'grade_jabatan'       => $p->gradeJabatan->grade ?? '',
                 'sk_kepengurusan'     => $p->sk_kepengurusan,
 
-                'fungsional_tugas'    => $p->fungsionalTugas->tugas ?? '',
+                // Di sini hanya muncul tugas yang aktif saja
+                'fungsional_tugas'    => $listTugas,
+
                 'rangkap_internal'    => $p->rangkapInternal->internal ?? '',
                 'rangkap_eksternal'   => $p->rangkapEksternal->eksternal ?? '',
                 'status'              => $p->status,
                 'pendidikan'          => $p->pendidikan->nama_pendidikan ?? '',
                 'angkatan'            => $p->angkatan->angkatan ?? '',
 
-                // FILE → URL
+                // FILE
                 'berkas_sk_pengurus'  => $file($p->berkas_sk_pengurus),
                 'berkas_surat_tugas'  => $file($p->berkas_surat_tugas),
                 'berkas_plt'          => $file($p->berkas_plt),
@@ -155,7 +151,7 @@ class PengurusExport implements FromCollection, WithHeadings
             'Fungsional Tugas',
             'Rangkap Internal',
             'Rangkap Eksternal',
-            'Status',
+            'Status Pengurus',
             'Pendidikan',
             'Angkatan',
             'Berkas SK Pengurus',
