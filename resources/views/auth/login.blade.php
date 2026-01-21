@@ -195,7 +195,7 @@
 
     {{-- FOOTER --}}
     <div class="mt-4 text-center footer-text" style="font-size: 0.9rem;">
-        Developed by <strong>Muhammad Babun Waseptian</strong>
+        Developed by <strong>Nurul Jadid</strong>
     </div>
 
     {{-- JS Template --}}
