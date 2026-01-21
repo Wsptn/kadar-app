@@ -97,13 +97,25 @@
                                         <span class="badge bg-light text-dark border">{{ $p->niup ?? '-' }}</span>
                                     </div>
 
-                                    {{-- Fungsional Tugas (WAJIB TAMPIL) --}}
-                                    <div class="small text-success fw-semibold mb-1" title="Fungsional Tugas">
+                                    {{-- Fungsional Tugas (PERBAIKAN MULTI-SELECT) --}}
+                                    <div class="small text-success fw-bold mb-1" title="Fungsional Tugas">
                                         <i data-feather="briefcase" style="width: 12px;" class="me-1"></i>
-                                        {{ $p->fungsionalTugas->tugas ?? '-' }}
+
+                                        @if ($p->fungsionalTugas->count() > 0)
+                                            @foreach ($p->fungsionalTugas as $ft)
+                                                {{-- Coret teks jika status non-aktif --}}
+                                                <span
+                                                    class="{{ $ft->pivot->status == 'non_aktif' ? 'text-decoration-line-through text-muted' : '' }}">
+                                                    {{ $ft->tugas }}
+                                                </span>
+                                                {{ !$loop->last ? ', ' : '' }}
+                                            @endforeach
+                                        @else
+                                            -
+                                        @endif
                                     </div>
 
-                                    {{-- Wilayah/Daerah (Opsional, pelengkap) --}}
+                                    {{-- Wilayah/Daerah --}}
                                     <div class="small text-muted text-truncate">
                                         <i data-feather="map-pin" style="width: 12px;" class="me-1"></i>
                                         {{ $p->daerah->nama_daerah ?? '-' }}

@@ -2,26 +2,38 @@
 
 @section('this-page-contain')
     @php
+        // Helper function sederhana untuk menampilkan preview berkas/foto
         function tampilkanBerkas($file)
         {
             if (!$file) {
                 return '<small class="text-muted fst-italic">Tidak ada berkas</small>';
             }
 
-            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
             $url = asset('storage/' . $file);
+            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
-            // Jika gambar
+            // Jika file gambar -> Tampilkan Preview Image
             if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                return '<div class="mt-2"><img src="' .
+                return '<div class="mt-2 position-relative d-inline-block">
+                            <img src="' .
                     $url .
-                    '" style="width:100px; height:120px; border-radius:6px; object-fit:cover; border:1px solid #ddd;"></div>';
+                    '" class="img-thumbnail" style="width:100px; height:120px; object-fit:cover;">
+                            <a href="' .
+                    $url .
+                    '" target="_blank" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" title="Lihat Full">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>';
             }
 
-            // Jika PDF atau file lain
-            return '<div class="mt-1"><a href="' .
+            // Jika PDF/Dokumen lain -> Tampilkan Tombol Download/View
+            return '<div class="mt-2">
+                        <a href="' .
                 $url .
-                '" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-file-earmark-text"></i> Lihat Berkas Saat Ini</a></div>';
+                '" target="_blank" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center">
+                            <i class="bi bi-file-earmark-text me-1"></i> Lihat Berkas
+                        </a>
+                    </div>';
         }
     @endphp
 
@@ -40,6 +52,7 @@
         <div class="card shadow-sm border-0">
             <div class="card-body px-4 py-4">
 
+                {{-- TAMPILKAN ERROR VALIDASI --}}
                 @if ($errors->any())
                     <div class="alert alert-danger">
                         <ul class="mb-0">
@@ -55,7 +68,7 @@
                     @csrf
                     @method('PUT')
 
-                    {{-- NIUP & Nama --}}
+                    {{-- IDENTITAS --}}
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">NIUP <span class="text-danger">*</span></label>
@@ -75,7 +88,6 @@
                     {{-- WILAYAH --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Wilayah</label>
-                        {{-- Jika Admin/Biktren: Boleh ganti Wilayah --}}
                         @if (Auth::user()->isAdmin() || Auth::user()->isBiktren())
                             <select name="wilayah_id" id="wilayahSelect" class="form-select">
                                 <option value="">-- Pilih Wilayah --</option>
@@ -87,7 +99,7 @@
                                 @endforeach
                             </select>
                         @else
-                            {{-- Jika Wilayah/Daerah: Readonly --}}
+                            {{-- Readonly untuk user Wilayah/Daerah --}}
                             <input type="hidden" id="wilayahSelect" name="wilayah_id" value="{{ $pengurus->wilayah_id }}">
                             <input type="text" class="form-control bg-light"
                                 value="{{ $pengurus->wilayah->nama_wilayah ?? '-' }}" readonly>
@@ -97,11 +109,9 @@
                     {{-- DAERAH --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Daerah</label>
-                        {{-- Admin/Biktren/Wilayah boleh ganti daerah (dalam lingkup wilayahnya) --}}
                         @if (!Auth::user()->isDaerah())
                             <select name="daerah_id" id="daerahSelect" class="form-select">
                                 <option value="">-- Pilih Daerah --</option>
-                                {{-- Opsi diload via JS/PHP --}}
                                 @foreach ($daerahs as $d)
                                     <option value="{{ $d->id }}"
                                         {{ old('daerah_id', $pengurus->daerah_id) == $d->id ? 'selected' : '' }}>
@@ -110,17 +120,15 @@
                                 @endforeach
                             </select>
                         @else
-                            {{-- Akun Daerah: Readonly --}}
                             <input type="hidden" name="daerah_id" value="{{ $pengurus->daerah_id }}">
                             <input type="text" class="form-control bg-light"
                                 value="{{ $pengurus->daerah->nama_daerah ?? '-' }}" readonly>
                         @endif
                     </div>
 
-                    {{-- === ENTITAS DAERAH (MANUAL LIST) === --}}
+                    {{-- ENTITAS DAERAH (MANUAL LIST) --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Entitas Daerah</label>
-
                         <select name="entitas_daerah" class="form-select @error('entitas_daerah') is-invalid @enderror">
                             <option value="">-- Pilih Entitas Daerah (Opsional) --</option>
                             @php
@@ -144,7 +152,7 @@
                                     'Tahfidz (PPIQ)',
                                     'Awwaliyah',
                                     'Idadiyah SLTA',
-                                ]; // Tambahkan opsi lain di sini
+                                ];
                             @endphp
                             @foreach ($opsiEntitas as $op)
                                 <option value="{{ $op }}"
@@ -153,12 +161,10 @@
                                 </option>
                             @endforeach
                         </select>
-
                         @error('entitas_daerah')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    {{-- =================================================== --}}
 
                     {{-- KAMAR --}}
                     <div class="mb-3">
@@ -233,6 +239,7 @@
                         </select>
                     </div>
 
+                    {{-- SK --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">SK Kepengurusan</label>
                         <input type="text" name="sk_kepengurusan" class="form-control"
@@ -242,18 +249,55 @@
                     <hr class="my-4">
                     <h6 class="mb-3 fw-bold text-success">Data Pendukung</h6>
 
+                    {{-- ========================================================== --}}
+                    {{-- FUNGSIONAL TUGAS (MULTI-SELECT CHECKBOX) --}}
+                    {{-- ========================================================== --}}
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Fungsional Tugas</label>
-                        <select name="fungsional_tugas_id" class="form-select">
-                            <option value="">-- Pilih --</option>
-                            @foreach ($fungsionalTugas as $ft)
-                                <option value="{{ $ft->id_tugas }}"
-                                    {{ old('fungsional_tugas_id', $pengurus->fungsional_tugas_id) == $ft->id_tugas ? 'selected' : '' }}>
-                                    {{ $ft->tugas }}
-                                </option>
+                        <label class="form-label fw-semibold">Fungsional Tugas (Bisa pilih lebih dari satu)</label>
+                        <div class="card p-3 bg-light border">
+                            @foreach ($fungsionalTugas as $index => $ft)
+                                @php
+                                    // Cek apakah pengurus ini memiliki tugas tersebut (lewat tabel pivot)
+                                    // Asumsi model Pengurus sudah memiliki relasi 'fungsionalTugas'
+                                    $pivotRecord = $pengurus->fungsionalTugas->firstWhere('id_tugas', $ft->id_tugas);
+                                    $isChecked = !is_null($pivotRecord);
+
+                                    // Jika ada di pivot, ambil statusnya. Jika tidak, default 'aktif'
+                                    $currentStatus = $isChecked ? $pivotRecord->pivot->status : 'aktif';
+                                @endphp
+
+                                <div class="row align-items-center mb-2 pb-2 border-bottom">
+                                    {{-- CHECKBOX --}}
+                                    <div class="col-md-7">
+                                        <div class="form-check">
+                                            <input class="form-check-input tugas-checkbox" type="checkbox"
+                                                name="tugas[{{ $index }}][id]" value="{{ $ft->id_tugas }}"
+                                                id="tugas_{{ $index }}" data-index="{{ $index }}"
+                                                {{ $isChecked ? 'checked' : '' }}>
+
+                                            <label class="form-check-label fw-bold" for="tugas_{{ $index }}">
+                                                {{ $ft->tugas }}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {{-- PILIHAN STATUS --}}
+                                    <div class="col-md-5">
+                                        <select name="tugas[{{ $index }}][status]"
+                                            class="form-select form-select-sm status-select"
+                                            id="status_{{ $index }}" {{ $isChecked ? '' : 'disabled' }}>
+                                            <option value="aktif" {{ $currentStatus == 'aktif' ? 'selected' : '' }}>Aktif
+                                            </option>
+                                            <option value="non_aktif"
+                                                {{ $currentStatus == 'non_aktif' ? 'selected' : '' }}>Non Aktif</option>
+                                        </select>
+                                    </div>
+                                </div>
                             @endforeach
-                        </select>
+                        </div>
+                        <small class="text-muted fst-italic">*Centang tugas untuk mengaktifkan pilihan status.</small>
                     </div>
+                    {{-- ========================================================== --}}
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -310,12 +354,13 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Status</label>
+                        <label class="form-label fw-semibold">Status Pengurus</label>
                         <select name="status" class="form-select">
                             <option value="aktif" {{ old('status', $pengurus->status) == 'aktif' ? 'selected' : '' }}>
                                 Aktif</option>
                             <option value="non_aktif"
-                                {{ old('status', $pengurus->status) == 'non_aktif' ? 'selected' : '' }}>Non Aktif
+                                {{ old('status', $pengurus->status) == 'non_aktif' ? 'selected' : '' }}>
+                                Non Aktif
                             </option>
                         </select>
                     </div>
@@ -323,7 +368,7 @@
                     <hr class="my-4">
                     <h6 class="mb-3 fw-bold text-success">Berkas & Foto</h6>
 
-                    {{-- FOTO (Semua boleh update) --}}
+                    {{-- FOTO --}}
                     <div class="mb-4">
                         <label class="form-label fw-semibold">Foto Profil</label>
                         <input type="file" name="foto" class="form-control">
@@ -333,7 +378,7 @@
                         </div>
                     </div>
 
-                    {{-- BERKAS LAIN (Hanya Admin & Biktren) --}}
+                    {{-- BERKAS LAIN --}}
                     @if (Auth::user()->isAdmin() || Auth::user()->isBiktren())
                         <div class="row">
                             <div class="col-md-6 mb-4">
@@ -362,7 +407,7 @@
                             <i class="bi bi-info-circle-fill me-2"></i>
                             <div>
                                 Anda hanya diizinkan mengubah <strong>Foto Profil</strong>. Untuk mengubah berkas dokumen
-                                lainnya, silahkan hubungi Admin Pusat atau BIKTREN.
+                                lainnya, silakan hubungi Admin Pusat atau BIKTREN.
                             </div>
                         </div>
                     @endif
@@ -383,7 +428,25 @@
 @section('this-page-scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // Helper function untuk fetch JSON
+        // === SCRIPT KHUSUS CHECKBOX TUGAS (AGAR STATUS HANYA BISA DIKLIK JIKA DICENTANG) ===
+        document.addEventListener("DOMContentLoaded", function() {
+            const checkboxes = document.querySelectorAll('.tugas-checkbox');
+            checkboxes.forEach(chk => {
+                chk.addEventListener('change', function() {
+                    const idx = this.getAttribute('data-index');
+                    const select = document.getElementById(`status_${idx}`);
+                    if (this.checked) {
+                        select.removeAttribute('disabled');
+                    } else {
+                        select.setAttribute('disabled', true);
+                        select.value = 'aktif'; // Reset ke default
+                    }
+                });
+            });
+        });
+
+        // =========================================================================
+
         async function fetchJson(url) {
             try {
                 const res = await fetch(url, {
@@ -398,23 +461,14 @@
             }
         }
 
-        // Variable data lama dari backend (untuk prefill saat gagal validasi)
         const oldWilayah = "{{ old('wilayah_id', $pengurus->wilayah_id) }}";
         const oldDaerah = "{{ old('daerah_id', $pengurus->daerah_id) }}";
         const oldKamar = "{{ old('kamar_id', $pengurus->kamar_id) }}";
 
-        const oldEntitas = "{{ old('entitas_id', $pengurus->entitas_id) }}";
-        const oldJabatan = "{{ old('jabatan_id', $pengurus->jabatan_id) }}";
-        const oldJenis = "{{ old('jenis_jabatan_id', $pengurus->jenis_jabatan_id) }}";
-        const oldGrade = "{{ old('grade_jabatan_id', $pengurus->grade_jabatan_id) }}";
-
-        // ========== DOMISILI LOGIC ==========
-
-        // Load Daerah by Wilayah
+        // Load Daerah
         async function loadDaerah(wid, selectedId = null) {
             const el = document.getElementById('daerahSelect');
-            if (!el) return; // jika element tidak ada (misal akun daerah)
-
+            if (!el) return;
             el.innerHTML = '<option>Memuat...</option>';
             el.disabled = true;
 
@@ -427,15 +481,13 @@
                 });
                 el.innerHTML = html;
                 el.disabled = false;
-
-                // Jika ada selectedId, load anak-anaknya (kamar)
                 if (selectedId) loadKamar(selectedId, oldKamar);
             } else {
                 el.innerHTML = '<option>Gagal memuat</option>';
             }
         }
 
-        // Load Kamar by Daerah
+        // Load Kamar
         async function loadKamar(did, selectedId = null) {
             const el = document.getElementById('kamarSelect');
             el.innerHTML = '<option>Memuat...</option>';
@@ -456,7 +508,6 @@
             }
         }
 
-        // Event Listeners Domisili
         document.getElementById('wilayahSelect')?.addEventListener('change', function() {
             loadDaerah(this.value);
             document.getElementById('kamarSelect').innerHTML = '<option>-- Pilih Daerah Dulu --</option>';
@@ -466,14 +517,12 @@
             loadKamar(this.value);
         });
 
-
-        // ========== KELEMBAGAAN LOGIC ==========
+        // === KELEMBAGAAN ===
 
         async function loadJabatan(eid, selectedId = null) {
             const el = document.getElementById('jabatanSelect');
             el.innerHTML = '<option>Memuat...</option>';
             el.disabled = true;
-
             const data = await fetchJson(`/master/jabatan/get-jabatan/${eid}`);
             if (data) {
                 let html = '<option value="">-- Pilih Jabatan --</option>';
@@ -490,7 +539,6 @@
             const el = document.getElementById('jenisSelect');
             el.innerHTML = '<option>Memuat...</option>';
             el.disabled = true;
-
             const data = await fetchJson(`/master/jabatan/get-jenis/${jid}`);
             if (data) {
                 let html = '<option value="">-- Pilih Jenis --</option>';
@@ -507,7 +555,6 @@
             const el = document.getElementById('gradeSelect');
             el.innerHTML = '<option>Memuat...</option>';
             el.disabled = true;
-
             const data = await fetchJson(`/master/jabatan/get-grade/${jid}`);
             if (data) {
                 let html = '<option value="">-- Pilih Grade --</option>';
@@ -520,29 +567,17 @@
             }
         }
 
-        // Event Listeners Kelembagaan
-        document.getElementById('entitasSelect').addEventListener('change', function() {
+        document.getElementById('entitasSelect')?.addEventListener('change', function() {
             loadJabatan(this.value);
             document.getElementById('jenisSelect').innerHTML = '<option>-- Pilih Jabatan Dulu --</option>';
             document.getElementById('gradeSelect').innerHTML = '<option>-- Pilih Jenis Dulu --</option>';
         });
-
-        document.getElementById('jabatanSelect').addEventListener('change', function() {
+        document.getElementById('jabatanSelect')?.addEventListener('change', function() {
             loadJenis(this.value);
             document.getElementById('gradeSelect').innerHTML = '<option>-- Pilih Jenis Dulu --</option>';
         });
-
-        document.getElementById('jenisSelect').addEventListener('change', function() {
+        document.getElementById('jenisSelect')?.addEventListener('change', function() {
             loadGrade(this.value);
-        });
-
-
-        // ========== INIT ON LOAD (Hanya jika dropdown kosong/perlu di-refresh) ==========
-        $(function() {
-            const wilayahEl = document.getElementById('wilayahSelect');
-            if (wilayahEl && wilayahEl.value && document.getElementById('daerahSelect').options.length <= 1) {
-                loadDaerah(wilayahEl.value, oldDaerah);
-            }
         });
     </script>
 @endsection

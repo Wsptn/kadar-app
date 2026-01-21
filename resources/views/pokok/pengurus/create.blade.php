@@ -246,18 +246,58 @@
                         <h6 class="mb-3 fw-bold text-success">Data Pendukung</h6>
 
                         {{-- Fungsional Tugas --}}
+                        {{-- Fungsional Tugas (MULTI SELECT) --}}
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Fungsional Tugas</label>
-                            <select name="fungsional_tugas_id" class="form-select">
-                                <option value="">-- Pilih Fungsional Tugas --</option>
-                                @foreach ($fungsionalTugas as $ft)
-                                    <option value="{{ $ft->id_tugas }}"
-                                        {{ old('fungsional_tugas_id') == $ft->id_tugas ? 'selected' : '' }}>
-                                        {{ $ft->tugas }}
-                                    </option>
+                            <label class="form-label fw-semibold">Fungsional Tugas (Bisa pilih lebih dari satu)</label>
+                            <div class="card p-3 bg-light border">
+                                @foreach ($fungsionalTugas as $index => $ft)
+                                    <div class="row align-items-center mb-2 pb-2 border-bottom">
+                                        {{-- CHECKBOX NAMA TUGAS --}}
+                                        <div class="col-md-7">
+                                            <div class="form-check">
+                                                {{-- ID Tugas dikirim sebagai array tugas[index][id] --}}
+                                                <input class="form-check-input tugas-checkbox" type="checkbox"
+                                                    name="tugas[{{ $index }}][id]" value="{{ $ft->id_tugas }}"
+                                                    {{-- Pastikan ini ID primary key tabel master tugas --}} id="tugas_{{ $index }}"
+                                                    data-index="{{ $index }}">
+                                                <label class="form-check-label fw-bold" for="tugas_{{ $index }}">
+                                                    {{ $ft->tugas }}
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {{-- PILIHAN STATUS (Aktif/Non) --}}
+                                        <div class="col-md-5">
+                                            <select name="tugas[{{ $index }}][status]"
+                                                class="form-select form-select-sm status-select"
+                                                id="status_{{ $index }}" disabled>
+                                                <option value="aktif">Aktif</option>
+                                                <option value="non_aktif">Non Aktif</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 @endforeach
-                            </select>
+                            </div>
+                            <small class="text-muted fst-italic">*Centang tugas untuk mengaktifkan pilihan status.</small>
                         </div>
+
+                        {{-- Script Khusus Checkbox (Taruh langsung di bawah div ini atau di section scripts) --}}
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function() {
+                                const checkboxes = document.querySelectorAll('.tugas-checkbox');
+                                checkboxes.forEach(chk => {
+                                    chk.addEventListener('change', function() {
+                                        const idx = this.getAttribute('data-index');
+                                        const select = document.getElementById(`status_${idx}`);
+                                        if (this.checked) {
+                                            select.removeAttribute('disabled');
+                                        } else {
+                                            select.setAttribute('disabled', true);
+                                        }
+                                    });
+                                });
+                            });
+                        </script>
 
                         {{-- Rangkap Tugas --}}
                         <div class="row">

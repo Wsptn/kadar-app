@@ -70,14 +70,14 @@
             <li class="sidebar-item {{ request()->routeIs('master.internal.*') ? 'active' : '' }}">
                 <a class="sidebar-link" href="{{ route('master.internal.index') }}">
                     <i class="align-middle" data-feather="git-merge"></i>
-                    <span class="align-middle">Master Rangkap Tugas Internal</span>
+                    <span class="align-middle">Master Rangkap Internal</span>
                 </a>
             </li>
 
             <li class="sidebar-item {{ request()->routeIs('master.eksternal.*') ? 'active' : '' }}">
                 <a class="sidebar-link" href="{{ route('master.eksternal.index') }}">
                     <i class="align-middle" data-feather="git-branch"></i>
-                    <span class="align-middle">Master Rangkap Tugas Eksternal</span>
+                    <span class="align-middle">Master Rangkap Eksternal</span>
                 </a>
             </li>
 

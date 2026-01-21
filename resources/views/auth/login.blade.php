@@ -168,7 +168,7 @@
 
                 <div class="mb-3">
                     <label for="username" class="form-label fw-semibold text-secondary small">Username</label>
-                    <input type="text" name="username" id="username"
+                    <input type="text" autofocus name="username" id="username"
                         class="form-control @error('username') is-invalid @enderror" placeholder="Masukkan Username"
                         value="{{ old('username') }}" required>
                 </div>
