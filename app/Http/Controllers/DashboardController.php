@@ -17,26 +17,31 @@ class DashboardController extends Controller
         // ===============================
         // 1. STATISTIK UTAMA (HANYA YANG AKTIF)
         // ===============================
-        // Karena kita sudah menambahkan kolom 'status' di tabel muallim/wali_asuh/pengajar
-        // lewat migrasi sebelumnya, sekarang aman untuk menggunakan where('status', 'aktif').
+        // Gunakan 'penguruses.status' agar aman dari error ambiguous column
+        $totalPengurus = Pengurus::where('penguruses.status', 'aktif')->count();
 
-        $totalPengurus = Pengurus::where('status', 'aktif')->count(); // Hanya pengurus aktif
-
+        // Hitung Data Pendukung
         $totalMuallim  = Muallim::where('status', 'aktif')->count();
         $totalWaliAsuh = WaliAsuh::where('status', 'aktif')->count();
         $totalPengajar = Pengajar::where('status', 'aktif')->count();
 
         // ===============================
-        // 2. GRAFIK PENGURUS PER WILAYAH
+        // 2. GRAFIK PENGURUS PER WILAYAH (LOGIKA BARU)
         // ===============================
-        $pengurusPerWilayah = Pengurus::select(
-            'wilayahs.nama_wilayah',
-            DB::raw('COUNT(penguruses.id) as total')
-        )
-            ->join('wilayahs', 'wilayahs.id', '=', 'penguruses.wilayah_id')
-            ->where('penguruses.status', 'aktif') // Filter hanya pengurus aktif
+        // KITA UBAH: Start dari tabel 'wilayahs' (Master), bukan 'pengurus'.
+        // Tujuannya agar SEMUA wilayah tetap terambil meski jumlah pengurusnya sedikit atau 0.
+
+        $pengurusPerWilayah = DB::table('wilayahs')
+            ->leftJoin('penguruses', function ($join) {
+                $join->on('wilayahs.id', '=', 'penguruses.wilayah_id')
+                    ->where('penguruses.status', '=', 'aktif'); // Hanya hitung yang aktif
+            })
+            ->select(
+                'wilayahs.nama_wilayah',
+                DB::raw('COUNT(penguruses.id) as total')
+            )
             ->groupBy('wilayahs.nama_wilayah')
-            ->orderBy('wilayahs.nama_wilayah')
+            ->orderBy('wilayahs.nama_wilayah', 'asc') // Urutkan nama wilayah A-Z agar rapi di grafik
             ->get();
 
         $labelsWilayah = $pengurusPerWilayah->pluck('nama_wilayah');
@@ -45,30 +50,32 @@ class DashboardController extends Controller
         // ===============================
         // 3. GRAFIK RANGKAP TUGAS (Hanya Pengurus Aktif)
         // ===============================
-        $rangkapInternal = Pengurus::where('status', 'aktif')
+        $rangkapInternal = Pengurus::where('penguruses.status', 'aktif')
             ->whereNotNull('rangkap_internal_id')->count();
 
         $tidakInternal   = $totalPengurus - $rangkapInternal;
 
-        $rangkapEksternal = Pengurus::where('status', 'aktif')
+        $rangkapEksternal = Pengurus::where('penguruses.status', 'aktif')
             ->whereNotNull('rangkap_eksternal_id')->count();
 
         $tidakEksternal   = $totalPengurus - $rangkapEksternal;
 
         // ===============================
-        // 4. GRAFIK FUNGSIONAL TUGAS (SANGAT PENTING)
+        // 4. GRAFIK FUNGSIONAL TUGAS (METODE LEFT JOIN)
         // ===============================
-        // Logika: Ambil semua Master Tugas, lalu hitung jumlah pivot yang statusnya 'aktif'.
-        // Menggunakan LEFT JOIN dengan kondisi filter DI DALAM JOIN agar kategori tugas tetap muncul meski jumlahnya 0.
 
         $fungsional = DB::table('master_fungsional_tugas')
             ->leftJoin('pengurus_fungsional_tugas', function ($join) {
                 $join->on('pengurus_fungsional_tugas.master_fungsional_tugas_id', '=', 'master_fungsional_tugas.id_tugas')
-                    ->where('pengurus_fungsional_tugas.status', '=', 'aktif'); // KUNCI: Hanya hitung yang aktif
+                    ->where('pengurus_fungsional_tugas.status', '=', 'aktif');
+            })
+            ->leftJoin('penguruses', function ($join) {
+                $join->on('penguruses.id', '=', 'pengurus_fungsional_tugas.pengurus_id')
+                    ->where('penguruses.status', '=', 'aktif');
             })
             ->select(
                 'master_fungsional_tugas.tugas',
-                DB::raw('COUNT(pengurus_fungsional_tugas.id) as total') // Hitung data yang match
+                DB::raw('COUNT(penguruses.id) as total')
             )
             ->groupBy('master_fungsional_tugas.tugas')
             ->orderBy('master_fungsional_tugas.tugas')
@@ -80,9 +87,8 @@ class DashboardController extends Controller
         // ===============================
         // 5. STATUS KEAKTIFAN PENGURUS
         // ===============================
-        // Ini menghitung global (termasuk yang non-aktif untuk perbandingan)
-        $jumlahAktif    = Pengurus::where('status', 'aktif')->count();
-        $jumlahNonAktif = Pengurus::where('status', 'non_aktif')->count();
+        $jumlahAktif    = Pengurus::where('penguruses.status', 'aktif')->count();
+        $jumlahNonAktif = Pengurus::where('penguruses.status', 'non_aktif')->count();
 
         // ===============================
         // RETURN VIEW
