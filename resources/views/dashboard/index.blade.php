@@ -1,66 +1,186 @@
 @extends('layouts.app')
 
+{{-- BAGIAN 1: STYLE & CSS (Termasuk FontAwesome untuk Icon)      --}}
 @section('this-page-style')
-    {{-- Additional styles for dashboard if needed --}}
     <style>
-        .stat-card {
-            transition: transform 0.2s;
+        /* --- SETTING WARNA & FONT --- */
+        :root {
+            --green-primary: #059669;
+            /* Emerald 600 */
+            --green-soft: #D1FAE5;
+            --card-radius: 15px;
         }
 
-        .stat-card:hover {
+        body {
+            background-color: #f8fafc;
+            /* Latar sedikit abu-abu bersih */
+        }
+
+        /* --- CARD MODERN STYLE --- */
+        .card {
+            border: none;
+            border-radius: var(--card-radius);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .card-title {
-            font-size: 0.875rem;
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 1.25rem;
+            font-weight: 700;
+            color: var(--green-primary);
+            display: flex;
+            align-items: center;
+        }
+
+        /* Ikon kecil di header card grafik */
+        .card-header i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            color: #10B981;
+        }
+
+        /* --- STAT CARDS (KARTU ATAS DENGAN ICON) --- */
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            /* Agar icon tidak keluar kotak */
+            border: none;
+            border-radius: var(--card-radius);
+            color: white;
+            min-height: 140px;
+            /* Tinggi minimum agar proporsional */
+        }
+
+        .stat-card .card-body {
+            position: relative;
+            z-index: 2;
+            /* Text di atas icon */
+            padding: 1.5rem;
+        }
+
+        .stat-card .card-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-card h2 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- FLOATING ICONS (IKON BESAR DI KANAN) --- */
+        .stat-icon-bg {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 4.5rem;
+            opacity: 0.25;
+            /* Transparan */
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        /* Efek saat hover: Icon sedikit membesar dan berputar */
+        .stat-card:hover .stat-icon-bg {
+            transform: translateY(-50%) scale(1.1) rotate(5deg);
+            opacity: 0.4;
+        }
+
+        /* --- GRADIENTS MODERN --- */
+        .bg-gradient-emerald {
+            background: linear-gradient(135deg, #059669 0%, #34D399 100%);
+        }
+
+        .bg-gradient-teal {
+            background: linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%);
+        }
+
+        .bg-gradient-lime {
+            background: linear-gradient(135deg, #4d7c0f 0%, #a3e635 100%);
+        }
+
+        .bg-gradient-green {
+            background: linear-gradient(135deg, #15803d 0%, #4ade80 100%);
+        }
+
+        /* --- CHART CONTAINERS --- */
+        .chart-container,
+        .chart-container-lg {
+            position: relative;
+            margin: auto;
+            width: 100%;
         }
 
         .chart-container {
-            position: relative;
             height: 300px;
         }
 
         .chart-container-lg {
-            position: relative;
             height: 400px;
         }
     </style>
 @endsection
 
+{{-- BAGIAN 2: KONTEN UTAMA HALAMAN (HTML)                        --}}
 @section('this-page-contain')
-    <div class="container-fluid px-4">
-        <h1 class="mb-4">Dashboard</h1>
+    <div class="container-fluid px-4 pt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Dashboard</h2>
+            </div>
+        </div>
 
-        {{-- ====== BARIS 1: Statistik singkat ====== --}}
         <div class="row mb-4">
+            {{-- 1. Total Pengurus --}}
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card text-white bg-success mb-3 shadow stat-card">
+                <div class="card stat-card bg-gradient-emerald shadow">
                     <div class="card-body">
                         <h5 class="card-title">Total Pengurus</h5>
                         <h2 class="mb-0">{{ $totalPengurus ?? 0 }}</h2>
                     </div>
                 </div>
             </div>
+
+            {{-- 2. Total Wali Asuh --}}
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card text-white bg-primary mb-3 shadow stat-card">
+                <div class="card stat-card bg-gradient-teal shadow">
                     <div class="card-body">
                         <h5 class="card-title">Total Wali Asuh</h5>
                         <h2 class="mb-0">{{ $totalWaliAsuh ?? 0 }}</h2>
                     </div>
                 </div>
             </div>
+
+            {{-- 3. Total Pengajar --}}
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card text-white bg-warning mb-3 shadow stat-card">
+                <div class="card stat-card bg-gradient-lime shadow">
                     <div class="card-body">
                         <h5 class="card-title">Total Pengajar</h5>
                         <h2 class="mb-0">{{ $totalPengajar ?? 0 }}</h2>
                     </div>
                 </div>
             </div>
+
+            {{-- 4. Total Mu'allim --}}
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card text-white bg-info mb-3 shadow stat-card">
+                <div class="card stat-card bg-gradient-green shadow">
                     <div class="card-body">
                         <h5 class="card-title">Total Mu'allim</h5>
                         <h2 class="mb-0">{{ $totalMuallim ?? 0 }}</h2>
@@ -69,11 +189,12 @@
             </div>
         </div>
 
-        {{-- ====== BARIS 2: Grafik Utama (Rincian Data Pengurus per Daerah) ====== --}}
+        {{-- ====== BARIS 2: Grafik Utama ====== --}}
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card shadow">
                     <div class="card-header">
+                        <i class="fas fa-chart-bar"></i>
                         <h5 class="card-title mb-0">Grafik Rincian Data Pengurus per Wilayah</h5>
                     </div>
                     <div class="card-body">
@@ -90,6 +211,7 @@
             <div class="col-xl-6 col-lg-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header">
+                        <i class="fas fa-chart-pie"></i>
                         <h5 class="card-title mb-0">Grafik Rangkap Tugas Internal</h5>
                     </div>
                     <div class="card-body">
@@ -103,6 +225,7 @@
             <div class="col-xl-6 col-lg-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header">
+                        <i class="fas fa-chart-pie"></i>
                         <h5 class="card-title mb-0">Grafik Rangkap Tugas Eksternal</h5>
                     </div>
                     <div class="card-body">
@@ -119,6 +242,7 @@
             <div class="col-xl-6 col-lg-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header">
+                        <i class="fas fa-tasks"></i>
                         <h5 class="card-title mb-0">Grafik Fungsional Tugas</h5>
                     </div>
                     <div class="card-body">
@@ -132,6 +256,7 @@
             <div class="col-xl-6 col-lg-6 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-header">
+                        <i class="fas fa-toggle-on"></i>
                         <h5 class="card-title mb-0">Status Keaktifan Pengurus</h5>
                     </div>
                     <div class="card-body">
@@ -145,49 +270,51 @@
     </div>
 @endsection
 
+{{-- BAGIAN 3: JAVASCRIPT (Chart.js Logic)                        --}}
 @section('this-page-scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Chart Pengurus per Wilayah (Bar Chart)
+            // Chart Pengurus per Wilayah
             const ctxPengurus = document.getElementById("chartPengurus");
-            if (!ctxPengurus) return;
-
-            new Chart(ctxPengurus, {
-                type: 'bar',
-                data: {
-                    labels: @json($labelsWilayah),
-                    datasets: [{
-                        label: 'Jumlah Pengurus',
-                        data: @json($dataWilayah),
-                        backgroundColor: '#2563eb',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+            if (ctxPengurus) {
+                new Chart(ctxPengurus, {
+                    type: 'bar',
+                    data: {
+                        labels: @json($labelsWilayah),
+                        datasets: [{
+                            label: 'Jumlah Pengurus',
+                            data: @json($dataWilayah),
+                            backgroundColor: '#10B981',
+                            borderRadius: 6,
+                            barPercentage: 0.7
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
+                    options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
                             }
                         },
-                        x: {
-                            grid: {
-                                display: false
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
 
-            // Chart Rangkap Tugas Internal (Pie Chart)
+            // Chart Rangkap Tugas Internal
             const ctxEksternal = document.getElementById("chartEksternal");
             if (ctxEksternal) {
                 new Chart(ctxEksternal, {
@@ -195,12 +322,9 @@
                     data: {
                         labels: ["Rangkap Internal", "Tidak Rangkap"],
                         datasets: [{
-                            data: [
-                                {{ $rangkapInternal }},
-                                {{ $tidakInternal }}
-                            ],
-                            backgroundColor: ["#2563eb", "#e5e7eb"],
-                            borderWidth: 2,
+                            data: [{{ $rangkapInternal }}, {{ $tidakInternal }}],
+                            backgroundColor: ["#10B981", "#E5E7EB"],
+                            borderWidth: 1,
                             borderColor: "#fff"
                         }]
                     },
@@ -215,7 +339,7 @@
                 });
             }
 
-            // Chart Rangkap Tugas Eksternal (Pie Chart)
+            // Chart Rangkap Tugas Eksternal
             const ctxAktif = document.getElementById("chartAktif");
             if (ctxAktif) {
                 new Chart(ctxAktif, {
@@ -223,12 +347,9 @@
                     data: {
                         labels: ["Rangkap Eksternal", "Tidak Rangkap"],
                         datasets: [{
-                            data: [
-                                {{ $rangkapEksternal }},
-                                {{ $tidakEksternal }}
-                            ],
-                            backgroundColor: ["#ef4444", "#e5e7eb"],
-                            borderWidth: 2,
+                            data: [{{ $rangkapEksternal }}, {{ $tidakEksternal }}],
+                            backgroundColor: ["#14B8A6", "#E5E7EB"],
+                            borderWidth: 1,
                             borderColor: "#fff"
                         }]
                     },
@@ -243,7 +364,7 @@
                 });
             }
 
-            // Chart Fungsional (Horizontal Bar Chart)
+            // Chart Fungsional (Horizontal Bar)
             const ctxFungsional = document.getElementById("chartFungsional");
             if (ctxFungsional) {
                 new Chart(ctxFungsional, {
@@ -253,12 +374,12 @@
                         datasets: [{
                             label: "Jumlah Pengurus",
                             data: @json($dataFungsional),
-                            backgroundColor: "#2563eb",
-                            borderRadius: 6
+                            backgroundColor: "#059669",
+                            borderRadius: 5
                         }]
                     },
                     options: {
-                        indexAxis: 'y', // ✅ horizontal bar
+                        indexAxis: 'y',
                         maintainAspectRatio: false,
                         responsive: true,
                         plugins: {
@@ -283,7 +404,7 @@
                 });
             }
 
-            // Chart Status Keaktifan (Doughnut Chart)
+            // Chart Status Keaktifan (Doughnut)
             var ctxInternal = document.getElementById("chartInternal");
             if (ctxInternal) {
                 new Chart(ctxInternal, {
@@ -292,10 +413,7 @@
                         labels: ["Aktif", "Tidak Aktif"],
                         datasets: [{
                             data: [{{ $jumlahAktif }}, {{ $jumlahNonAktif }}],
-                            backgroundColor: [
-                                window.theme ? window.theme.success : "#22c55e",
-                                window.theme ? window.theme.danger : "#ef4444"
-                            ],
+                            backgroundColor: ["#22c55e", "#fca5a5"],
                             borderWidth: 2,
                             borderColor: "#fff"
                         }]
