@@ -20,8 +20,6 @@
 
     <style>
         /* === 1. ANIMASI === */
-
-        /* Muncul dari bawah ke atas */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -34,7 +32,6 @@
             }
         }
 
-        /* Logo berdenyut halus */
         @keyframes pulseLogo {
             0% {
                 transform: scale(1.1);
@@ -51,7 +48,6 @@
 
         /* === 2. BACKGROUND & OVERLAY === */
         body {
-            /* Pastikan path gambar benar */
             background-image: url("{{ asset('template-admin/img/biktren.jpeg') }}");
             background-size: cover;
             background-position: center;
@@ -59,10 +55,10 @@
             position: relative;
             min-height: 100vh;
             overflow: hidden;
-            /* Mencegah scrollbar saat animasi masuk */
+            /* Mencegah scrollbar */
         }
 
-        /* Overlay Putih Transparan (Tipis) agar gambar jelas tapi tidak menabrak teks */
+        /* Overlay Gelap Transparan */
         body::before {
             content: "";
             position: absolute;
@@ -71,43 +67,39 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
+            /* Gelapkan background biar teks terbaca */
             z-index: -1;
         }
 
         /* === 3. KOMPONEN === */
-
         .logo-kiper {
-            /* Animasi Pulse: Berjalan selamanya */
             animation: pulseLogo 3s infinite ease-in-out;
             display: inline-block;
         }
 
-        /* Card Login */
+        /* Card Login (Glassmorphism) */
         .card-login {
-            width: 380px;
+            /* PERBAIKAN RESPONSIF: Gunakan max-width agar aman di HP kecil */
+            width: 100%;
+            max-width: 380px;
+            margin: 0 15px;
+            /* Jarak aman kiri kanan di HP */
+
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.95);
-            /* Putih solid tapi soft */
             border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
             backdrop-filter: blur(10px);
-
-            /* Animasi Masuk: Fade In Up (0.8 detik) */
             opacity: 0;
-            /* Mulai sembunyi */
             animation: fadeInUp 0.8s ease-out forwards;
         }
 
         /* Teks Footer */
         .footer-text {
             color: #ffffff !important;
-            /* Putih Mutlak */
             font-weight: 400;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-            /* Bayangan Hitam Tebal */
             margin-top: 1.5rem;
-
-            /* Animasi Masuk: Muncul belakangan (delay 0.5s) */
             opacity: 0;
             animation: fadeInUp 0.8s ease-out forwards;
             animation-delay: 0.5s;
@@ -194,7 +186,8 @@
     </div>
 
     {{-- FOOTER --}}
-    <div class="mt-4 text-center footer-text text-muted" style="font-size: 0.9rem;">
+    {{-- Perbaikan: Menghapus class 'text-muted' agar tidak bentrok dengan CSS putih --}}
+    <div class="mt-4 text-center footer-text" style="font-size: 0.9rem;">
         <p class="mb-1">
             &copy; {{ date('Y') }} <strong>Nurul Jadid</strong>. All rights reserved.
         </p>
