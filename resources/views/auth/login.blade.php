@@ -194,8 +194,17 @@
     </div>
 
     {{-- FOOTER --}}
-    <div class="mt-4 text-center footer-text" style="font-size: 0.9rem;">
-        Developed by <strong>Nurul Jadid</strong>
+    <div class="mt-4 text-center footer-text text-muted" style="font-size: 0.9rem;">
+        <p class="mb-1">
+            &copy; {{ date('Y') }} <strong>Nurul Jadid</strong>. All rights reserved.
+        </p>
+        <p>
+            Developed by
+            <a href="https://www.instagram.com/waseptian_11?igsh=MTlneGhycWNqZmQyeQ==" target="_blank"
+                style="text-decoration: none; font-weight: bold; color: inherit;">
+                Muhammad Babun Waseptian
+            </a>
+        </p>
     </div>
 
     {{-- JS Template --}}
