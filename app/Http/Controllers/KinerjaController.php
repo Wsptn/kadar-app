@@ -107,4 +107,23 @@ class KinerjaController extends Controller
 
         return redirect()->route('pokok.kinerja.index')->with('success', 'Penilaian Berhasil Disimpan!');
     }
+    public function show($id)
+    {
+        $pengurus = Pengurus::with(['kinerja' => function ($q) {
+            $q->latest(); // Order by created_at desc
+        }])->findOrFail($id);
+
+        return view('pokok.kinerja.show', compact('pengurus'));
+    }
+    public function markAsHandled($id)
+    {
+        $kinerja = Kinerja::findOrFail($id);
+
+        $kinerja->update([
+            'status_tindak_lanjut' => 'sudah',
+            'tanggal_tindak_lanjut' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Status berhasil diubah menjadi Sudah Ditangani!');
+    }
 }

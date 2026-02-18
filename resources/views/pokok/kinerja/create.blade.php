@@ -120,7 +120,7 @@
 
                     <div class="d-flex justify-content-end mt-4">
                         <a href="{{ route('pokok.kinerja.index') }}" class="btn btn-secondary me-2">Batal</a>
-                        <button type="submit" class="btn btn-primary">Simpan Nilai</button>
+                        <button type="submit" class="btn btn-success">Simpan Nilai</button>
                     </div>
                 </form>
             </div>

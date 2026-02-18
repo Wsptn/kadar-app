@@ -84,6 +84,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [KinerjaController::class, 'index'])->name('index');
         Route::get('/create', [KinerjaController::class, 'create'])->name('create');
         Route::post('/store', [KinerjaController::class, 'store'])->name('store');
+        Route::get('/{id}/riwayat', [KinerjaController::class, 'show'])->name('show');
+        Route::put('/{id}/tandai-sudah', [KinerjaController::class, 'markAsHandled'])->name('mark_handled');
     });
 
 
