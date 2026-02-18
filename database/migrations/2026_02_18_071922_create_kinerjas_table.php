@@ -31,6 +31,8 @@ return new class extends Migration
             $table->enum('rekomendasi', ['Kinerja Memuaskan', 'Pendampingan', 'Pembinaan']);
 
             $table->text('catatan')->nullable(); // Uraian tanggapan
+            $table->enum('status_tindak_lanjut', ['belum', 'sudah'])->default('belum');
+            $table->timestamp('tanggal_tindak_lanjut')->nullable();
             $table->timestamps();
         });
     }

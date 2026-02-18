@@ -2,49 +2,56 @@
 
 @section('this-page-contain')
     <div class="container-fluid px-4">
-
-        {{-- Header --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="mb-1">Riwayat Kinerja</h2>
-                <div class="text-muted">Pengurus: <strong>{{ $pengurus->nama }}</strong> ({{ $pengurus->niup }})</div>
+                <div class="text-muted">Pengurus: <strong class="text-dark">{{ $pengurus->nama }}</strong></div>
             </div>
             <a href="{{ route('pokok.kinerja.index') }}" class="btn btn-secondary btn-sm">
                 <i data-feather="arrow-left" class="me-1"></i> Kembali
             </a>
         </div>
 
-        {{-- Tabel Riwayat --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i data-feather="check-circle" class="me-1"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div class="card shadow-sm border-0">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped align-middle">
+                    <table class="table table-hover table-bordered align-middle text-center">
                         <thead class="table-dark">
                             <tr>
-                                <th>Tanggal Penilaian</th>
-                                <th class="text-center">Nilai Total</th>
-                                <th class="text-center">Mutu</th>
+                                <th>Tgl Penilaian</th>
+                                <th style="width: 80px;">Nilai</th>
+                                <th style="width: 80px;">Mutu</th>
                                 <th>Rekomendasi</th>
                                 <th>Catatan</th>
-                                {{-- <th class="text-center">Aksi</th> --}}
+                                <th style="width: 220px;">Status Tindak Lanjut</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($pengurus->kinerja as $k)
                                 <tr>
+                                    {{-- 1. Tgl Penilaian --}}
                                     <td>
-                                        {{ \Carbon\Carbon::parse($k->tanggal_penilaian)->format('d F Y') }}
-                                        <br>
-                                        <small
-                                            class="text-muted">{{ \Carbon\Carbon::parse($k->created_at)->diffForHumans() }}</small>
+                                        {{ \Carbon\Carbon::parse($k->tanggal_penilaian)->format('d M Y') }}
                                     </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-primary"
-                                            style="font-size: 0.9rem">{{ $k->nilai_total }}</span>
+
+                                    {{-- 2. Nilai --}}
+                                    <td>
+                                        <span class="badge bg-primary fs-6">{{ $k->nilai_total }}</span>
                                     </td>
-                                    <td class="text-center">
-                                        <strong>{{ $k->huruf_mutu }}</strong>
+
+                                    {{-- 3. Mutu --}}
+                                    <td>
+                                        <strong class="fs-5">{{ $k->huruf_mutu }}</strong>
                                     </td>
+
+                                    {{-- 4. Rekomendasi --}}
                                     <td>
                                         @if ($k->rekomendasi == 'Kinerja Memuaskan')
                                             <span class="badge bg-success">Memuaskan</span>
@@ -54,18 +61,46 @@
                                             <span class="badge bg-danger">Pembinaan</span>
                                         @endif
                                     </td>
-                                    <td>{{ $k->catatan ?? '-' }}</td>
-                                    {{-- 
-                            <td class="text-center">
-                                <a href="#" class="btn btn-sm btn-light" title="Cetak"><i data-feather="printer"></i></a>
-                            </td> 
-                            --}}
+
+                                    {{-- 5. Catatan --}}
+                                    <td class="text-start">
+                                        <small class="text-muted">{{ $k->catatan ?? '-' }}</small>
+                                    </td>
+
+                                    {{-- 6. Status Tindak Lanjut (Tombol Aksi) --}}
+                                    <td>
+                                        @if ($k->rekomendasi != 'Kinerja Memuaskan')
+                                            @if ($k->status_tindak_lanjut == 'belum')
+                                                {{-- JIKA BELUM: MUNCUL TOMBOL MERAH --}}
+                                                <form action="{{ route('pokok.kinerja.mark_handled', $k->id) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Konfirmasi: Apakah Pimpinan SUDAH melakukan pembinaan tatap muka dengan pengurus ini?')">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <button type="submit" class="btn btn-danger btn-sm w-100 shadow-sm">
+                                                        <i data-feather="alert-triangle" style="width:12px"></i> Tangani
+                                                        Sekarang
+                                                    </button>
+                                                </form>
+                                            @else
+                                                {{-- JIKA SUDAH: MUNCUL BADGE HIJAU --}}
+                                                <div
+                                                    class="border border-success rounded p-1 bg-success bg-opacity-10 text-success">
+                                                    <i data-feather="check-circle" style="width:12px"></i> Selesai
+                                                    <div style="font-size: 0.7rem">
+                                                        {{ \Carbon\Carbon::parse($k->tanggal_tindak_lanjut)->format('d/m/Y') }}
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        @else
+                                            <span class="text-muted small">-</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">
-                                        <i data-feather="inbox" style="width: 32px; height: 32px;" class="mb-2"></i><br>
-                                        Belum ada riwayat penilaian untuk pengurus ini.
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        Belum ada riwayat penilaian.
                                     </td>
                                 </tr>
                             @endforelse
