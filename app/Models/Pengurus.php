@@ -111,4 +111,9 @@ class Pengurus extends Model
     {
         return $this->belongsTo(Angkatan::class, 'angkatan_id', 'id_angkatan');
     }
+
+    public function kinerja()
+    {
+        return $this->hasMany(Kinerja::class, 'pengurus_id');
+    }
 }

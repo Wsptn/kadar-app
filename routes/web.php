@@ -23,6 +23,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WaliAsuhController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\KinerjaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,11 +41,9 @@ Route::middleware('guest')->group(function () {
 });
 
 /*
-|--------------------------------------------------------------------------
+
 | ROUTE AUTH (WAJIB LOGIN)
-|--------------------------------------------------------------------------
-| Semua route di dalam group ini otomatis dicek apakah user sudah login.
-| Jika belum, akan dilempar kembali ke halaman login.
+
 */
 Route::middleware('auth')->group(function () {
 
@@ -79,6 +78,13 @@ Route::middleware('auth')->group(function () {
 
     // MU'ALLIM
     Route::get('/muallim', [MuallimController::class, 'index'])->name('pokok.muallim.index');
+
+    // KINERJA DAN REKOMENDASI
+    Route::prefix('kinerja')->name('pokok.kinerja.')->group(function () {
+        Route::get('/', [KinerjaController::class, 'index'])->name('index');
+        Route::get('/create', [KinerjaController::class, 'create'])->name('create');
+        Route::post('/store', [KinerjaController::class, 'store'])->name('store');
+    });
 
 
     // ==========================================================

@@ -44,6 +44,13 @@
                 </a>
             </li>
 
+            <li class="sidebar-item {{ request()->routeIs('pokok.kinerja.*') ? 'active' : '' }}">
+                <a class="sidebar-link" href="{{ route('pokok.kinerja.index') }}">
+                    <i class="align-middle" data-feather="bar-chart-2"></i>
+                    <span class="align-middle">Kinerja & Rekomendasi</span>
+                </a>
+            </li>
+
             <li class="sidebar-header">DATA MASTER</li>
 
             <li class="sidebar-item {{ request()->routeIs('master.domisili.*') ? 'active' : '' }}">
