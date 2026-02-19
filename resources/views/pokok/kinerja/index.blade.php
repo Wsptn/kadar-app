@@ -29,6 +29,28 @@
         .blink-animation {
             animation: blink 2s infinite;
         }
+
+        /* Styling Paginasi Bawaan agar seragam dengan tema hijau */
+        .pagination {
+            margin-bottom: 0;
+        }
+
+        .pagination .page-link {
+            color: #198754;
+            /* Warna hijau success Bootstrap */
+        }
+
+        .pagination .page-link:hover {
+            background-color: #d1e7dd;
+            /* Warna hijau sangat muda saat di-hover */
+            color: #146c43;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #198754;
+            border-color: #198754;
+            color: white;
+        }
     </style>
 @endsection
 
@@ -183,9 +205,21 @@
             @endforelse
         </div>
 
-        <div class="d-flex justify-content-end mt-4">
-            {{ $pengurus->links('pagination::bootstrap-5') }}
+        {{-- Area Info Data & Paginasi --}}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-2 mb-5">
+            <div class="text-muted small mb-3 mb-md-0">
+                Menampilkan <span class="fw-bold">{{ $pengurus->firstItem() ?? 0 }}</span>
+                sampai <span class="fw-bold">{{ $pengurus->lastItem() ?? 0 }}</span>
+                dari total <span class="fw-bold text-success">{{ $pengurus->total() }}</span> data
+            </div>
+
+            @if ($pengurus->hasPages())
+                <div>
+                    {{ $pengurus->appends(request()->query())->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
         </div>
+
     </div>
 @endsection
 

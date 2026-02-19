@@ -22,7 +22,7 @@ class PengajarController extends Controller
                 });
             })
             ->orderBy('nama', 'asc')
-            ->get();
+            ->paginate(12);
 
         return view('pokok.pengajar.index', compact('pengajar', 'search'));
     }

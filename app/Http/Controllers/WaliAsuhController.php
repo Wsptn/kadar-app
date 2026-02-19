@@ -23,7 +23,7 @@ class WaliAsuhController extends Controller
                 });
             })
             ->orderBy('nama', 'asc')
-            ->get();
+            ->paginate(12);
 
         return view('pokok.waliasuh.index', compact('waliasuh', 'search'));
     }

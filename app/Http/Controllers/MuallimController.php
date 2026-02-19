@@ -22,7 +22,7 @@ class MuallimController extends Controller
                 });
             })
             ->orderBy('nama', 'asc')
-            ->get();
+            ->paginate(12);
 
         return view('pokok.muallim.index', compact('muallim', 'search'));
     }

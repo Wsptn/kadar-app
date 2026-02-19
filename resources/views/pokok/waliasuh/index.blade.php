@@ -31,6 +31,28 @@
             padding-top: 0.75rem;
             text-align: right;
         }
+
+        /* Styling Paginasi Bawaan agar seragam dengan tema hijau */
+        .pagination {
+            margin-bottom: 0;
+        }
+
+        .pagination .page-link {
+            color: #198754;
+            /* Warna hijau success Bootstrap */
+        }
+
+        .pagination .page-link:hover {
+            background-color: #d1e7dd;
+            /* Warna hijau sangat muda saat di-hover */
+            color: #146c43;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #198754;
+            border-color: #198754;
+            color: white;
+        }
     </style>
 @endsection
 
@@ -51,7 +73,6 @@
             <div class="card-body">
                 <form action="{{ route('pokok.waliasuh.index') }}" method="GET"
                     class="d-flex align-items-center flex-wrap gap-2">
-
                     <div class="input-group" style="width: auto; flex-grow: 1; min-width: 200px;">
                         <span class="input-group-text bg-white"><i data-feather="search" style="width: 16px;"></i></span>
                         <input type="text" name="search" value="{{ $search ?? '' }}" class="form-control"
@@ -78,7 +99,6 @@
                     <div class="card shadow-sm pengurus-card h-100">
                         <div class="card-body p-3">
                             <div class="d-flex align-items-start">
-
                                 {{-- FOTO --}}
                                 <div class="pengurus-photo-wrapper me-3">
                                     <img src="{{ $p->foto ? asset('storage/' . $p->foto) : asset('template-admin/img/default-avatar.png') }}"
@@ -97,13 +117,12 @@
                                         <span class="badge bg-light text-dark border">{{ $p->niup ?? '-' }}</span>
                                     </div>
 
-                                    {{-- Fungsional Tugas (PERBAIKAN MULTI-SELECT) --}}
+                                    {{-- Fungsional Tugas --}}
                                     <div class="small text-success fw-bold mb-1" title="Fungsional Tugas">
                                         <i data-feather="briefcase" style="width: 12px;" class="me-1"></i>
 
                                         @if ($p->fungsionalTugas->count() > 0)
                                             @foreach ($p->fungsionalTugas as $ft)
-                                                {{-- Coret teks jika status non-aktif --}}
                                                 <span
                                                     class="{{ $ft->pivot->status == 'non_aktif' ? 'text-decoration-line-through text-muted' : '' }}">
                                                     {{ $ft->tugas }}
@@ -143,6 +162,22 @@
                     </div>
                 </div>
             @endforelse
+        </div>
+
+        {{-- Area Info Data & Paginasi --}}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-2 mb-5">
+
+            <div class="text-muted small mb-3 mb-md-0">
+                Menampilkan <span class="fw-bold">{{ $waliasuh->firstItem() ?? 0 }}</span>
+                sampai <span class="fw-bold">{{ $waliasuh->lastItem() ?? 0 }}</span>
+                dari total <span class="fw-bold text-success">{{ $waliasuh->total() }}</span> data
+            </div>
+
+            @if ($waliasuh->hasPages())
+                <div>
+                    {{ $waliasuh->appends(request()->query())->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
         </div>
 
     </div>
