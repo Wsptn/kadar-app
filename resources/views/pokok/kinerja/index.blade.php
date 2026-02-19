@@ -64,6 +64,31 @@
             </div>
         </div>
 
+        @if (session('error'))
+            <div class="alert fade show shadow-sm mb-4" role="alert"
+                style="background-color: #f8d7da; border: 1px solid #f5c2c7; border-left: 5px solid #dc3545; color: #842029; display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem;">
+                <div style="display: flex; align-items: center;">
+                    <i data-feather="alert-octagon" style="width: 18px; min-width: 18px; margin-right: 10px;"></i>
+                    <span>{{ session('error') }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
+                    style="position: static; margin: 0;"></button>
+            </div>
+        @endif
+
+        {{-- Notifikasi Sukses (Warna Hijau) --}}
+        @if (session('success'))
+            <div class="alert fade show shadow-sm mb-4" role="alert"
+                style="background-color: #d1e7dd; border: 1px solid #badbcc; border-left: 5px solid #198754; color: #0f5132; display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem;">
+                <div style="display: flex; align-items: center;">
+                    <i data-feather="check-circle" style="width: 18px; min-width: 18px; margin-right: 10px;"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"
+                    style="position: static; margin: 0;"></button>
+            </div>
+        @endif
+
         {{-- GRID KARTU --}}
         <div class="row">
             @forelse ($pengurus as $p)
@@ -74,7 +99,7 @@
                     <div class="card shadow-sm pengurus-card h-100 position-relative">
 
                         {{-- BADGE INDIKATOR POJOK KANAN ATAS --}}
-                        @if ($lastKinerja && $lastKinerja->rekomendasi != 'Kinerja Memuaskan')
+                        @if ($lastKinerja && in_array($lastKinerja->huruf_mutu, ['C', 'D', 'E']))
                             <div class="position-absolute top-0 end-0 m-2">
                                 @if ($lastKinerja->status_tindak_lanjut == 'sudah')
                                     <span class="badge bg-success shadow-sm" title="Sudah Ditangani">
@@ -102,18 +127,26 @@
 
                                     @if ($lastKinerja)
                                         <div class="mb-1">
-                                            @if ($lastKinerja->rekomendasi == 'Kinerja Memuaskan')
-                                                <span class="badge bg-primary text-wrap lh-sm"
-                                                    style="font-size: 0.65rem;">Memuaskan
+                                            @if ($lastKinerja->huruf_mutu == 'A')
+                                                <span class="badge bg-success text-wrap lh-sm"
+                                                    style="font-size: 0.65rem;">Apresiasi & Kaderisasi
                                                     ({{ $lastKinerja->nilai_total }})
                                                 </span>
-                                            @elseif($lastKinerja->rekomendasi == 'Pendampingan')
-                                                <span class="badge bg-warning text-dark text-wrap lh-sm"
-                                                    style="font-size: 0.65rem;">Pendampingan
+                                            @elseif($lastKinerja->huruf_mutu == 'B')
+                                                <span class="badge bg-info text-dark text-wrap lh-sm"
+                                                    style="font-size: 0.65rem;">Bimbingan ringan
                                                     ({{ $lastKinerja->nilai_total }})</span>
+                                            @elseif($lastKinerja->huruf_mutu == 'C')
+                                                <span class="badge bg-warning text-dark text-wrap lh-sm"
+                                                    style="font-size: 0.65rem;">Pembinaan Sedang
+                                                    ({{ $lastKinerja->nilai_total }})</span>
+                                            @elseif($lastKinerja->huruf_mutu == 'D')
+                                                <span class="badge text-white text-wrap lh-sm"
+                                                    style="background-color: #fd7e14; font-size: 0.65rem;">Pembinaan
+                                                    Intensif ({{ $lastKinerja->nilai_total }})</span>
                                             @else
                                                 <span class="badge bg-danger text-wrap lh-sm"
-                                                    style="font-size: 0.65rem;">Pembinaan
+                                                    style="font-size: 0.65rem;">Penanganan khusus/rujukan SOP bermasalah
                                                     ({{ $lastKinerja->nilai_total }})</span>
                                             @endif
                                         </div>

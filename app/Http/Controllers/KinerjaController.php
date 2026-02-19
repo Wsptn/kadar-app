@@ -9,24 +9,29 @@ use Carbon\Carbon;
 
 class KinerjaController extends Controller
 {
-    // 1. HALAMAN UTAMA (GRID KARTU)
-    public function index(Request $request)
+    // 1. HALAMAN RIWAYAT (INDEX)
+    public function index(\Illuminate\Http\Request $request)
     {
-        // Ambil pengurus aktif beserta riwayat kinerjanya
-        $query = Pengurus::with(['kinerja'])
-            ->where('status', 'aktif');
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $query = \App\Models\Pengurus::with(['kinerja', 'jabatan', 'wilayah', 'daerah']);
 
-        // Filter Pencarian Nama
+        if ($user->isAdmin() || $user->isBiktren()) {
+        } elseif ($user->isWilayah()) {
+            $query->where('wilayah_id', $user->wilayah_id);
+        } elseif ($user->isDaerah()) {
+            $query->where('daerah_id', $user->daerah_id);
+        }
+
         if ($request->filled('search')) {
             $query->where('nama', 'like', '%' . $request->search . '%');
         }
 
-        // Filter Status (Sudah/Belum Dinilai)
         if ($request->filled('status_penilaian')) {
             if ($request->status_penilaian == 'sudah') {
                 $query->whereHas('kinerja');
             } elseif ($request->status_penilaian == 'belum') {
-                $query->whereDoesntHave('kinerja');
+                $query->doesntHave('kinerja');
             }
         }
 
@@ -35,17 +40,68 @@ class KinerjaController extends Controller
         return view('pokok.kinerja.index', compact('pengurus'));
     }
 
-    // 2. HALAMAN INPUT NILAI
+    // 2. HALAMAN INPUT NILAI (CREATE)
     public function create(Request $request)
     {
-        $pengurus = Pengurus::where('status', 'aktif')->get();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
         $selected_id = $request->query('pengurus_id');
+
+        if ($selected_id) {
+            $target = Pengurus::find($selected_id);
+            if ($target && ($target->id == $user->pengurus_id || $target->niup == $user->niup)) {
+                return redirect()->route('pokok.kinerja.index')
+                    ->with('error', 'Tidak bisa input nilai diri sendiri, penilaian harus sesuai dengan struktur pesantren.');
+            }
+        }
+
+        $query = Pengurus::query();
+
+        if ($user->isAdmin()) {
+        } elseif ($user->isBiktren()) {
+            $query->whereHas('jabatan', function ($q) {
+                $q->where('nama_jabatan', 'like', '%Kepala Wilayah%');
+            });
+        } elseif ($user->isWilayah()) {
+            $query->where('wilayah_id', $user->wilayah_id)
+                ->where('id', '!=', $user->pengurus_id)
+                ->whereHas('jabatan', function ($q) {
+                    $q->where(function ($sub) {
+                        $sub->where('nama_jabatan', 'like', '%Wilayah%')
+                            ->where('nama_jabatan', 'not like', '%Kepala Wilayah%');
+                    })
+                        ->orWhere('nama_jabatan', 'like', '%Kepala Daerah%');
+                });
+        } elseif ($user->isDaerah()) {
+            $query->where('daerah_id', $user->daerah_id)
+                ->where('id', '!=', $user->pengurus_id)
+                ->whereHas('jabatan', function ($q) {
+                    $q->where('nama_jabatan', 'like', '%Daerah%')
+                        ->where('nama_jabatan', 'not like', '%Kepala Daerah%');
+                });
+        }
+
+        $pengurus = $query->get();
+
+        // Validasi Akses via URL
+        if ($selected_id && !$pengurus->contains('id', $selected_id)) {
+            return redirect()->route('pokok.kinerja.index')
+                ->with('error', 'Akses Ditolak: Anda tidak memiliki wewenang untuk menilai pengurus ini.');
+        }
+
         return view('pokok.kinerja.create', compact('pengurus', 'selected_id'));
     }
 
     // 3. PROSES SIMPAN NILAI
     public function store(Request $request)
     {
+        $user = auth()->user();
+        $targetPengurus = \App\Models\Pengurus::find($request->pengurus_id);
+
+        if ($targetPengurus && $targetPengurus->niup == $user->niup) {
+            return redirect()->route('pokok.kinerja.index')
+                ->with('error', 'Gagal Menyimpan: Tidak bisa input nilai diri sendiri, tindakan mencurigakan terdeteksi!');
+        }
         $request->validate([
             'pengurus_id' => 'required',
             'tanggal_penilaian' => 'required|date',
@@ -74,20 +130,21 @@ class KinerjaController extends Controller
             ($request->skor_kebersamaan * 0.05);
 
         // Tentukan Predikat
-        $huruf = 'E';
-        $rekomendasi = 'Pembinaan';
         if ($total >= 90) {
             $huruf = 'A';
-            $rekomendasi = 'Kinerja Memuaskan';
+            $rekomendasi = 'Apresiasi & kaderisasi';
         } elseif ($total >= 75) {
             $huruf = 'B';
-            $rekomendasi = 'Kinerja Memuaskan';
-        } elseif ($total >= 60) {
+            $rekomendasi = 'Bimbingan ringan';
+        } elseif ($total >= 70) {
             $huruf = 'C';
-            $rekomendasi = 'Pendampingan';
+            $rekomendasi = 'Pembinaan sedang';
         } elseif ($total >= 50) {
             $huruf = 'D';
-            $rekomendasi = 'Pembinaan';
+            $rekomendasi = 'Pembinaan intensif';
+        } else {
+            $huruf = 'E';
+            $rekomendasi = 'Penanganan khusus/rujukan SOP bermasalah';
         }
 
         // Simpan ke Database
@@ -132,15 +189,56 @@ class KinerjaController extends Controller
     }
 
     // 5. PROSES TANDAI SUDAH DITANGANI (PEMBINAAN OFFLINE)
-    public function markAsHandled($id)
+    public function markAsHandled(Request $request, $id)
     {
-        $kinerja = Kinerja::findOrFail($id);
-
-        $kinerja->update([
-            'status_tindak_lanjut' => 'sudah',
-            'tanggal_tindak_lanjut' => Carbon::now(),
+        // 1. Validasi: Deskripsi wajib diisi (minimal 5 karakter agar bermakna)
+        $request->validate([
+            'deskripsi_tindak_lanjut' => 'required|string|min:5',
+        ], [
+            'deskripsi_tindak_lanjut.required' => 'Catatan penanganan wajib diisi sebagai bukti pembinaan.',
         ]);
 
-        return redirect()->back()->with('success', 'Status berhasil diubah menjadi SUDAH DITANGANI.');
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        // Pastikan relasi jabatan ikut dimuat
+        $kinerja = Kinerja::with(['pengurus.jabatan'])->findOrFail($id);
+        $target = $kinerja->pengurus;
+
+        // 2. Proteksi Diri Sendiri: Tidak boleh menangani diri sendiri
+        if (!$user->isAdmin() && ($target->id == $user->pengurus_id || $target->niup == $user->niup)) {
+            return redirect()->back()->with('error', 'Pembinaan harus dilakukan oleh atasan langsung.');
+        }
+
+        $namaJabatan = strtolower($target->jabatan->nama_jabatan ?? '');
+        $isDaerah = str_contains($namaJabatan, 'daerah');
+
+        $bolehUpdate = false;
+
+        // 3. Logika Wewenang Sesuai Instruksi Baru
+        if ($user->isAdmin() || $user->isBiktren()) {
+            // Admin & Biktren: Power penuh, bisa tangani Wilayah maupun Daerah
+            $bolehUpdate = true;
+        } elseif ($user->isWilayah()) {
+            // Wilayah: Hanya bisa menangani level Daerah di bawah koordinasinya
+            if ($isDaerah && $target->wilayah_id == $user->wilayah_id) {
+                $bolehUpdate = true;
+            } else {
+                return redirect()->back()->with('error', 'Wewenang Wilayah hanya untuk anggota Daerah di koordinasi Anda.');
+            }
+        }
+
+        // 4. Eksekusi Update jika lolos verifikasi
+        if ($bolehUpdate) {
+            $kinerja->update([
+                'status_tindak_lanjut' => 'sudah',
+                'deskripsi_tindak_lanjut' => $request->deskripsi_tindak_lanjut, // Simpan input dari modal
+                'tanggal_tindak_lanjut' => now(),
+            ]);
+
+            return redirect()->back()->with('success', 'Berhasil mencatat tindak lanjut untuk: ' . $target->nama);
+        }
+
+        return redirect()->back()->with('error', 'Akses Ditolak: Anda tidak memiliki wewenang.');
     }
 }

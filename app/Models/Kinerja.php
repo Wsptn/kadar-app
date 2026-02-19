@@ -11,8 +11,9 @@ class Kinerja extends Model
 
     protected $guarded = [];
 
-    public function user()
+
+    public function pengurus()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Pengurus::class, 'pengurus_id');
     }
 }

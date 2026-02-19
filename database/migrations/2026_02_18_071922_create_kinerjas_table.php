@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('kinerjas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pengurus_id')->constrained()->onDelete('cascade'); // Relasi ke Pengurus
+            $table->foreignId('pengurus_id')->constrained()->onDelete('cascade');
             $table->date('tanggal_penilaian');
 
             $table->integer('skor_disiplin_waktu');       // Bobot 13%
@@ -25,12 +25,12 @@ return new class extends Migration
             $table->integer('skor_kebersamaan');          // Bobot 5%
 
             // === HASIL AKHIR ===
-            $table->decimal('nilai_total', 5, 2); // Hasil perhitungan bobot
+            $table->decimal('nilai_total', 5, 2);
             $table->string('huruf_mutu', 2);      // A, B, C, D, E
 
-            $table->enum('rekomendasi', ['Kinerja Memuaskan', 'Pendampingan', 'Pembinaan']);
+            $table->text('rekomendasi');
 
-            $table->text('catatan')->nullable(); // Uraian tanggapan
+            $table->text('catatan')->nullable();
             $table->enum('status_tindak_lanjut', ['belum', 'sudah'])->default('belum');
             $table->timestamp('tanggal_tindak_lanjut')->nullable();
             $table->timestamps();
