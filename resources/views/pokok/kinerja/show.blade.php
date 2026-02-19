@@ -84,7 +84,7 @@
                                             <span class="badge text-white" style="background-color: #fd7e14;">Pembinaan
                                                 Intensif</span>
                                         @else
-                                            <span class="badge bg-danger">Penanganan khusus/rujukan SOP bermasalah</span>
+                                            <span class="badge bg-danger">Penanganan khusus (Merujuk ke SOP)</span>
                                         @endif
                                     </td>
 
@@ -92,76 +92,86 @@
                                             class="text-muted">{{ $k->catatan ?? 'Tidak ada catatan' }}</small></td>
 
                                     <td>
-                                        @if (in_array($k->huruf_mutu, ['C', 'D', 'E']))
-                                            @if ($k->status_tindak_lanjut == 'belum')
-                                                @php
-                                                    $me = auth()->user();
-                                                    $target = $pengurus;
-                                                    $jabatanT = strtolower($target->jabatan->nama_jabatan ?? '');
-                                                    $targetIsWilayah = str_contains($jabatanT, 'wilayah');
-                                                    $targetIsDaerah = str_contains($jabatanT, 'daerah');
-                                                    $isDiriSendiri = $target->id == $me->pengurus_id;
+                                        @if ($k->status_tindak_lanjut == 'belum')
+                                            @php
+                                                $me = auth()->user();
+                                                $target = $pengurus;
+                                                $bolehTanganin = false;
 
-                                                    $bolehTanganin = false;
-                                                    if ($me->isAdmin() || $me->isBiktren()) {
-                                                        $bolehTanganin = !$isDiriSendiri; // Admin & Biktren bisa semua asal bukan diri sendiri
-                                                    } elseif (
-                                                        $me->isWilayah() &&
-                                                        $targetIsDaerah &&
+                                                if ($me->isAdmin() || $me->isBiktren()) {
+                                                    $bolehTanganin = true;
+                                                } elseif ($me->isWilayah()) {
+                                                    // Wilayah bisa tangani jika target adalah Entitas Daerah (ID 2)
+                                                    if (
+                                                        $target->entitas_id == 2 &&
                                                         $target->wilayah_id == $me->wilayah_id
                                                     ) {
                                                         $bolehTanganin = true;
                                                     }
-                                                @endphp
+                                                }
+                                            @endphp
 
-                                                @if ($bolehTanganin)
-                                                    <button type="button" class="btn btn-danger btn-sm w-100 shadow-sm"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#modalTangani{{ $k->id }}">
-                                                        <i data-feather="edit-3" style="width:14px"></i> Tangani Sekarang
-                                                    </button>
+                                            @if ($bolehTanganin)
+                                                {{-- Tombol muncul untuk semua mutu A-E selama belum ditangani --}}
+                                                <button type="button" class="btn btn-danger btn-sm w-100 shadow-sm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalTangani{{ $k->id }}">
+                                                    <i data-feather="edit-3" style="width:14px"></i> Beri Catatan
+                                                </button>
 
-                                                    <div class="modal fade" id="modalTangani{{ $k->id }}"
-                                                        tabindex="-1" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered">
-                                                            <div class="modal-content text-start">
-                                                                <form
-                                                                    action="{{ route('pokok.kinerja.mark_handled', $k->id) }}"
-                                                                    method="POST">
-                                                                    @csrf @method('PUT')
-                                                                    <div class="modal-header bg-danger text-white">
-                                                                        <h5 class="modal-title">Catatan Pembinaan</h5>
-                                                                        <button type="button"
-                                                                            class="btn-close btn-close-white"
-                                                                            data-bs-dismiss="modal"></button>
-                                                                    </div>
-                                                                    <div class="modal-body">
-                                                                        <label class="fw-bold mb-2">Deskripsi
-                                                                            Tindakan/Pembinaan:</label>
-                                                                        <textarea name="deskripsi_tindak_lanjut" class="form-control" rows="3"
-                                                                            placeholder="Contoh: Sudah dipanggil dan diberikan arahan terkait disiplin..." required></textarea>
-                                                                    </div>
-                                                                    <div class="modal-footer">
-                                                                        <button type="submit" class="btn btn-danger">Simpan
-                                                                            & Selesaikan</button>
-                                                                    </div>
-                                                                </form>
-                                                            </div>
+                                                {{-- Modal Input Deskripsi --}}
+                                                <div class="modal fade" id="modalTangani{{ $k->id }}" tabindex="-1"
+                                                    aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content text-start">
+                                                            <form
+                                                                action="{{ route('pokok.kinerja.mark_handled', $k->id) }}"
+                                                                method="POST">
+                                                                @csrf @method('PUT')
+                                                                <div class="modal-header bg-danger text-white">
+                                                                    <h5 class="modal-title">Respons Atasan</h5>
+                                                                    <button type="button" class="btn-close btn-close-white"
+                                                                        data-bs-dismiss="modal"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <p class="small text-muted">Berikan catatan pembinaan
+                                                                        atau apresiasi untuk pengurus ini.</p>
+                                                                    <textarea name="deskripsi_tindak_lanjut" class="form-control" rows="3" placeholder="Tuliskan catatan..." required></textarea>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="submit" class="btn btn-danger">Simpan
+                                                                        Catatan</button>
+                                                                </div>
+                                                            </form>
                                                         </div>
                                                     </div>
-                                                @else
-                                                    <div class="text-muted small">Menunggu Atasan</div>
-                                                @endif
+                                                </div>
                                             @else
-                                                <div class="text-success small">
-                                                    <i data-feather="check-circle" style="width:14px"></i>
-                                                    <strong>Selesai</strong><br>
-                                                    <span
-                                                        class="text-dark fst-italic">"{{ $k->deskripsi_tindak_lanjut }}"</span>
+                                                <div
+                                                    class="border border-secondary rounded p-2 bg-light text-muted text-center">
+                                                    <i data-feather="lock" style="width:12px"></i>
+                                                    <small class="fw-bold d-block mt-1">
+                                                        {{ $target->entitas_id == 1 ? 'Wewenang Biktren' : 'Menunggu Atasan' }}
+                                                    </small>
                                                 </div>
                                             @endif
                                         @else
-                                            <span class="text-muted small italic">Aman</span>
+                                            {{-- DESKRIPSI WAJIB MUNCUL JIKA SUDAH DITANGANI --}}
+                                            <div
+                                                class="border border-success rounded p-2 bg-success bg-opacity-10 text-success text-center">
+                                                <i data-feather="check-circle" style="width:14px"></i>
+                                                <strong>Selesai</strong><br>
+                                                <div class="mt-2 bg-white rounded p-2 text-dark small fst-italic shadow-sm text-start"
+                                                    style="border-left: 3px solid #28a745;">
+                                                    "{{ $k->deskripsi_tindak_lanjut }}"
+                                                </div>
+                                                <small class="text-muted d-block mt-2 text-end">
+                                                    <i data-feather="clock" style="width: 12px;"></i>
+                                                    Dicatat:
+                                                    {{ \Carbon\Carbon::parse($k->tanggal_tindak_lanjut)->translatedFormat('d F Y, H:i') }}
+                                                    WIB
+                                                </small>
+                                            </div>
                                         @endif
                                     </td>
                                 </tr>

@@ -14,20 +14,24 @@
         <div class="row">
 
             {{-- FOTO & IDENTITAS (Kiri) --}}
-            <div class="col-lg-4 mb-4">
+            <div class="col-lg-4 mb-6">
                 {{-- Card Profil --}}
-                <div class="card shadow-sm p-3 text-center border-0">
+                <div class="card shadow-sm p-3 text-center border-0 h-100">
+                    <div class="d-flex flex-column align-items-center h-100">
 
-                    <div class="d-flex flex-column align-items-center">
-                        {{-- 1. FOTO --}}
-                        @if ($pengurus->foto)
-                            <img src="{{ asset('storage/' . $pengurus->foto) }}" class="rounded border p-1 mb-3"
-                                style="width:180px; height:220px; object-fit:cover;"
+                        {{-- 1. FOTO (Klik untuk Lihat Tab Baru) --}}
+                        @php
+                            $pathFoto = $pengurus->foto
+                                ? asset('storage/' . $pengurus->foto)
+                                : asset('template-admin/img/default-avatar.png');
+                        @endphp
+                        <a href="{{ $pathFoto }}" target="_blank" title="Klik untuk memperbesar">
+                            <img src="{{ $pathFoto }}" class="rounded border p-1 mb-3 shadow-sm"
+                                style="width:180px; height:220px; object-fit:cover; transition: transform .2s;"
+                                onmouseover="this.style.transform='scale(1.02)'"
+                                onmouseout="this.style.transform='scale(1)'"
                                 onerror="this.src='{{ asset('template-admin/img/default-avatar.png') }}'">
-                        @else
-                            <img src="{{ asset('template-admin/img/default-avatar.png') }}" class="rounded border p-1 mb-3"
-                                style="width:180px; height:220px; object-fit:cover;">
-                        @endif
+                        </a>
 
                         {{-- 2. NAMA & NIUP --}}
                         <h4 class="fw-bold mb-1">{{ $pengurus->nama }}</h4>
@@ -37,8 +41,6 @@
                         @php
                             $statusClass = $pengurus->status == 'aktif' ? 'bg-success' : 'bg-secondary';
                             $statusText = $pengurus->status == 'aktif' ? 'AKTIF' : 'NON-AKTIF';
-
-                            // Ambil Data Kinerja Terakhir
                             $lastKinerja = $pengurus->kinerja->last();
                         @endphp
 
@@ -47,51 +49,66 @@
                             {{ $statusText }}
                         </span>
 
-                        {{-- 4. TAMBAHAN: STATUS PENILAIAN & REKOMENDASI --}}
+                        {{-- 4. KINERJA TERAKHIR --}}
                         @if ($lastKinerja)
-                            <div class="card bg-light border-0 p-2" style="width: 180px;">
-                                <small class="text-muted d-block fw-bold"
+                            <div class="card bg-light border-0 p-3 mb-2 w-100" style="max-width: 280px;">
+                                <small class="text-muted d-block fw-bold mb-1"
                                     style="font-size: 0.65rem; text-transform: uppercase;">
-                                    Kinerja Terakhir
+                                    Hasil Kinerja Terakhir
                                 </small>
 
-                                {{-- Angka Nilai --}}
                                 <div
                                     class="display-6 fw-bold my-1 
-                        {{ $lastKinerja->nilai_total >= 75 ? 'text-primary' : ($lastKinerja->nilai_total >= 60 ? 'text-warning' : 'text-danger') }}">
+                        {{ $lastKinerja->nilai_total >= 75 ? 'text-primary' : ($lastKinerja->nilai_total >= 70 ? 'text-warning' : 'text-danger') }}">
                                     {{ $lastKinerja->nilai_total }}
                                 </div>
 
-                                {{-- Badge Rekomendasi --}}
-                                @if ($lastKinerja->rekomendasi == 'Kinerja Memuaskan')
-                                    <span class="badge bg-success w-100 text-wrap lh-sm py-2">
-                                        {{ $lastKinerja->rekomendasi }}
-                                    </span>
-                                @elseif($lastKinerja->rekomendasi == 'Pendampingan')
-                                    <span class="badge bg-warning text-dark w-100 text-wrap lh-sm py-2">
-                                        {{ $lastKinerja->rekomendasi }}
-                                    </span>
-                                @else
-                                    <span class="badge bg-danger w-100 text-wrap lh-sm py-2">
-                                        {{ $lastKinerja->rekomendasi }}
-                                    </span>
-                                @endif
+                                <span
+                                    class="badge {{ $lastKinerja->nilai_total >= 75 ? 'bg-success' : ($lastKinerja->nilai_total >= 70 ? 'bg-warning text-dark' : 'bg-danger') }} mb-2 text-wrap">
+                                    {{ $lastKinerja->rekomendasi }}
+                                </span>
 
-                                {{-- Tanggal --}}
-                                <small class="text-muted d-block mt-2" style="font-size: 0.6rem">
-                                    {{ \Carbon\Carbon::parse($lastKinerja->tanggal_penilaian)->format('d M Y') }}
-                                </small>
+                                <hr class="my-2 opacity-25">
+
+                                <div class="text-start mt-2">
+                                    <small class="fw-bold d-block text-muted mb-1"
+                                        style="font-size: 0.65rem; text-transform: uppercase;">
+                                        Status Terakhir:
+                                    </small>
+
+                                    @if ($lastKinerja->status_tindak_lanjut == 'sudah')
+                                        <div class="p-2 rounded bg-white border border-success border-opacity-25 shadow-sm">
+                                            <span class="badge bg-success mb-1" style="font-size: 0.6rem;">
+                                                <i data-feather="check-circle" style="width:10px; height:10px;"></i>
+                                                TERVERIFIKASI
+                                            </span>
+                                            <p class="mb-0 text-dark small fst-italic"
+                                                style="font-size: 0.75rem; line-height: 1.2;">
+                                                "{{ Str::limit($lastKinerja->deskripsi_tindak_lanjut, 100) }}"
+                                            </p>
+                                        </div>
+                                    @else
+                                        <div
+                                            class="p-2 rounded bg-white border border-warning border-opacity-25 text-center shadow-sm">
+                                            <span class="badge bg-warning text-dark mb-1" style="font-size: 0.6rem;">
+                                                <i data-feather="clock" style="width:10px; height:10px;"></i> MENUNGGU
+                                                RESPON
+                                            </span>
+                                            <small class="d-block text-muted" style="font-size: 0.7rem;">
+                                                {{ in_array($lastKinerja->huruf_mutu, ['A', 'B']) ? 'Apresiasi pimpinan diperlukan' : 'Pembinaan atasan diperlukan' }}
+                                            </small>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         @else
-                            {{-- Jika Belum Ada Nilai --}}
-                            <div class="card bg-light border-0 p-2 d-flex align-items-center justify-content-center"
-                                style="width: 180px; height: 100px; border-style: dashed !important;">
-                                <span class="text-muted small">Belum ada<br>Data Penilaian</span>
+                            <div class="card bg-light border-0 p-4 d-flex align-items-center justify-content-center w-100"
+                                style="max-width: 280px; border-style: dashed !important; border-width: 2px !important;">
+                                <span class="text-muted small">Belum ada Data Penilaian</span>
                             </div>
                         @endif
 
                     </div>
-
                 </div>
             </div>
 

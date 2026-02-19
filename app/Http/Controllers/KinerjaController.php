@@ -64,13 +64,9 @@ class KinerjaController extends Controller
             });
         } elseif ($user->isWilayah()) {
             $query->where('wilayah_id', $user->wilayah_id)
-                ->where('id', '!=', $user->pengurus_id)
+                ->where('id', '!=', $user->pengurus_id) // Tidak bisa menilai diri sendiri
                 ->whereHas('jabatan', function ($q) {
-                    $q->where(function ($sub) {
-                        $sub->where('nama_jabatan', 'like', '%Wilayah%')
-                            ->where('nama_jabatan', 'not like', '%Kepala Wilayah%');
-                    })
-                        ->orWhere('nama_jabatan', 'like', '%Kepala Daerah%');
+                    $q->where('nama_jabatan', 'not like', '%Kepala Wilayah%');
                 });
         } elseif ($user->isDaerah()) {
             $query->where('daerah_id', $user->daerah_id)
@@ -144,7 +140,7 @@ class KinerjaController extends Controller
             $rekomendasi = 'Pembinaan intensif';
         } else {
             $huruf = 'E';
-            $rekomendasi = 'Penanganan khusus/rujukan SOP bermasalah';
+            $rekomendasi = 'Penanganan khusus (Merujuk ke SOP)';
         }
 
         // Simpan ke Database
@@ -180,7 +176,6 @@ class KinerjaController extends Controller
     // 4. HALAMAN RIWAYAT (DETAIL)
     public function show($id)
     {
-        // Ambil pengurus + riwayat kinerja (urut dari terbaru)
         $pengurus = Pengurus::with(['kinerja' => function ($q) {
             $q->latest();
         }])->findOrFail($id);
@@ -191,54 +186,33 @@ class KinerjaController extends Controller
     // 5. PROSES TANDAI SUDAH DITANGANI (PEMBINAAN OFFLINE)
     public function markAsHandled(Request $request, $id)
     {
-        // 1. Validasi: Deskripsi wajib diisi (minimal 5 karakter agar bermakna)
-        $request->validate([
-            'deskripsi_tindak_lanjut' => 'required|string|min:5',
-        ], [
-            'deskripsi_tindak_lanjut.required' => 'Catatan penanganan wajib diisi sebagai bukti pembinaan.',
-        ]);
+        $request->validate(['deskripsi_tindak_lanjut' => 'required|string|min:5']);
 
-        /** @var \App\Models\User $user */
         $user = auth()->user();
-
-        // Pastikan relasi jabatan ikut dimuat
-        $kinerja = Kinerja::with(['pengurus.jabatan'])->findOrFail($id);
+        $kinerja = Kinerja::with(['pengurus'])->findOrFail($id);
         $target = $kinerja->pengurus;
-
-        // 2. Proteksi Diri Sendiri: Tidak boleh menangani diri sendiri
-        if (!$user->isAdmin() && ($target->id == $user->pengurus_id || $target->niup == $user->niup)) {
-            return redirect()->back()->with('error', 'Pembinaan harus dilakukan oleh atasan langsung.');
-        }
-
-        $namaJabatan = strtolower($target->jabatan->nama_jabatan ?? '');
-        $isDaerah = str_contains($namaJabatan, 'daerah');
 
         $bolehUpdate = false;
 
-        // 3. Logika Wewenang Sesuai Instruksi Baru
         if ($user->isAdmin() || $user->isBiktren()) {
-            // Admin & Biktren: Power penuh, bisa tangani Wilayah maupun Daerah
             $bolehUpdate = true;
         } elseif ($user->isWilayah()) {
-            // Wilayah: Hanya bisa menangani level Daerah di bawah koordinasinya
-            if ($isDaerah && $target->wilayah_id == $user->wilayah_id) {
+            if ($target->entitas_id == 2 && $target->wilayah_id == $user->wilayah_id) {
                 $bolehUpdate = true;
             } else {
-                return redirect()->back()->with('error', 'Wewenang Wilayah hanya untuk anggota Daerah di koordinasi Anda.');
+                return redirect()->back()->with('error', 'Wewenang Wilayah hanya untuk level Daerah.');
             }
         }
 
-        // 4. Eksekusi Update jika lolos verifikasi
         if ($bolehUpdate) {
             $kinerja->update([
                 'status_tindak_lanjut' => 'sudah',
-                'deskripsi_tindak_lanjut' => $request->deskripsi_tindak_lanjut, // Simpan input dari modal
+                'deskripsi_tindak_lanjut' => $request->deskripsi_tindak_lanjut,
                 'tanggal_tindak_lanjut' => now(),
             ]);
-
-            return redirect()->back()->with('success', 'Berhasil mencatat tindak lanjut untuk: ' . $target->nama);
+            return redirect()->back()->with('success', 'Berhasil mencatat tindak lanjut.');
         }
 
-        return redirect()->back()->with('error', 'Akses Ditolak: Anda tidak memiliki wewenang.');
+        return redirect()->back()->with('error', 'Akses Ditolak.');
     }
 }

@@ -146,7 +146,7 @@
                                                     Intensif ({{ $lastKinerja->nilai_total }})</span>
                                             @else
                                                 <span class="badge bg-danger text-wrap lh-sm"
-                                                    style="font-size: 0.65rem;">Penanganan khusus/rujukan SOP bermasalah
+                                                    style="font-size: 0.65rem;">Penanganan khusus (Merujuk ke SOP)
                                                     ({{ $lastKinerja->nilai_total }})</span>
                                             @endif
                                         </div>
