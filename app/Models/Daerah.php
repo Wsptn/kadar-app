@@ -16,4 +16,8 @@ class Daerah extends Model
     {
         return $this->belongsTo(Wilayah::class, 'wilayah_id');
     }
+    public function kamar()
+    {
+        return $this->hasMany(Kamar::class, 'daerah_id');
+    }
 }

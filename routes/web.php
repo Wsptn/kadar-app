@@ -102,14 +102,23 @@ Route::middleware('auth')->group(function () {
             // Wilayah
             Route::get('/wilayah/create', [WilayahController::class, 'create'])->name('wilayah.create');
             Route::post('/wilayah/store', [WilayahController::class, 'store'])->name('wilayah.store');
+            Route::get('/wilayah/{id}/edit', [WilayahController::class, 'edit'])->name('wilayah.edit'); // Tambahan
+            Route::put('/wilayah/{id}/update', [WilayahController::class, 'update'])->name('wilayah.update'); // Tambahan
+            Route::delete('/wilayah/{id}/destroy', [WilayahController::class, 'destroy'])->name('wilayah.destroy'); // Tambahan
 
             // Daerah
             Route::get('/daerah/create', [DaerahController::class, 'create'])->name('daerah.create');
             Route::post('/daerah/store', [DaerahController::class, 'store'])->name('daerah.store');
+            Route::get('/daerah/{id}/edit', [DaerahController::class, 'edit'])->name('daerah.edit'); // Tambahan
+            Route::put('/daerah/{id}/update', [DaerahController::class, 'update'])->name('daerah.update'); // Tambahan
+            Route::delete('/daerah/{id}/destroy', [DaerahController::class, 'destroy'])->name('daerah.destroy'); // Tambahan
 
             // Kamar
             Route::get('/kamar/create', [KamarController::class, 'create'])->name('kamar.create');
             Route::post('/kamar/store', [KamarController::class, 'store'])->name('kamar.store');
+            Route::get('/kamar/{id}/edit', [KamarController::class, 'edit'])->name('kamar.edit'); // Tambahan
+            Route::put('/kamar/{id}/update', [KamarController::class, 'update'])->name('kamar.update'); // Tambahan
+            Route::delete('/kamar/{id}/destroy', [KamarController::class, 'destroy'])->name('kamar.destroy'); // Tambahan
 
             // Ajax Routes Domisili
             Route::get('/get-daerah/{wilayah_id}', function ($wilayah_id) {
