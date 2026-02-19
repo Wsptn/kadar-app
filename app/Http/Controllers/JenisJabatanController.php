@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Entitas;
+use App\Models\Jabatan;
 use App\Models\JenisJabatan;
 use Illuminate\Http\Request;
 
@@ -48,29 +49,47 @@ class JenisJabatanController extends Controller
 
 
 
-    // public function edit($id)
-    // {
-    //     $data = JenisJabatan::findOrFail($id);
-    //     return view('master.jabatan.jenis.edit', compact('data'));
-    // }
+    public function edit($id)
+    {
+        $jenis = JenisJabatan::findOrFail($id);
+        $entitas = Entitas::orderBy('nama_entitas')->get();
+        $jabatans = Jabatan::where('entitas_id', $jenis->entitas_id)->get();
 
-    // public function update(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'nama_jenis_jabatan' => 'required'
-    //     ]);
+        return view('master.jabatan.jenis.edit', compact('jenis', 'entitas', 'jabatans'));
+    }
 
-    //     JenisJabatan::findOrFail($id)->update([
-    //         'nama_jenis_jabatan' => $request->nama_jenis_jabatan,
-    //     ]);
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'entitas_id'    => 'required|exists:entitas,id',
+            'jabatan_id'    => 'required|exists:jabatans,id',
+            'jenis_jabatan' => 'required'
+        ]);
 
-    //     return redirect()->route('master.jabatan.jenis.index')
-    //         ->with('success', 'Jenis Jabatan berhasil diperbarui.');
-    // }
+        $jenis = JenisJabatan::findOrFail($id);
+        $jenis->update([
+            'entitas_id'    => $request->entitas_id,
+            'jabatan_id'    => $request->jabatan_id,
+            'jenis_jabatan' => $request->jenis_jabatan,
+        ]);
 
-    // public function destroy($id)
-    // {
-    //     JenisJabatan::destroy($id);
-    //     return back()->with('success', 'Jenis Jabatan berhasil dihapus.');
-    // }
+        return redirect()->route('master.jabatan.index')
+            ->with('success', 'Jenis Jabatan berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $jenis = JenisJabatan::findOrFail($id);
+
+            if ($jenis->grade()->count() > 0) {
+                return back()->with('error', 'Gagal hapus! Data ini masih digunakan di tab Grade Jabatan.');
+            }
+
+            $jenis->delete();
+            return back()->with('success', 'Jenis Jabatan berhasil dihapus.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan sistem.');
+        }
+    }
 }

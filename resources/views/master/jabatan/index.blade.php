@@ -47,7 +47,7 @@
                             <h5 class="fw-semibold mb-0">Data Entitas Pengurus</h5>
                             @if (!Auth::user()->isDaerah())
                                 <a href="{{ route('master.jabatan.entitas.create') }}" class="btn btn-success btn-sm">
-                                    <i data-feather="plus-circle" class="me-1"></i>Tambah Entitas Pengurus
+                                    <i data-feather="plus-circle" class="me-1"></i>Tambah Entitas
                                 </a>
                             @endif
                         </div>
@@ -58,6 +58,7 @@
                                     <tr>
                                         <th style="width: 60px;">No</th>
                                         <th>Entitas Pengurus</th>
+                                        <th style="width: 120px;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -65,18 +66,28 @@
                                         <tr>
                                             <td class="text-center">{{ $index + 1 }}</td>
                                             <td>{{ $item->nama_entitas }}</td>
+                                            <td class="text-center">
+                                                <div class="btn-group">
+                                                    <a href="{{ route('master.jabatan.entitas.edit', $item->id) }}"
+                                                        class="btn btn-outline-primary btn-sm"><i data-feather="edit-2"
+                                                            style="width: 14px;"></i></a>
+                                                    <form action="{{ route('master.jabatan.entitas.destroy', $item->id) }}"
+                                                        method="POST" onsubmit="return confirm('Hapus entitas ini?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i
+                                                                data-feather="trash-2" style="width: 14px;"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="2" class="text-center text-muted py-3">
-                                                Belum ada data entitas.
-                                            </td>
+                                            <td colspan="3" class="text-center py-3">Belum ada data.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -99,8 +110,9 @@
                                 <thead class="table-success text-center">
                                     <tr>
                                         <th style="width: 60px;">No</th>
-                                        <th>Entitas Pengurus</th>
+                                        <th>Entitas</th>
                                         <th>Jabatan</th>
+                                        <th style="width: 120px;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -109,18 +121,28 @@
                                             <td class="text-center">{{ $index + 1 }}</td>
                                             <td>{{ $item->entitas->nama_entitas ?? '-' }}</td>
                                             <td>{{ $item->nama_jabatan }}</td>
+                                            <td class="text-center">
+                                                <div class="btn-group">
+                                                    <a href="{{ route('master.jabatan.jabatan.edit', $item->id) }}"
+                                                        class="btn btn-outline-primary btn-sm"><i data-feather="edit-2"
+                                                            style="width: 14px;"></i></a>
+                                                    <form action="{{ route('master.jabatan.jabatan.destroy', $item->id) }}"
+                                                        method="POST" onsubmit="return confirm('Hapus jabatan ini?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i
+                                                                data-feather="trash-2" style="width: 14px;"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="3" class="text-center text-muted py-3">
-                                                Belum ada data jabatan.
-                                            </td>
+                                            <td colspan="4" class="text-center py-3">Belum ada data.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -133,7 +155,7 @@
                             <h5 class="fw-semibold mb-0">Data Jenis Jabatan</h5>
                             @if (!Auth::user()->isDaerah())
                                 <a href="{{ route('master.jabatan.jenis.create') }}" class="btn btn-success btn-sm">
-                                    <i data-feather="plus-circle" class="me-1"></i>Tambah Jenis Jabatan
+                                    <i data-feather="plus-circle" class="me-1"></i>Tambah Jenis
                                 </a>
                             @endif
                         </div>
@@ -143,30 +165,39 @@
                                 <thead class="table-success text-center">
                                     <tr>
                                         <th style="width: 60px;">No</th>
-                                        <th>Entitas Pengurus</th>
                                         <th>Jabatan</th>
                                         <th>Jenis Jabatan</th>
+                                        <th style="width: 120px;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($jenis as $index => $item)
                                         <tr>
                                             <td class="text-center">{{ $index + 1 }}</td>
-                                            <td>{{ $item->entitas->nama_entitas ?? '-' }}</td>
                                             <td>{{ $item->jabatan->nama_jabatan ?? '-' }}</td>
                                             <td>{{ $item->jenis_jabatan }}</td>
+                                            <td class="text-center">
+                                                <div class="btn-group">
+                                                    <a href="{{ route('master.jabatan.jenis.edit', $item->id) }}"
+                                                        class="btn btn-outline-primary btn-sm"><i data-feather="edit-2"
+                                                            style="width: 14px;"></i></a>
+                                                    <form action="{{ route('master.jabatan.jenis.destroy', $item->id) }}"
+                                                        method="POST" onsubmit="return confirm('Hapus jenis ini?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i
+                                                                data-feather="trash-2" style="width: 14px;"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center text-muted py-3">
-                                                Belum ada data jenis jabatan.
-                                            </td>
+                                            <td colspan="4" class="text-center py-3">Belum ada data.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -179,7 +210,7 @@
                             <h5 class="fw-semibold mb-0">Data Grade Jabatan</h5>
                             @if (!Auth::user()->isDaerah())
                                 <a href="{{ route('master.jabatan.grade.create') }}" class="btn btn-success btn-sm">
-                                    <i data-feather="plus-circle" class="me-1"></i>Tambah Grade Jabatan
+                                    <i data-feather="plus-circle" class="me-1"></i>Tambah Grade
                                 </a>
                             @endif
                         </div>
@@ -189,36 +220,42 @@
                                 <thead class="table-success text-center">
                                     <tr>
                                         <th style="width: 60px;">No</th>
-                                        <th>Entitas Pengurus</th>
-                                        <th>Jabatan</th>
-                                        <th>Jenis jabatan</th>
-                                        <th>Grade Jabatan</th>
+                                        <th>Jenis</th>
+                                        <th>Grade</th>
+                                        <th style="width: 120px;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($grade as $index => $item)
                                         <tr>
                                             <td class="text-center">{{ $index + 1 }}</td>
-                                            <td>{{ $item->entitas->nama_entitas ?? '-' }}</td>
-                                            <td>{{ $item->jabatan->nama_jabatan ?? '-' }}</td>
                                             <td>{{ $item->jenis->jenis_jabatan ?? '-' }}</td>
                                             <td>{{ $item->grade }}</td>
+                                            <td class="text-center">
+                                                <div class="btn-group">
+                                                    <a href="{{ route('master.jabatan.grade.edit', $item->id) }}"
+                                                        class="btn btn-outline-primary btn-sm"><i data-feather="edit-2"
+                                                            style="width: 14px;"></i></a>
+                                                    <form action="{{ route('master.jabatan.grade.destroy', $item->id) }}"
+                                                        method="POST" onsubmit="return confirm('Hapus grade ini?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i
+                                                                data-feather="trash-2" style="width: 14px;"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="text-center text-muted py-3">
-                                                Belum ada data grade jabatan.
-                                            </td>
+                                            <td colspan="4" class="text-center py-3">Belum ada data.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 @endsection

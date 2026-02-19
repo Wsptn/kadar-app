@@ -125,23 +125,35 @@ Route::middleware('auth')->group(function () {
         Route::prefix('jabatan')->name('jabatan.')->group(function () {
             Route::get('/', [JabatanController::class, 'index'])->name('index');
 
-            // Entitas
+            // ================= ENTITAS =================
             Route::get('/entitas/create', [EntitasController::class, 'create'])->name('entitas.create');
             Route::post('/entitas/store', [EntitasController::class, 'store'])->name('entitas.store');
+            Route::get('/entitas/{id}/edit', [EntitasController::class, 'edit'])->name('entitas.edit');
+            Route::put('/entitas/{id}/update', [EntitasController::class, 'update'])->name('entitas.update');
+            Route::delete('/entitas/{id}', [EntitasController::class, 'destroy'])->name('entitas.destroy');
 
-            // Jabatan
+            // ================= JABATAN =================
             Route::get('/jabatan/create', [JabatanController::class, 'create'])->name('jabatan.create');
             Route::post('/jabatan/store', [JabatanController::class, 'store'])->name('jabatan.store');
+            Route::get('/jabatan/{id}/edit', [JabatanController::class, 'edit'])->name('jabatan.edit');
+            Route::put('/jabatan/{id}/update', [JabatanController::class, 'update'])->name('jabatan.update');
+            Route::delete('/jabatan/{id}', [JabatanController::class, 'destroy'])->name('jabatan.destroy');
 
-            // Jenis Jabatan
+            // ================= JENIS JABATAN =================
             Route::get('/jenis/create', [JenisJabatanController::class, 'create'])->name('jenis.create');
             Route::post('/jenis/store', [JenisJabatanController::class, 'store'])->name('jenis.store');
+            Route::get('/jenis/{id}/edit', [JenisJabatanController::class, 'edit'])->name('jenis.edit');
+            Route::put('/jenis/{id}/update', [JenisJabatanController::class, 'update'])->name('jenis.update');
+            Route::delete('/jenis/{id}', [JenisJabatanController::class, 'destroy'])->name('jenis.destroy');
 
-            // Grade Jabatan
+            // ================= GRADE JABATAN =================
             Route::get('/grade/create', [GradeJabatanController::class, 'create'])->name('grade.create');
             Route::post('/grade/store', [GradeJabatanController::class, 'store'])->name('grade.store');
+            Route::get('/grade/{id}/edit', [GradeJabatanController::class, 'edit'])->name('grade.edit');
+            Route::put('/grade/{id}/update', [GradeJabatanController::class, 'update'])->name('grade.update');
+            Route::delete('/grade/{id}', [GradeJabatanController::class, 'destroy'])->name('grade.destroy');
 
-            // Ajax Routes Jabatan
+            // Ajax Routes Jabatan (Tetap Sama)
             Route::get('/get-jabatan/{entitas_id}', function ($entitas_id) {
                 return \App\Models\Jabatan::where('entitas_id', $entitas_id)->get();
             })->name('jabatan.byEntitas');

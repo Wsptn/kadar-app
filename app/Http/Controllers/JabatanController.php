@@ -12,19 +12,16 @@ class JabatanController extends Controller
 {
     public function index()
     {
-        // Ambil semua entitas, jabatan, jenis, dan grade untuk ditampilkan di tab
         $entitas = Entitas::orderBy('nama_entitas')->get();
 
         $jabatan = Jabatan::with('entitas')
             ->orderBy('id', 'DESC')
             ->get();
 
-        // pastikan nama relasi di model JenisJabatan sesuai (mis. entitas, jabatan)
         $jenis = JenisJabatan::with(['entitas', 'jabatan'])
             ->orderBy('id', 'DESC')
             ->get();
 
-        // pastikan nama relasi di model GradeJabatan sesuai (mis. entitas, jabatan, jenis)
         $grade = GradeJabatan::with(['entitas', 'jabatan', 'jenis'])
             ->orderBy('id', 'DESC')
             ->get();
@@ -65,34 +62,59 @@ class JabatanController extends Controller
     }
 
 
-    // public function edit($id)
-    // {
-    //     $data = Jabatan::findOrFail($id);
-    //     $jenis = JenisJabatan::all();
-    //     $grade = GradeJabatan::all();
-    //     $entitas = Entitas::all();
+    public function edit($id)
+    {
+        $jabatan = Jabatan::findOrFail($id);
 
-    //     return view('master.jabatan.jabatan.edit', compact('data', 'jenis', 'grade', 'entitas'));
-    // }
+        $entitas = Entitas::orderBy('nama_entitas')->get();
 
-    // public function update(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'nama_jabatan' => 'required',
-    //         'jenis_jabatan_id' => 'required',
-    //         'grade_id' => 'required',
-    //         'entitas_id' => 'required',
-    //     ]);
+        return view('master.jabatan.jabatan.edit', compact('jabatan', 'entitas'));
+    }
 
-    //     Jabatan::findOrFail($id)->update($request->all());
+    /**
+     * Perbarui data jabatan di database.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'entitas_id'   => 'required|exists:entitas,id',
+            'nama_jabatan' => 'required|string|max:255'
+        ]);
 
-    //     return redirect()->route('master.jabatan.jabatan.index')
-    //         ->with('success', 'Jabatan berhasil diperbarui.');
-    // }
+        $jabatan = Jabatan::findOrFail($id);
+        $jabatan->update([
+            'entitas_id'   => $request->entitas_id,
+            'nama_jabatan' => $request->nama_jabatan
+        ]);
 
-    // public function destroy($id)
-    // {
-    //     Jabatan::destroy($id);
-    //     return back()->with('success', 'Jabatan berhasil dihapus.');
-    // }
+        // Redirect kembali ke index utama master jabatan
+        return redirect()->route('master.jabatan.index')
+            ->with('success', 'Jabatan berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus data jabatan.
+     */
+    public function destroy($id)
+    {
+        try {
+            $jabatan = Jabatan::findOrFail($id);
+
+            $adaJenis = \App\Models\JenisJabatan::where('jabatan_id', $id)->exists();
+
+            if ($adaJenis) {
+                return back()->with('error', 'Gagal! Jabatan ini tidak bisa dihapus karena masih digunakan di tab "Jenis Jabatan". Hapus dulu jenis jabatannya.');
+            }
+
+            $adaPengurus = \App\Models\Pengurus::where('jabatan_id', $id)->exists();
+            if ($adaPengurus) {
+                return back()->with('error', 'Gagal! Jabatan ini sedang dipakai oleh data Pengurus. Ubah jabatan pengurus tersebut sebelum menghapus ini.');
+            }
+
+            $jabatan->delete();
+            return back()->with('success', 'Jabatan berhasil dihapus.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Kesalahan sistem: ' . $e->getMessage());
+        }
+    }
 }

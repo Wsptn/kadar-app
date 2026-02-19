@@ -44,28 +44,41 @@ class GradeJabatanController extends Controller
             ->with('success', 'Grade Jabatan berhasil ditambahkan.');
     }
 
-    // public function edit($id)
-    // {
-    //     $data = GradeJabatan::findOrFail($id);
-    //     return view('master.jabatan.grade.edit', compact('data'));
-    // }
+    public function edit($id)
+    {
+        $grade = GradeJabatan::findOrFail($id);
+        $entitas = Entitas::orderBy('nama_entitas')->get();
+        $jabatans = Jabatan::where('entitas_id', $grade->entitas_id)->get();
+        $jenis = JenisJabatan::where('jabatan_id', $grade->jabatan_id)->get();
 
-    // public function update(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'grade' => 'required',
-    //         'keterangan' => 'nullable'
-    //     ]);
+        return view('master.jabatan.grade.edit', compact('grade', 'entitas', 'jabatans', 'jenis'));
+    }
 
-    //     GradeJabatan::findOrFail($id)->update($request->all());
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'entitas_id'        => 'required|exists:entitas,id',
+            'jabatan_id'        => 'required|exists:jabatans,id',
+            'jenis_jabatan_id'  => 'required|exists:jenis_jabatans,id',
+            'grade'             => 'required',
+            'keterangan'        => 'nullable',
+        ]);
 
-    //     return redirect()->route('master.jabatan.grade.index')
-    //         ->with('success', 'Grade Jabatan berhasil diperbarui.');
-    // }
+        $grade = GradeJabatan::findOrFail($id);
+        $grade->update($request->all());
 
-    // public function destroy($id)
-    // {
-    //     GradeJabatan::destroy($id);
-    //     return back()->with('success', 'Grade Jabatan berhasil dihapus.');
-    // }
+        return redirect()->route('master.jabatan.index')
+            ->with('success', 'Grade Jabatan berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $grade = GradeJabatan::findOrFail($id);
+            $grade->delete();
+            return back()->with('success', 'Grade Jabatan berhasil dihapus.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan saat menghapus data.');
+        }
+    }
 }
