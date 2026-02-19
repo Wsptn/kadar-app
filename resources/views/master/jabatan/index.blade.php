@@ -9,43 +9,46 @@
             <span>Data Master / <span class="text-success fw-semibold">Jabatan</span></span>
         </div>
 
+        {{-- Logika Hak Akses: Admin, Biktren, dan Wilayah bisa akses --}}
+        @php
+            $hasAccess =
+                Auth::user()->role == 'Admin' || Auth::user()->role == 'Biktren' || Auth::user()->role == 'Wilayah';
+        @endphp
+
         {{-- Tabs --}}
         <ul class="nav nav-tabs mb-3" id="jabatanTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="entitas-tab" data-bs-toggle="tab" data-bs-target="#entitas"
-                    type="button">
-                    Entitas Pengurus
-                </button>
+                    type="button">Entitas Pengurus</button>
             </li>
-
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="jabatan-tab" data-bs-toggle="tab" data-bs-target="#jabatan" type="button">
-                    Jabatan
-                </button>
+                <button class="nav-link" id="jabatan-tab" data-bs-toggle="tab" data-bs-target="#jabatan"
+                    type="button">Jabatan</button>
             </li>
-
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="jenis-tab" data-bs-toggle="tab" data-bs-target="#jenis" type="button">
-                    Jenis Jabatan
-                </button>
+                <button class="nav-link" id="jenis-tab" data-bs-toggle="tab" data-bs-target="#jenis" type="button">Jenis
+                    Jabatan</button>
             </li>
-
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="grade-tab" data-bs-toggle="tab" data-bs-target="#grade" type="button">
-                    Grade Jabatan
-                </button>
+                <button class="nav-link" id="grade-tab" data-bs-toggle="tab" data-bs-target="#grade" type="button">Grade
+                    Jabatan</button>
             </li>
         </ul>
 
         <div class="tab-content" id="jabatanTabContent">
+            {{-- Logika: Jika role BUKAN 'Daerah', maka boleh akses --}}
+            @php
+                $userLevel = Auth::user()->level;
+                $canAccess = $userLevel == 'Admin' || $userLevel == 'Biktren' || $userLevel == 'Wilayah';
+            @endphp
 
-            {{-- ============================ TAB ENTITAS PENGURUS ============================ --}}
+            {{-- ============================ 1. TAB ENTITAS PENGURUS ============================ --}}
             <div class="tab-pane fade show active" id="entitas" role="tabpanel">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-semibold mb-0">Data Entitas Pengurus</h5>
-                            @if (!Auth::user()->isDaerah())
+                            @if ($canAccess)
                                 <a href="{{ route('master.jabatan.entitas.create') }}" class="btn btn-success btn-sm">
                                     <i data-feather="plus-circle" class="me-1"></i>Tambah Entitas
                                 </a>
@@ -67,17 +70,27 @@
                                             <td class="text-center">{{ $index + 1 }}</td>
                                             <td>{{ $item->nama_entitas }}</td>
                                             <td class="text-center">
-                                                <div class="btn-group">
-                                                    <a href="{{ route('master.jabatan.entitas.edit', $item->id) }}"
-                                                        class="btn btn-outline-primary btn-sm"><i data-feather="edit-2"
-                                                            style="width: 14px;"></i></a>
-                                                    <form action="{{ route('master.jabatan.entitas.destroy', $item->id) }}"
-                                                        method="POST" onsubmit="return confirm('Hapus entitas ini?')">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i
-                                                                data-feather="trash-2" style="width: 14px;"></i></button>
-                                                    </form>
-                                                </div>
+                                                @if ($canAccess)
+                                                    <div class="btn-group">
+                                                        <a href="{{ route('master.jabatan.entitas.edit', $item->id) }}"
+                                                            class="btn btn-outline-warning btn-sm">
+                                                            <i data-feather="edit-2" style="width: 14px;"></i>
+                                                        </a>
+                                                        <form
+                                                            action="{{ route('master.jabatan.entitas.destroy', $item->id) }}"
+                                                            method="POST" onsubmit="return confirm('Hapus entitas ini?')">
+                                                            @csrf @method('DELETE')
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm"><i
+                                                                    data-feather="trash-2"
+                                                                    style="width: 14px;"></i></button>
+                                                        </form>
+                                                    </div>
+                                                @else
+                                                    <span class="badge"
+                                                        style="background-color: #6c757d; color: white; font-weight: 500; padding: 5px 10px;">
+                                                        <i class="bi bi-lock-fill"></i> Restricted
+                                                    </span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty
@@ -92,13 +105,13 @@
                 </div>
             </div>
 
-            {{-- ============================ TAB JABATAN ============================ --}}
+            {{-- ============================ 2. TAB JABATAN ============================ --}}
             <div class="tab-pane fade" id="jabatan" role="tabpanel">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-semibold mb-0">Data Jabatan</h5>
-                            @if (!Auth::user()->isDaerah())
+                            @if ($canAccess)
                                 <a href="{{ route('master.jabatan.jabatan.create') }}" class="btn btn-success btn-sm">
                                     <i data-feather="plus-circle" class="me-1"></i>Tambah Jabatan
                                 </a>
@@ -122,17 +135,27 @@
                                             <td>{{ $item->entitas->nama_entitas ?? '-' }}</td>
                                             <td>{{ $item->nama_jabatan }}</td>
                                             <td class="text-center">
-                                                <div class="btn-group">
-                                                    <a href="{{ route('master.jabatan.jabatan.edit', $item->id) }}"
-                                                        class="btn btn-outline-primary btn-sm"><i data-feather="edit-2"
-                                                            style="width: 14px;"></i></a>
-                                                    <form action="{{ route('master.jabatan.jabatan.destroy', $item->id) }}"
-                                                        method="POST" onsubmit="return confirm('Hapus jabatan ini?')">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i
-                                                                data-feather="trash-2" style="width: 14px;"></i></button>
-                                                    </form>
-                                                </div>
+                                                @if ($canAccess)
+                                                    <div class="btn-group">
+                                                        <a href="{{ route('master.jabatan.jabatan.edit', $item->id) }}"
+                                                            class="btn btn-outline-warning btn-sm">
+                                                            <i data-feather="edit-2" style="width: 14px;"></i>
+                                                        </a>
+                                                        <form
+                                                            action="{{ route('master.jabatan.jabatan.destroy', $item->id) }}"
+                                                            method="POST" onsubmit="return confirm('Hapus jabatan ini?')">
+                                                            @csrf @method('DELETE')
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm"><i
+                                                                    data-feather="trash-2"
+                                                                    style="width: 14px;"></i></button>
+                                                        </form>
+                                                    </div>
+                                                @else
+                                                    <span class="badge"
+                                                        style="background-color: #6c757d; color: white; font-weight: 500; padding: 5px 10px;">
+                                                        <i class="bi bi-lock-fill"></i> Restricted
+                                                    </span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty
@@ -147,13 +170,13 @@
                 </div>
             </div>
 
-            {{-- ============================ TAB JENIS JABATAN ============================ --}}
+            {{-- ============================ 3. TAB JENIS JABATAN ============================ --}}
             <div class="tab-pane fade" id="jenis" role="tabpanel">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-semibold mb-0">Data Jenis Jabatan</h5>
-                            @if (!Auth::user()->isDaerah())
+                            @if ($canAccess)
                                 <a href="{{ route('master.jabatan.jenis.create') }}" class="btn btn-success btn-sm">
                                     <i data-feather="plus-circle" class="me-1"></i>Tambah Jenis
                                 </a>
@@ -177,17 +200,28 @@
                                             <td>{{ $item->jabatan->nama_jabatan ?? '-' }}</td>
                                             <td>{{ $item->jenis_jabatan }}</td>
                                             <td class="text-center">
-                                                <div class="btn-group">
-                                                    <a href="{{ route('master.jabatan.jenis.edit', $item->id) }}"
-                                                        class="btn btn-outline-primary btn-sm"><i data-feather="edit-2"
-                                                            style="width: 14px;"></i></a>
-                                                    <form action="{{ route('master.jabatan.jenis.destroy', $item->id) }}"
-                                                        method="POST" onsubmit="return confirm('Hapus jenis ini?')">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i
-                                                                data-feather="trash-2" style="width: 14px;"></i></button>
-                                                    </form>
-                                                </div>
+                                                @if ($canAccess)
+                                                    <div class="btn-group">
+                                                        <a href="{{ route('master.jabatan.jenis.edit', $item->id) }}"
+                                                            class="btn btn-outline-warning btn-sm">
+                                                            <i data-feather="edit-2" style="width: 14px;"></i>
+                                                        </a>
+                                                        <form
+                                                            action="{{ route('master.jabatan.jenis.destroy', $item->id) }}"
+                                                            method="POST" onsubmit="return confirm('Hapus jenis ini?')">
+                                                            @csrf @method('DELETE')
+                                                            <button type="submit"
+                                                                class="btn btn-outline-danger btn-sm"><i
+                                                                    data-feather="trash-2"
+                                                                    style="width: 14px;"></i></button>
+                                                        </form>
+                                                    </div>
+                                                @else
+                                                    <span class="badge"
+                                                        style="background-color: #6c757d; color: white; font-weight: 500; padding: 5px 10px;">
+                                                        <i class="bi bi-lock-fill"></i> Restricted
+                                                    </span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty
@@ -202,13 +236,13 @@
                 </div>
             </div>
 
-            {{-- ============================ TAB GRADE JABATAN ============================ --}}
+            {{-- ============================ 4. TAB GRADE JABATAN ============================ --}}
             <div class="tab-pane fade" id="grade" role="tabpanel">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-semibold mb-0">Data Grade Jabatan</h5>
-                            @if (!Auth::user()->isDaerah())
+                            @if ($canAccess)
                                 <a href="{{ route('master.jabatan.grade.create') }}" class="btn btn-success btn-sm">
                                     <i data-feather="plus-circle" class="me-1"></i>Tambah Grade
                                 </a>
@@ -232,17 +266,28 @@
                                             <td>{{ $item->jenis->jenis_jabatan ?? '-' }}</td>
                                             <td>{{ $item->grade }}</td>
                                             <td class="text-center">
-                                                <div class="btn-group">
-                                                    <a href="{{ route('master.jabatan.grade.edit', $item->id) }}"
-                                                        class="btn btn-outline-primary btn-sm"><i data-feather="edit-2"
-                                                            style="width: 14px;"></i></a>
-                                                    <form action="{{ route('master.jabatan.grade.destroy', $item->id) }}"
-                                                        method="POST" onsubmit="return confirm('Hapus grade ini?')">
-                                                        @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i
-                                                                data-feather="trash-2" style="width: 14px;"></i></button>
-                                                    </form>
-                                                </div>
+                                                @if ($canAccess)
+                                                    <div class="btn-group">
+                                                        <a href="{{ route('master.jabatan.grade.edit', $item->id) }}"
+                                                            class="btn btn-outline-warning btn-sm">
+                                                            <i data-feather="edit-2" style="width: 14px;"></i>
+                                                        </a>
+                                                        <form
+                                                            action="{{ route('master.jabatan.grade.destroy', $item->id) }}"
+                                                            method="POST" onsubmit="return confirm('Hapus grade ini?')">
+                                                            @csrf @method('DELETE')
+                                                            <button type="submit"
+                                                                class="btn btn-outline-danger btn-sm"><i
+                                                                    data-feather="trash-2"
+                                                                    style="width: 14px;"></i></button>
+                                                        </form>
+                                                    </div>
+                                                @else
+                                                    <span class="badge"
+                                                        style="background-color: #6c757d; color: white; font-weight: 500; padding: 5px 10px;">
+                                                        <i class="bi bi-lock-fill"></i> Restricted
+                                                    </span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty
@@ -278,6 +323,12 @@
 
         .nav-tabs .nav-link {
             color: #000 !important;
+        }
+
+        /* Styling untuk badge Restricted agar abu-abu dan tulisan putih */
+        .badge.bg-secondary {
+            background-color: #6c757d !important;
+            color: #ffffff !important;
         }
     </style>
 @endpush
