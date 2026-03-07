@@ -52,17 +52,26 @@
                         {{-- 4. KINERJA TERAKHIR --}}
                         @if ($lastKinerja)
                             <div class="card bg-light border-0 p-3 mb-2 w-100" style="max-width: 280px;">
-                                <small class="text-muted d-block fw-bold mb-1"
-                                    style="font-size: 0.65rem; text-transform: uppercase;">
-                                    Hasil Kinerja Terakhir
-                                </small>
+                                {{-- Judul & Tanggal Penilaian --}}
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <small class="text-muted fw-bold"
+                                        style="font-size: 0.65rem; text-transform: uppercase;">
+                                        Hasil Kinerja Terakhir
+                                    </small>
+                                    <small class="text-secondary fw-semibold" style="font-size: 0.6rem;">
+                                        <i data-feather="calendar" style="width: 10px; height: 10px; margin-top: -2px;"></i>
+                                        {{ \Carbon\Carbon::parse($lastKinerja->tanggal_penilaian)->translatedFormat('d M Y') }}
+                                    </small>
+                                </div>
 
+                                {{-- Skor Total --}}
                                 <div
                                     class="display-6 fw-bold my-1 
-                        {{ $lastKinerja->nilai_total >= 75 ? 'text-primary' : ($lastKinerja->nilai_total >= 70 ? 'text-warning' : 'text-danger') }}">
+            {{ $lastKinerja->nilai_total >= 75 ? 'text-primary' : ($lastKinerja->nilai_total >= 70 ? 'text-warning' : 'text-danger') }}">
                                     {{ $lastKinerja->nilai_total }}
                                 </div>
 
+                                {{-- Rekomendasi --}}
                                 <span
                                     class="badge {{ $lastKinerja->nilai_total >= 75 ? 'bg-success' : ($lastKinerja->nilai_total >= 70 ? 'bg-warning text-dark' : 'bg-danger') }} mb-2 text-wrap">
                                     {{ $lastKinerja->rekomendasi }}
@@ -70,6 +79,7 @@
 
                                 <hr class="my-2 opacity-25">
 
+                                {{-- Status Tindak Lanjut --}}
                                 <div class="text-start mt-2">
                                     <small class="fw-bold d-block text-muted mb-1"
                                         style="font-size: 0.65rem; text-transform: uppercase;">
@@ -78,10 +88,19 @@
 
                                     @if ($lastKinerja->status_tindak_lanjut == 'sudah')
                                         <div class="p-2 rounded bg-white border border-success border-opacity-25 shadow-sm">
-                                            <span class="badge bg-success mb-1" style="font-size: 0.6rem;">
-                                                <i data-feather="check-circle" style="width:10px; height:10px;"></i>
-                                                TERVERIFIKASI
-                                            </span>
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="badge bg-success" style="font-size: 0.6rem;">
+                                                    <i data-feather="check-circle" style="width:10px; height:10px;"></i>
+                                                    TERVERIFIKASI
+                                                </span>
+                                                {{-- Tanggal Verifikasi/Tindak Lanjut --}}
+                                                @if ($lastKinerja->tanggal_tindak_lanjut)
+                                                    <small class="text-muted" style="font-size: 0.55rem;">
+                                                        {{ \Carbon\Carbon::parse($lastKinerja->tanggal_tindak_lanjut)->translatedFormat('d M Y') }}
+                                                    </small>
+                                                @endif
+                                            </div>
+
                                             <p class="mb-0 text-dark small fst-italic"
                                                 style="font-size: 0.75rem; line-height: 1.2;">
                                                 "{{ Str::limit($lastKinerja->deskripsi_tindak_lanjut, 100) }}"

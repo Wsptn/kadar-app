@@ -166,10 +166,9 @@
                                                     "{{ $k->deskripsi_tindak_lanjut }}"
                                                 </div>
                                                 <small class="text-muted d-block mt-2 text-end">
-                                                    <i data-feather="clock" style="width: 12px;"></i>
+                                                    <i data-feather="calendar" style="width: 12px;"></i>
                                                     Dicatat:
-                                                    {{ \Carbon\Carbon::parse($k->tanggal_tindak_lanjut)->translatedFormat('d F Y, H:i') }}
-                                                    WIB
+                                                    {{ \Carbon\Carbon::parse($k->tanggal_tindak_lanjut)->translatedFormat('d F Y') }}
                                                 </small>
                                             </div>
                                         @endif
