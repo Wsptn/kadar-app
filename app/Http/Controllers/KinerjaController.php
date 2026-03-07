@@ -53,9 +53,13 @@ class KinerjaController extends Controller
                 return redirect()->route('pokok.kinerja.index')
                     ->with('error', 'Tidak bisa input nilai diri sendiri, penilaian harus sesuai dengan struktur pesantren.');
             }
+            if ($target && $target->status == 'non_aktif') {
+                return redirect()->route('pokok.kinerja.index')
+                    ->with('error', 'Akses ditolak! Pengurus berstatus Non-Aktif tidak dapat dinilai kinerjanya.');
+            }
         }
 
-        $query = Pengurus::query();
+        $query = Pengurus::query()->where('status', 'aktif');
 
         if ($user->isAdmin()) {
         } elseif ($user->isBiktren()) {

@@ -188,10 +188,19 @@
                                         class="btn btn-sm btn-outline-info flex-fill" title="Lihat Detail Riwayat">
                                         <i data-feather="clock" style="width: 14px;"></i> Riwayat
                                     </a>
-                                    <a href="{{ route('pokok.kinerja.create', ['pengurus_id' => $p->id]) }}"
-                                        class="btn btn-sm btn-outline-success flex-fill" title="Input Nilai Baru">
-                                        Input <i data-feather="edit-3" style="width: 14px;" class="ms-1"></i>
-                                    </a>
+
+                                    {{-- Pengecekan Status Aktif/Non-Aktif --}}
+                                    @if ($p->status == 'aktif')
+                                        <a href="{{ route('pokok.kinerja.create', ['pengurus_id' => $p->id]) }}"
+                                            class="btn btn-sm btn-outline-success flex-fill" title="Input Nilai Baru">
+                                            Input <i data-feather="edit-3" style="width: 14px;" class="ms-1"></i>
+                                        </a>
+                                    @else
+                                        <button class="btn btn-sm btn-secondary flex-fill" disabled
+                                            title="Pengurus berstatus Non-Aktif">
+                                            <i data-feather="lock" style="width: 14px;" class="me-1"></i> Terkunci
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
                         </div>
