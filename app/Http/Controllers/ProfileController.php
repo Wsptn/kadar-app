@@ -23,7 +23,13 @@ class ProfileController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:4096', // Max 4MB
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:15360|dimensions:min_width=1080,min_height=1080',
+        ], [
+            // --- PESAN ERROR CUSTOM ---
+            'foto.max'        => 'Ukuran foto terlalu besar. Maksimal 15 MB.',
+            'foto.dimensions' => 'Resolusi foto kurang tajam. Minimal dimensi gambar adalah 1080 x 1080 piksel.',
+            'foto.image'      => 'File yang diunggah harus berupa file gambar.',
+            'foto.mimes'      => 'Format foto hanya boleh JPG, JPEG, atau PNG.',
         ]);
 
         // Update Nama

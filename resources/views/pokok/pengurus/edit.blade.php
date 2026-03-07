@@ -249,9 +249,7 @@
                     <hr class="my-4">
                     <h6 class="mb-3 fw-bold text-success">Data Pendukung</h6>
 
-                    {{-- ========================================================== --}}
                     {{-- FUNGSIONAL TUGAS (MULTI-SELECT CHECKBOX) --}}
-                    {{-- ========================================================== --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Fungsional Tugas (Bisa pilih lebih dari satu)</label>
                         <div class="card p-3 bg-light border">
@@ -297,7 +295,6 @@
                         </div>
                         <small class="text-muted fst-italic">*Centang tugas untuk mengaktifkan pilihan status.</small>
                     </div>
-                    {{-- ========================================================== --}}
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -370,10 +367,22 @@
 
                     {{-- FOTO --}}
                     <div class="mb-4">
-                        <label class="form-label fw-semibold">Foto Profil</label>
-                        <input type="file" name="foto" class="form-control">
-                        <small class="text-muted">Kosongkan jika tidak ingin mengubah foto.</small>
-                        <div class="mt-2">
+                        <label class="form-label fw-semibold" for="foto">Foto Profil</label>
+
+                        <input type="file" name="foto" id="foto" accept="image/jpeg, image/png, image/jpg"
+                            class="form-control @error('foto') is-invalid @enderror">
+
+                        <small class="text-muted d-block mt-1">
+                            <i data-feather="info" style="width: 14px; margin-top: -2px;"></i>
+                            Format: JPG, JPEG, PNG | Maks: 15 MB | Resolusi Min: 1080 x 1080 px <br>
+                            <span class="text-danger fw-bold">* Kosongkan jika tidak ingin mengubah foto.</span>
+                        </small>
+
+                        @error('foto')
+                            <div class="invalid-feedback fw-bold d-block">{{ $message }}</div>
+                        @enderror
+
+                        <div class="mt-3">
                             {!! tampilkanBerkas($pengurus->foto) !!}
                         </div>
                     </div>

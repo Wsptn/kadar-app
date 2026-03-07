@@ -140,6 +140,13 @@ class PengurusController extends Controller
             'jenis_jabatan_id'     => 'required|exists:jenis_jabatans,id',
             'grade_jabatan_id'     => 'required|exists:grade_jabatans,id',
             // Status tidak divalidasi karena default 'aktif'
+            'foto'                 => 'nullable|image|mimes:jpeg,png,jpg|max:15360|dimensions:min_width=1080,min_height=1080',
+        ], [
+            // --- PESAN ERROR CUSTOM AGAR BISA DIBACA USER ---
+            'foto.max'        => 'Ukuran foto terlalu besar. Maksimal 15 MB.',
+            'foto.dimensions' => 'Resolusi foto kurang tajam. Minimal dimensi gambar adalah 1080 x 1080 piksel.',
+            'foto.image'      => 'File yang diunggah harus berupa file gambar.',
+            'foto.mimes'      => 'Format foto hanya boleh JPG, JPEG, atau PNG.',
         ]);
 
         // LOGIK LOKASI
@@ -293,6 +300,12 @@ class PengurusController extends Controller
             'niup'   => 'required',
             'nama'   => 'required',
             // 'status' => 'required', // Status sudah dihandle di logic bawah
+            'foto'   => 'nullable|image|mimes:jpeg,png,jpg|max:15360|dimensions:min_width=1080,min_height=1080',
+        ], [
+            'foto.max'        => 'Ukuran foto terlalu besar. Maksimal 15 MB.',
+            'foto.dimensions' => 'Resolusi foto kurang tajam. Minimal dimensi gambar adalah 1080 x 1080 piksel.',
+            'foto.image'      => 'File yang diunggah harus berupa file gambar.',
+            'foto.mimes'      => 'Format foto hanya boleh JPG, JPEG, atau PNG.',
         ]);
 
         // 1. UPDATE DATA UTAMA
@@ -345,9 +358,7 @@ class PengurusController extends Controller
 
         $pengurus->save();
 
-        // ==========================================================
         // 2. LOGIKA SINKRONISASI TUGAS (RELASI)
-        // ==========================================================
 
         // Bersihkan dulu semua relasi lama di pivot
         $pengurus->fungsionalTugas()->detach();
@@ -376,9 +387,7 @@ class PengurusController extends Controller
                 $pengurus->fungsionalTugas()->attach($master->id_tugas, ['status' => $statusTugas]);
             }
 
-            // ======================================================
             // 3. SINKRONISASI KE TABEL SPESIFIK (Muallim/WaliAsuh)
-            // ======================================================
             $dataSync = [
                 'status' => $statusTugas,
                 'nama'   => $pengurus->nama,

@@ -361,12 +361,19 @@
                         {{-- Foto Profil --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Foto Profil (jpg/png)</label>
-                            <input type="file" name="foto"
+
+                            <input type="file" name="foto" id="foto"
+                                accept="image/jpeg, image/png, image/jpg"
                                 class="form-control @error('foto') is-invalid @enderror">
+
+                            <small class="text-muted d-block mt-1">
+                                <i data-feather="info" style="width: 14px; margin-top: -2px;"></i>
+                                Format: JPG, JPEG, PNG | Maks: 15 MB | Resolusi Min: 1080 x 1080 px
+                            </small>
+
                             @error('foto')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback fw-bold d-block">{{ $message }}</div>
                             @enderror
-                            <small class="text-muted">Format: jpg, jpeg, png. Maks: 4MB.</small>
                         </div>
 
                         {{-- Upload Berkas (Hanya Admin/Biktren) --}}
