@@ -6,6 +6,7 @@ use App\Models\Kinerja;
 use App\Models\Pengurus;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KinerjaController extends Controller
 {
@@ -218,5 +219,17 @@ class KinerjaController extends Controller
         }
 
         return redirect()->back()->with('error', 'Akses Ditolak.');
+    }
+    public function exportPdf($id)
+    {
+        // 1. Ambil data pengurus beserta riwayat kinerjanya
+        $pengurus = \App\Models\Pengurus::with('kinerja')->findOrFail($id);
+
+        // 2. Load view khusus PDF (kita buat di langkah 4)
+        $pdf = Pdf::loadView('pokok.kinerja.pdf', compact('pengurus'))
+            ->setPaper('a4', 'landscape'); // Menggunakan format Landscape agar tabel luas
+
+        // 3. Download filenya
+        return $pdf->download('Raport_Kinerja_' . str_replace(' ', '_', $pengurus->nama) . '.pdf');
     }
 }

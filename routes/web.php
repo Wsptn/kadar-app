@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/store', [KinerjaController::class, 'store'])->name('store');
         Route::get('/{id}/riwayat', [KinerjaController::class, 'show'])->name('show');
         Route::put('/{id}/tandai-sudah', [KinerjaController::class, 'markAsHandled'])->name('mark_handled');
+        Route::get('/{id}/export-pdf', [KinerjaController::class, 'exportPdf'])->name('export_pdf');
     });
 
 

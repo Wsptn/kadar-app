@@ -26,13 +26,25 @@
 @section('this-page-contain')
     <div class="container-fluid px-4">
         <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+
+            {{-- BAGIAN KIRI: Judul dan Nama Pengurus --}}
             <div>
                 <h2 class="mb-1">Riwayat Kinerja</h2>
                 <div class="text-muted">Pengurus: <strong class="text-success">{{ $pengurus->nama }}</strong></div>
             </div>
-            <a href="{{ route('pokok.kinerja.index') }}" class="btn btn-secondary btn-sm shadow-sm">
-                <i data-feather="arrow-left" class="me-1" style="width: 16px;"></i> Kembali
-            </a>
+
+            {{-- BAGIAN KANAN: Tombol Aksi --}}
+            <div class="d-flex gap-2">
+                <a href="{{ route('pokok.kinerja.export_pdf', $pengurus->id) }}" class="btn btn-danger btn-sm shadow-sm"
+                    target="_blank">
+                    <i data-feather="printer" class="me-1" style="width: 16px;"></i> Cetak PDF
+                </a>
+
+                <a href="{{ route('pokok.kinerja.index') }}" class="btn btn-secondary btn-sm shadow-sm">
+                    <i data-feather="arrow-left" class="me-1" style="width: 16px;"></i> Kembali
+                </a>
+            </div>
+
         </div>
 
         @if (session('success'))
