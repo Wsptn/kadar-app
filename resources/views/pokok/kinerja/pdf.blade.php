@@ -89,13 +89,24 @@
     <div class="header">
         <h2>RAPORT RIWAYAT KINERJA PENGURUS</h2>
         <p>Nama: <strong>{{ $pengurus->nama }}</strong> | NIUP: <strong>{{ $pengurus->niup ?? '-' }}</strong></p>
+        @if(request('triwulan') || request('tahun'))
+            <p style="color: #666; font-size: 11px;">
+                Filter: 
+                {{ request('triwulan') ? 'Triwulan ' . request('triwulan') : 'Semua Triwulan' }} 
+                | 
+                {{ request('tahun') ? 'Tahun ' . request('tahun') : 'Semua Tahun' }}
+            </p>
+        @endif
     </div>
 
     @forelse($pengurus->kinerja as $index => $k)
         <div
             style="background-color: #28a745; color: white; padding: 4px 8px; margin-top: 15px; font-weight: bold; font-size: 10px;">
-            Penilaian ke-{{ $index + 1 }} | Tanggal:
-            {{ \Carbon\Carbon::parse($k->tanggal_penilaian)->translatedFormat('d F Y') }}
+            Penilaian ke-{{ $index + 1 }} 
+            @if($k->triwulan && $k->tahun)
+                | Periode: Triwulan {{ $k->triwulan }} - {{ $k->tahun }}
+            @endif
+            | Tanggal: {{ \Carbon\Carbon::parse($k->tanggal_penilaian)->translatedFormat('d F Y') }}
         </div>
 
         <table>

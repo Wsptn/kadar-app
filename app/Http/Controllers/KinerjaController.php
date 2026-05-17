@@ -112,6 +112,8 @@ class KinerjaController extends Controller
         $rules = [
             'pengurus_id' => 'required',
             'tanggal_penilaian' => 'required|date',
+            'triwulan' => 'required|integer|min:1|max:4',
+            'tahun' => 'required|integer|min:2000',
         ];
         
         foreach ($instrumens as $instrumen) {
@@ -149,6 +151,8 @@ class KinerjaController extends Controller
         $kinerja = Kinerja::create([
             'pengurus_id' => $request->pengurus_id,
             'tanggal_penilaian' => $request->tanggal_penilaian,
+            'triwulan' => $request->triwulan,
+            'tahun' => $request->tahun,
             'nilai_total' => $total,
             'huruf_mutu' => $huruf,
             'rekomendasi' => $rekomendasi,
@@ -171,9 +175,15 @@ class KinerjaController extends Controller
     }
 
     // 4. HALAMAN RIWAYAT (DETAIL)
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $pengurus = Pengurus::with(['kinerja' => function ($q) {
+        $pengurus = Pengurus::with(['kinerja' => function ($q) use ($request) {
+            if ($request->filled('triwulan')) {
+                $q->where('triwulan', $request->triwulan);
+            }
+            if ($request->filled('tahun')) {
+                $q->where('tahun', $request->tahun);
+            }
             $q->with(['kinerjaDetails.instrumen'])->latest();
         }])->findOrFail($id);
 
@@ -212,10 +222,18 @@ class KinerjaController extends Controller
 
         return redirect()->back()->with('error', 'Akses Ditolak.');
     }
-    public function exportPdf($id)
+    public function exportPdf(Request $request, $id)
     {
-        // 1. Ambil data pengurus beserta riwayat kinerjanya
-        $pengurus = \App\Models\Pengurus::with(['kinerja.kinerjaDetails.instrumen'])->findOrFail($id);
+        // 1. Ambil data pengurus beserta riwayat kinerjanya, dengan filter
+        $pengurus = \App\Models\Pengurus::with(['kinerja' => function($q) use ($request) {
+            if ($request->filled('triwulan')) {
+                $q->where('triwulan', $request->triwulan);
+            }
+            if ($request->filled('tahun')) {
+                $q->where('tahun', $request->tahun);
+            }
+            $q->with(['kinerjaDetails.instrumen'])->latest();
+        }])->findOrFail($id);
 
         // 2. Load view khusus PDF (kita buat di langkah 4)
         $pdf = Pdf::loadView('pokok.kinerja.pdf', compact('pengurus'))

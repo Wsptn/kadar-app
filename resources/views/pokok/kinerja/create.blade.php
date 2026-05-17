@@ -8,7 +8,7 @@
                 <form action="{{ route('pokok.kinerja.store') }}" method="POST">
                     @csrf
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-bold">Nama Pengurus <span class="text-danger">*</span></label>
                             {{-- Dropdown otomatis terkunci jika $selected_id dikirim dari controller --}}
                             <select name="pengurus_id" class="form-select" required
@@ -26,10 +26,23 @@
                                     Pengurus otomatis terpilih.</small>
                             @endif
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">Tanggal Penilaian <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_penilaian" class="form-control" value="{{ date('Y-m-d') }}"
                                 required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Triwulan <span class="text-danger">*</span></label>
+                            <select name="triwulan" class="form-select" required>
+                                <option value="1" {{ ceil(date('m') / 3) == 1 ? 'selected' : '' }}>Triwulan 1 (Jan-Mar)</option>
+                                <option value="2" {{ ceil(date('m') / 3) == 2 ? 'selected' : '' }}>Triwulan 2 (Apr-Jun)</option>
+                                <option value="3" {{ ceil(date('m') / 3) == 3 ? 'selected' : '' }}>Triwulan 3 (Jul-Sep)</option>
+                                <option value="4" {{ ceil(date('m') / 3) == 4 ? 'selected' : '' }}>Triwulan 4 (Okt-Des)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Tahun <span class="text-danger">*</span></label>
+                            <input type="number" name="tahun" class="form-control" value="{{ date('Y') }}" required>
                         </div>
                     </div>
 

@@ -35,7 +35,7 @@
 
             {{-- BAGIAN KANAN: Tombol Aksi --}}
             <div class="d-flex gap-2">
-                <a href="{{ route('pokok.kinerja.export_pdf', $pengurus->id) }}" class="btn btn-danger btn-sm shadow-sm"
+                <a href="{{ route('pokok.kinerja.export_pdf', $pengurus->id) }}?triwulan={{ request('triwulan') }}&tahun={{ request('tahun') }}" class="btn btn-danger btn-sm shadow-sm"
                     target="_blank">
                     <i data-feather="printer" class="me-1" style="width: 16px;"></i> Cetak PDF
                 </a>
@@ -56,11 +56,39 @@
 
         <div class="card shadow-sm border-0">
             <div class="card-body">
+                
+                {{-- FILTER FORM --}}
+                <div class="mb-3 d-flex justify-content-end">
+                    <form action="{{ route('pokok.kinerja.show', $pengurus->id) }}" method="GET" class="d-flex gap-2 align-items-center">
+                        <select name="triwulan" class="form-select form-select-sm" style="width: auto;">
+                            <option value="">Semua Triwulan</option>
+                            <option value="1" {{ request('triwulan') == '1' ? 'selected' : '' }}>Triwulan 1</option>
+                            <option value="2" {{ request('triwulan') == '2' ? 'selected' : '' }}>Triwulan 2</option>
+                            <option value="3" {{ request('triwulan') == '3' ? 'selected' : '' }}>Triwulan 3</option>
+                            <option value="4" {{ request('triwulan') == '4' ? 'selected' : '' }}>Triwulan 4</option>
+                        </select>
+                        <select name="tahun" class="form-select form-select-sm" style="width: auto;">
+                            <option value="">Semua Tahun</option>
+                            @php
+                                $currentYear = date('Y');
+                                $startYear = 2024; 
+                            @endphp
+                            @for($i = $currentYear; $i >= $startYear; $i--)
+                                <option value="{{ $i }}" {{ request('tahun') == $i ? 'selected' : '' }}>{{ $i }}</option>
+                            @endfor
+                        </select>
+                        <button type="submit" class="btn btn-success btn-sm"><i data-feather="filter" style="width: 14px;"></i> Filter</button>
+                        @if(request('triwulan') || request('tahun'))
+                            <a href="{{ route('pokok.kinerja.show', $pengurus->id) }}" class="btn btn-secondary btn-sm"><i data-feather="x" style="width: 14px;"></i> Reset</a>
+                        @endif
+                    </form>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered align-middle text-center" style="font-size: 0.9rem;">
                         <thead class="table-dark">
                             <tr>
-                                <th>Tgl Penilaian</th>
+                                <th>Periode & Tgl Penilaian</th>
                                 <th style="width: 130px;">Nilai & Detail</th>
                                 <th style="width: 80px;">Mutu</th>
                                 <th>Rekomendasi</th>
@@ -72,7 +100,16 @@
                             @forelse($pengurus->kinerja as $k)
                                 {{-- BARIS UTAMA --}}
                                 <tr>
-                                    <td>{{ \Carbon\Carbon::parse($k->tanggal_penilaian)->format('d M Y') }}</td>
+                                    <td>
+                                        <div class="fw-bold mb-1" style="font-size: 0.9rem;">
+                                            @if($k->triwulan && $k->tahun)
+                                                Triwulan {{ $k->triwulan }} - {{ $k->tahun }}
+                                            @else
+                                                -
+                                            @endif
+                                        </div>
+                                        <small class="text-muted">{{ \Carbon\Carbon::parse($k->tanggal_penilaian)->format('d M Y') }}</small>
+                                    </td>
 
                                     <td>
                                         <span class="badge bg-success fs-6 mb-2">{{ $k->nilai_total }}</span><br>
