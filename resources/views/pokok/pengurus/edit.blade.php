@@ -126,42 +126,19 @@
                         @endif
                     </div>
 
-                    {{-- ENTITAS DAERAH (MANUAL LIST) --}}
+                    {{-- ENTITAS DAERAH (DYNAMIC) --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Entitas Daerah</label>
-                        <select name="entitas_daerah" class="form-select @error('entitas_daerah') is-invalid @enderror">
+                        <select name="entitas_daerah_id" class="form-select @error('entitas_daerah_id') is-invalid @enderror">
                             <option value="">-- Pilih Entitas Daerah (Opsional) --</option>
-                            @php
-                                $opsiEntitas = [
-                                    'LPBA',
-                                    'Idadiyah SLTP',
-                                    'Teknologi',
-                                    'BPK & Awwaliyah',
-                                    'Pondok Mahasiswa (POMAS)',
-                                    'SPThree (KIP)',
-                                    'Bahasa',
-                                    'MINM',
-                                    'LIPS',
-                                    'MAK',
-                                    'MIPA SMP & SMA',
-                                    'MIPA MANJ',
-                                    'Diniyah',
-                                    'Haddamiyah',
-                                    'IPS',
-                                    'Tahsin (PPIQ)',
-                                    'Tahfidz (PPIQ)',
-                                    'Awwaliyah',
-                                    'Idadiyah SLTA',
-                                ];
-                            @endphp
-                            @foreach ($opsiEntitas as $op)
-                                <option value="{{ $op }}"
-                                    {{ old('entitas_daerah', $pengurus->entitas_daerah) == $op ? 'selected' : '' }}>
-                                    {{ $op }}
+                            @foreach ($entitasDaerahs as $ed)
+                                <option value="{{ $ed->id }}"
+                                    {{ old('entitas_daerah_id', $pengurus->entitas_daerah_id) == $ed->id ? 'selected' : '' }}>
+                                    {{ $ed->nama_entitas }}
                                 </option>
                             @endforeach
                         </select>
-                        @error('entitas_daerah')
+                        @error('entitas_daerah_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

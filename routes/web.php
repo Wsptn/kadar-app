@@ -131,6 +131,16 @@ Route::middleware('auth')->group(function () {
             })->name('ajax.kamar');
         });
 
+        // --- ENTITAS DAERAH ---
+        Route::prefix('entitas_daerah')->name('entitas_daerah.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\EntitasDaerahController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\EntitasDaerahController::class, 'create'])->name('create');
+            Route::post('/store', [\App\Http\Controllers\EntitasDaerahController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\EntitasDaerahController::class, 'edit'])->name('edit');
+            Route::put('/{id}/update', [\App\Http\Controllers\EntitasDaerahController::class, 'update'])->name('update');
+            Route::delete('/{id}/destroy', [\App\Http\Controllers\EntitasDaerahController::class, 'destroy'])->name('destroy');
+        });
+
         // --- JABATAN & KELEMBAGAAN ---
         Route::prefix('jabatan')->name('jabatan.')->group(function () {
             Route::get('/', [JabatanController::class, 'index'])->name('index');

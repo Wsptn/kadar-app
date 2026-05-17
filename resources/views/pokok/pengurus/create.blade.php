@@ -97,68 +97,21 @@
                             @enderror
                         </div>
 
-                        {{-- === ENTITAS DAERAH (MANUAL LIST) === --}}
+                        {{-- === ENTITAS DAERAH (DYNAMIC) === --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Entitas Daerah</label>
 
-                            <select name="entitas_daerah" class="form-select @error('entitas_daerah') is-invalid @enderror">
+                            <select name="entitas_daerah_id" class="form-select @error('entitas_daerah_id') is-invalid @enderror">
                                 <option value="">-- Pilih Entitas Daerah (Opsional) --</option>
 
-                                <option value="LPBA" {{ old('entitas_daerah') == 'LPBA' ? 'selected' : '' }}>LPBA
-                                </option>
-                                <option value="Idadiyah SLTP"
-                                    {{ old('entitas_daerah') == 'Idadiyah SLTP' ? 'selected' : '' }}>Idadiyah SLTP
-                                </option>
-                                <option value="Teknologi" {{ old('entitas_daerah') == 'Teknologi' ? 'selected' : '' }}>
-                                    Teknologi
-                                </option>
-                                <option value="BPK & Awwaliyah"
-                                    {{ old('entitas_daerah') == 'BPK & Awwaliyah' ? 'selected' : '' }}>BPK & Awwaliyah
-                                </option>
-                                <option value="Pondok Mahasiswa (POMAS)"
-                                    {{ old('entitas_daerah') == 'Pondok Mahasiswa (POMAS)' ? 'selected' : '' }}>Pondok
-                                    Mahasiswa (POMAS)
-                                </option>
-                                <option value="SPThree (KIP)"
-                                    {{ old('entitas_daerah') == 'SPThree (KIP)' ? 'selected' : '' }}>SPThree (KIP)
-                                </option>
-                                <option value="Bahasa" {{ old('entitas_daerah') == 'Bahasa' ? 'selected' : '' }}>Bahasa
-                                </option>
-                                <option value="MINM" {{ old('entitas_daerah') == 'MINM' ? 'selected' : '' }}>MINM
-                                </option>
-                                <option value="LIPS" {{ old('entitas_daerah') == 'LIPS' ? 'selected' : '' }}>LIPS
-                                </option>
-                                <option value="MAK" {{ old('entitas_daerah') == 'MAK' ? 'selected' : '' }}>MAK
-                                </option>
-                                <option value="MIPA SMP & SMA"
-                                    {{ old('entitas_daerah') == 'MIPA SMP & SMA' ? 'selected' : '' }}>MIPA SMP & SMA
-                                </option>
-                                <option value="MIPA MANJ" {{ old('entitas_daerah') == 'MIPA MANJ' ? 'selected' : '' }}>MIPA
-                                    MANJ
-                                </option>
-                                <option value="Diniyah" {{ old('entitas_daerah') == 'Diniyah' ? 'selected' : '' }}>Diniyah
-                                </option>
-                                <option value="Haddamiyah" {{ old('entitas_daerah') == 'Haddamiyah' ? 'selected' : '' }}>
-                                    Haddamiyah
-                                </option>
-                                <option value="IPS" {{ old('entitas_daerah') == 'IPS' ? 'selected' : '' }}>IPS
-                                </option>
-                                <option value="Tahsin (PPIQ)"
-                                    {{ old('entitas_daerah') == 'Tahsin (PPIQ)' ? 'selected' : '' }}>Tahsin (PPIQ)
-                                </option>
-                                <option value="Tahfidz (PPIQ)"
-                                    {{ old('entitas_daerah') == 'Tahfidz (PPIQ)' ? 'selected' : '' }}>Tahfidz (PPIQ)
-                                </option>
-                                <option value="Awwaliyah" {{ old('entitas_daerah') == 'Awwaliyah' ? 'selected' : '' }}>
-                                    Awwaliyah
-                                </option>
-                                <option value="Idadiyah SLTA"
-                                    {{ old('entitas_daerah') == 'Idadiyah SLTA' ? 'selected' : '' }}>Idadiyah SLTA
-                                </option>
-                                {{-- Tambahkan opsi lain jika perlu --}}
+                                @foreach ($entitasDaerahs as $ed)
+                                    <option value="{{ $ed->id }}" {{ old('entitas_daerah_id') == $ed->id ? 'selected' : '' }}>
+                                        {{ $ed->nama_entitas }}
+                                    </option>
+                                @endforeach
                             </select>
 
-                            @error('entitas_daerah')
+                            @error('entitas_daerah_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

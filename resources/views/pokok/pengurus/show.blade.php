@@ -157,7 +157,7 @@
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Entitas Daerah</div>
-                        <div class="col-sm-8">: {{ $pengurus->entitas_daerah ?? '-' }}</div>
+                        <div class="col-sm-8">: {{ $pengurus->entitasDaerah->nama_entitas ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Kamar</div>

@@ -1,0 +1,39 @@
+name: Deploy ke Server
+
+on:
+  push:
+    branches:
+      - main # Akan jalan otomatis setiap push ke branch main
+
+jobs:
+  deploy:
+    runs-on: self-hosted # Menggunakan robot yang akan kita pasang di VPS
+
+    steps:
+      - name: 1. Mulai Auto-Deploy
+        run: echo "🚀 Memulai update kodingan dan database Laravel..."
+
+      - name: 2. Tarik Kodingan Terbaru (Git Pull)
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
+      - name: 3. Install Library PHP (Composer)
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: 4. Update Database (Migration Otomatis)
+        run: php artisan migrate --force
+
+      - name: 5. Clear & Cache Ulang Konfigurasi
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: 6. Restart Server (Opsional)
+        # Jika menggunakan PHP-FPM dan Nginx, sesuaikan versi PHP (contoh php8.2-fpm)
+        # run: sudo systemctl restart php8.2-fpm
+        run: echo "Server direstart (jika diperlukan)"
+
+      - name: 7. Selesai
+        run: echo "🎉 Server dan database Laravel berhasil diperbarui!"

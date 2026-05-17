@@ -12,6 +12,7 @@ use App\Models\Kamar;
 use App\Models\MasterFungsionalTugas;
 use App\Models\MasterTugasEksternal;
 use App\Models\MasterTugasInternal;
+use App\Models\EntitasDaerah;
 use App\Models\Pendidikan;
 use App\Models\Pengurus;
 use App\Models\Wilayah;
@@ -46,7 +47,7 @@ class PengurusController extends Controller
             $query->where('wilayah_id', $request->wilayah);
         }
         if ($request->filled('daerah')) $query->where('daerah_id', $request->daerah);
-        if ($request->filled('entitas_daerah')) $query->where('entitas_daerah', $request->entitas_daerah);
+        if ($request->filled('entitas_daerah_id')) $query->where('entitas_daerah_id', $request->entitas_daerah_id);
         if ($request->filled('entitas')) $query->where('entitas_id', $request->entitas);
         if ($request->filled('jabatan')) $query->where('jabatan_id', $request->jabatan);
 
@@ -89,6 +90,7 @@ class PengurusController extends Controller
         $jabatanList      = Jabatan::orderBy('nama_jabatan')->get();
         $jenisJabatanList = JenisJabatan::orderBy('jenis_jabatan')->get();
         $gradeJabatanList = GradeJabatan::orderBy('grade')->get();
+        $entitasDaerahList = EntitasDaerah::orderBy('nama_entitas')->get();
 
         return view('pokok.pengurus.index', compact(
             'pengurus',
@@ -102,7 +104,8 @@ class PengurusController extends Controller
             'entitasList',
             'jabatanList',
             'jenisJabatanList',
-            'gradeJabatanList'
+            'gradeJabatanList',
+            'entitasDaerahList'
         ));
     }
 
@@ -120,6 +123,7 @@ class PengurusController extends Controller
             'rangkapEksternals' => MasterTugasEksternal::orderBy('eksternal')->get(),
             'pendidikans'       => Pendidikan::orderBy('nama_pendidikan')->get(),
             'angkatans'         => Angkatan::orderBy('angkatan')->get(),
+            'entitasDaerahs'    => EntitasDaerah::orderBy('nama_entitas')->get(),
         ]);
     }
 
@@ -180,7 +184,7 @@ class PengurusController extends Controller
             'nama'                 => $request->nama,
             'wilayah_id'           => $wilayahId,
             'daerah_id'            => $daerahId,
-            'entitas_daerah'       => $request->entitas_daerah,
+            'entitas_daerah_id'    => $request->entitas_daerah_id,
             'kamar_id'             => $request->kamar_id,
             'entitas_id'           => $request->entitas_id,
             'jabatan_id'           => $request->jabatan_id,
@@ -284,6 +288,7 @@ class PengurusController extends Controller
             'rangkapEksternals' => MasterTugasEksternal::orderBy('eksternal')->get(),
             'pendidikans'       => Pendidikan::orderBy('nama_pendidikan')->get(),
             'angkatans'         => Angkatan::orderBy('angkatan')->get(),
+            'entitasDaerahs'    => EntitasDaerah::orderBy('nama_entitas')->get(),
         ]);
     }
 
@@ -312,7 +317,7 @@ class PengurusController extends Controller
         $pengurus->niup                 = $request->niup;
         $pengurus->nama                 = $request->nama;
         $pengurus->kamar_id             = $request->kamar_id;
-        $pengurus->entitas_daerah       = $request->entitas_daerah;
+        $pengurus->entitas_daerah_id    = $request->entitas_daerah_id;
         $pengurus->entitas_id           = $request->entitas_id;
         $pengurus->jabatan_id           = $request->jabatan_id;
         $pengurus->jenis_jabatan_id     = $request->jenis_jabatan_id;

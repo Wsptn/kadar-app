@@ -60,6 +60,13 @@
                 </a>
             </li>
 
+            <li class="sidebar-item {{ request()->routeIs('master.entitas_daerah.*') ? 'active' : '' }}">
+                <a class="sidebar-link" href="{{ route('master.entitas_daerah.index') }}">
+                    <i class="align-middle" data-feather="map"></i>
+                    <span class="align-middle">Master Entitas Daerah</span>
+                </a>
+            </li>
+
             <li class="sidebar-item {{ request()->routeIs('master.jabatan.*') ? 'active' : '' }}">
                 <a class="sidebar-link" href="{{ route('master.jabatan.index') }}">
                     <i class="align-middle" data-feather="briefcase"></i>

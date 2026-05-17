@@ -113,35 +113,12 @@
                         @endif
 
                         {{-- 3. ENTITAS DAERAH --}}
-                        <select name="entitas_daerah" class="form-select filter-select auto-submit">
+                        <select name="entitas_daerah_id" class="form-select filter-select auto-submit">
                             <option value="">-- Entitas Daerah --</option>
-                            @php
-                                $opsiEntitas = [
-                                    'LPBA',
-                                    'Idadiyah SLTP',
-                                    'Teknologi',
-                                    'BPK & Awwaliyah',
-                                    'Pondok Mahasiswa (POMAS)',
-                                    'SPThree (KIP)',
-                                    'Bahasa',
-                                    'MINM',
-                                    'LIPS',
-                                    'MAK',
-                                    'MIPA SMP & SMA',
-                                    'MIPA MANJ',
-                                    'Diniyah',
-                                    'Haddamiyah',
-                                    'IPS',
-                                    'Tahsin (PPIQ)',
-                                    'Tahfidz (PPIQ)',
-                                    'Awwaliyah',
-                                    'Idadiyah SLTA',
-                                ];
-                            @endphp
-                            @foreach ($opsiEntitas as $op)
-                                <option value="{{ $op }}"
-                                    {{ request('entitas_daerah') == $op ? 'selected' : '' }}>
-                                    {{ $op }}
+                            @foreach ($entitasDaerahList as $ed)
+                                <option value="{{ $ed->id }}"
+                                    {{ request('entitas_daerah_id') == $ed->id ? 'selected' : '' }}>
+                                    {{ $ed->nama_entitas }}
                                 </option>
                             @endforeach
                         </select>

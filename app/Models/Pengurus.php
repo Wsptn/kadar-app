@@ -13,7 +13,7 @@ class Pengurus extends Model
         'nama',
         'wilayah_id',
         'daerah_id',
-        'entitas_daerah',
+        'entitas_daerah_id',
         'kamar_id',
         'entitas_id',
         'jabatan_id',
@@ -45,6 +45,11 @@ class Pengurus extends Model
     public function daerah()
     {
         return $this->belongsTo(Daerah::class, 'daerah_id');
+    }
+
+    public function entitasDaerah()
+    {
+        return $this->belongsTo(EntitasDaerah::class, 'entitas_daerah_id');
     }
 
     public function kamar()

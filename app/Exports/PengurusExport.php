@@ -42,8 +42,8 @@ class PengurusExport implements FromCollection, WithHeadings
         if ($this->request->filled('daerah')) {
             $query->where('daerah_id', $this->request->daerah);
         }
-        if ($this->request->filled('entitas_daerah')) {
-            $query->where('entitas_daerah', $this->request->entitas_daerah);
+        if ($this->request->filled('entitas_daerah_id')) {
+            $query->where('entitas_daerah_id', $this->request->entitas_daerah_id);
         }
         if ($this->request->filled('entitas')) {
             $query->where('entitas_id', $this->request->entitas);
@@ -108,7 +108,7 @@ class PengurusExport implements FromCollection, WithHeadings
 
                 'wilayah'             => $p->wilayah->nama_wilayah ?? '',
                 'daerah'              => $p->daerah->nama_daerah ?? '',
-                'entitas_daerah'      => $p->entitas_daerah ?? '',
+                'entitas_daerah'      => $p->entitasDaerah->nama_entitas ?? '',
                 'kamar'               => $p->kamar->nomor_kamar ?? '',
                 'entitas'             => $p->entitas->nama_entitas ?? '',
                 'jabatan'             => $p->jabatan->nama_jabatan ?? '',
