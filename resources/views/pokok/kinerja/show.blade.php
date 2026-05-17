@@ -208,86 +208,30 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {{-- Aspek 1 --}}
-                                                    <tr>
-                                                        <td rowspan="2" class="fw-bold bg-light">1. Kedisiplinan dan
-                                                            Kehadiran</td>
-                                                        <td>Disiplin Waktu (13%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_disiplin_waktu < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_disiplin_waktu }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Kehadiran/Tanggung Jawab (11%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_tanggung_jawab_izin < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_tanggung_jawab_izin }}</td>
-                                                    </tr>
+                                                    @php
+                                                        $groupedDetails = $k->kinerjaDetails->groupBy(function($detail) {
+                                                            return $detail->instrumen->aspek ?? 'Lainnya';
+                                                        });
+                                                        $noAspek = 1;
+                                                    @endphp
 
-                                                    {{-- Aspek 2 --}}
-                                                    <tr>
-                                                        <td rowspan="2" class="fw-bold bg-light">2. Tanggung Jawab dan
-                                                            Loyalitas</td>
-                                                        <td>Penyelesaian Tugas (12%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_selesai_tugas < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_selesai_tugas }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Loyalitas (8%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_loyalitas < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_loyalitas }}</td>
-                                                    </tr>
-
-                                                    {{-- Aspek 3 --}}
-                                                    <tr>
-                                                        <td rowspan="2" class="fw-bold bg-light">3. Akhlak dan
-                                                            Keteladanan</td>
-                                                        <td>Akhlak (14%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_akhlak < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_akhlak }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Keteladanan (12%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_contoh < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_contoh }}</td>
-                                                    </tr>
-
-                                                    {{-- Aspek 4 --}}
-                                                    <tr>
-                                                        <td rowspan="2" class="fw-bold bg-light">4. Kinerja dan
-                                                            Inisiatif
-                                                        </td>
-                                                        <td>Tupoksi (11%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_tupoksi < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_tupoksi }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Komunikasi (7%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_komunikasi < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_komunikasi }}</td>
-                                                    </tr>
-
-                                                    {{-- Aspek 5 --}}
-                                                    <tr>
-                                                        <td rowspan="2" class="fw-bold bg-light">5. Kepemimpinan dan
-                                                            Kerja Sama</td>
-                                                        <td>Koordinasi (7%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_koordinasi < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_koordinasi }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Kebersamaan (5%)</td>
-                                                        <td
-                                                            class="text-center fw-bold fs-6 {{ $k->skor_kebersamaan < 60 ? 'text-danger' : 'text-success' }}">
-                                                            {{ $k->skor_kebersamaan }}</td>
-                                                    </tr>
+                                                    @forelse($groupedDetails as $aspek => $details)
+                                                        @foreach($details as $index => $detail)
+                                                            <tr>
+                                                                @if($index == 0)
+                                                                    <td rowspan="{{ count($details) }}" class="fw-bold bg-light">{{ $noAspek++ }}. {{ $aspek }}</td>
+                                                                @endif
+                                                                <td>{{ $detail->instrumen->indikator ?? '-' }} ({{ $detail->instrumen->bobot ?? 0 }}%)</td>
+                                                                <td class="text-center fw-bold fs-6 {{ $detail->skor < 60 ? 'text-danger' : 'text-success' }}">
+                                                                    {{ $detail->skor }}
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    @empty
+                                                        <tr>
+                                                            <td colspan="3" class="text-center text-muted">Detail skor tidak tersedia.</td>
+                                                        </tr>
+                                                    @endforelse
                                                 </tbody>
                                             </table>
                                         </div>

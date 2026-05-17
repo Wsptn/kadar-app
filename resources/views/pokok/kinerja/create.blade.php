@@ -46,124 +46,33 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {{-- ASPEK 1 --}}
-                                <tr>
-                                    <td rowspan="2" class="text-center fw-bold fs-5">1</td>
-                                    <td rowspan="2" class="fw-bold bg-light">Kedisiplinan dan Kehadiran</td>
-                                    <td>
-                                        <strong>Kedisiplinan Waktu</strong><br>
-                                        <small class="text-muted">Tepat waktu dalam mengikuti dan melaksanakan tugas sesuai
-                                            dengan kalender kegiatan.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">13%</td>
-                                    <td><input type="number" name="skor_disiplin_waktu" class="form-control text-center"
-                                            min="1" max="100" placeholder="0" required></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Kehadiran (Tanggung Jawab)</strong><br>
-                                        <small class="text-muted">Tidak meninggalkan tanggung jawab tanpa izin.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">11%</td>
-                                    <td><input type="number" name="skor_tanggung_jawab_izin"
-                                            class="form-control text-center" min="1" max="100" placeholder="0"
-                                            required></td>
-                                </tr>
+                                @php
+                                    // Kelompokkan instrumen berdasarkan aspek
+                                    $groupedInstrumens = $instrumens->groupBy('aspek');
+                                    $no = 1;
+                                @endphp
 
-                                {{-- ASPEK 2 --}}
-                                <tr>
-                                    <td rowspan="2" class="text-center fw-bold fs-5">2</td>
-                                    <td rowspan="2" class="fw-bold bg-light">Tanggung Jawab dan Loyalitas</td>
-                                    <td>
-                                        <strong>Penyelesaian Tugas</strong><br>
-                                        <small class="text-muted">Menyelesaikan tugas sesuai waktu yang telah
-                                            direncanakan.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">12%</td>
-                                    <td><input type="number" name="skor_selesai_tugas" class="form-control text-center"
-                                            min="1" max="100" placeholder="0" required></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Loyalitas</strong><br>
-                                        <small class="text-muted">Menunjukkan loyalitas terhadap kebutuhan daerah, wilayah
-                                            dan pesantren.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">8%</td>
-                                    <td><input type="number" name="skor_loyalitas" class="form-control text-center"
-                                            min="1" max="100" placeholder="0" required></td>
-                                </tr>
-
-                                {{-- ASPEK 3 --}}
-                                <tr>
-                                    <td rowspan="2" class="text-center fw-bold fs-5">3</td>
-                                    <td rowspan="2" class="fw-bold bg-light">Akhlak dan Keteladanan</td>
-                                    <td>
-                                        <strong>Akhlak</strong><br>
-                                        <small class="text-muted">Berperilaku sopan, berakhlak baik dan mengikuti semua
-                                            bentuk aturan pesantren.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">14%</td>
-                                    <td><input type="number" name="skor_akhlak" class="form-control text-center"
-                                            min="1" max="100" placeholder="0" required></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Keteladanan</strong><br>
-                                        <small class="text-muted">Menjadi contoh bagi santri dan sesama pengurus.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">12%</td>
-                                    <td><input type="number" name="skor_contoh" class="form-control text-center"
-                                            min="1" max="100" placeholder="0" required></td>
-                                </tr>
-
-                                {{-- ASPEK 4 --}}
-                                <tr>
-                                    <td rowspan="2" class="text-center fw-bold fs-5">4</td>
-                                    <td rowspan="2" class="fw-bold bg-light">Kinerja dan Inisiatif</td>
-                                    <td>
-                                        <strong>Tupoksi</strong><br>
-                                        <small class="text-muted">Bekerja sesuai tupoksi yang telah di tentukan oleh Kepala
-                                            Biro Kepesantrenan.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">11%</td>
-                                    <td><input type="number" name="skor_tupoksi" class="form-control text-center"
-                                            min="1" max="100" placeholder="0" required></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Komunikasi</strong><br>
-                                        <small class="text-muted">Mampu mengkomunikasikan ide secara lisan maupun tertulis
-                                            sehingga dipahami pengurus lain.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">7%</td>
-                                    <td><input type="number" name="skor_komunikasi" class="form-control text-center"
-                                            min="1" max="100" placeholder="0" required></td>
-                                </tr>
-
-                                {{-- ASPEK 5 --}}
-                                <tr>
-                                    <td rowspan="2" class="text-center fw-bold fs-5">5</td>
-                                    <td rowspan="2" class="fw-bold bg-light">Kepemimpinan dan Kerja Sama</td>
-                                    <td>
-                                        <strong>Koordinasi</strong><br>
-                                        <small class="text-muted">Mampu mengatur diri dan berkoordinasi secara utuh dengan
-                                            divisi lain dan satuan kerja terkait.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">7%</td>
-                                    <td><input type="number" name="skor_koordinasi" class="form-control text-center"
-                                            min="1" max="100" placeholder="0" required></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Kebersamaan</strong><br>
-                                        <small class="text-muted">Membangun kebersamaan sesama pengurus
-                                            Wilayah/Daerah.</small>
-                                    </td>
-                                    <td class="text-center fw-bold">5%</td>
-                                    <td><input type="number" name="skor_kebersamaan" class="form-control text-center"
-                                            min="1" max="100" placeholder="0" required></td>
-                                </tr>
+                                @forelse ($groupedInstrumens as $aspek => $items)
+                                    @foreach ($items as $index => $item)
+                                        <tr>
+                                            @if ($index == 0)
+                                                <td rowspan="{{ count($items) }}" class="text-center fw-bold fs-5">{{ $no++ }}</td>
+                                                <td rowspan="{{ count($items) }}" class="fw-bold bg-light">{{ $aspek }}</td>
+                                            @endif
+                                            <td>
+                                                <strong>{{ $item->indikator }}</strong><br>
+                                                <small class="text-muted">{{ $item->keterangan }}</small>
+                                            </td>
+                                            <td class="text-center fw-bold">{{ $item->bobot }}%</td>
+                                            <td><input type="number" name="skor_{{ $item->id }}" class="form-control text-center"
+                                                    min="0" max="100" placeholder="0" required></td>
+                                        </tr>
+                                    @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Data instrumen belum tersedia. Silakan atur di menu Master Instrumen.</td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

@@ -5,20 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Kinerja extends Model
+class MasterInstrumen extends Model
 {
     use HasFactory;
 
     protected $guarded = [];
 
-
-    public function pengurus()
-    {
-        return $this->belongsTo(Pengurus::class, 'pengurus_id');
-    }
-
     public function kinerjaDetails()
     {
-        return $this->hasMany(KinerjaDetail::class, 'kinerja_id');
+        return $this->hasMany(KinerjaDetail::class, 'instrumen_id');
     }
 }

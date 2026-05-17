@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Kinerja;
 use App\Models\Pengurus;
+use App\Models\MasterInstrumen;
+use App\Models\KinerjaDetail;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -90,7 +92,9 @@ class KinerjaController extends Controller
                 ->with('error', 'Akses Ditolak: Anda tidak memiliki wewenang untuk menilai pengurus ini.');
         }
 
-        return view('pokok.kinerja.create', compact('pengurus', 'selected_id'));
+        $instrumens = MasterInstrumen::where('status', 'aktif')->orderBy('aspek')->orderBy('id')->get();
+
+        return view('pokok.kinerja.create', compact('pengurus', 'selected_id', 'instrumens'));
     }
 
     // 3. PROSES SIMPAN NILAI
@@ -103,32 +107,25 @@ class KinerjaController extends Controller
             return redirect()->route('pokok.kinerja.index')
                 ->with('error', 'Gagal Menyimpan: Tidak bisa input nilai diri sendiri, tindakan mencurigakan terdeteksi!');
         }
-        $request->validate([
+
+        $instrumens = MasterInstrumen::where('status', 'aktif')->get();
+        $rules = [
             'pengurus_id' => 'required',
             'tanggal_penilaian' => 'required|date',
-            'skor_disiplin_waktu' => 'required|numeric|min:0|max:100',
-            'skor_tanggung_jawab_izin' => 'required|numeric|min:0|max:100',
-            'skor_selesai_tugas' => 'required|numeric|min:0|max:100',
-            'skor_loyalitas' => 'required|numeric|min:0|max:100',
-            'skor_akhlak' => 'required|numeric|min:0|max:100',
-            'skor_contoh' => 'required|numeric|min:0|max:100',
-            'skor_tupoksi' => 'required|numeric|min:0|max:100',
-            'skor_komunikasi' => 'required|numeric|min:0|max:100',
-            'skor_koordinasi' => 'required|numeric|min:0|max:100',
-            'skor_kebersamaan' => 'required|numeric|min:0|max:100',
-        ]);
+        ];
+        
+        foreach ($instrumens as $instrumen) {
+            $rules['skor_' . $instrumen->id] = 'required|numeric|min:0|max:100';
+        }
+
+        $request->validate($rules);
 
         // Hitung Bobot
-        $total = ($request->skor_disiplin_waktu * 0.13) +
-            ($request->skor_tanggung_jawab_izin * 0.11) +
-            ($request->skor_selesai_tugas * 0.12) +
-            ($request->skor_loyalitas * 0.08) +
-            ($request->skor_akhlak * 0.14) +
-            ($request->skor_contoh * 0.12) +
-            ($request->skor_tupoksi * 0.11) +
-            ($request->skor_komunikasi * 0.07) +
-            ($request->skor_koordinasi * 0.07) +
-            ($request->skor_kebersamaan * 0.05);
+        $total = 0;
+        foreach ($instrumens as $instrumen) {
+            $skorInput = $request->input('skor_' . $instrumen->id);
+            $total += ($skorInput * ($instrumen->bobot / 100));
+        }
 
         // Tentukan Predikat
         if ($total >= 90) {
@@ -148,32 +145,27 @@ class KinerjaController extends Controller
             $rekomendasi = 'Penanganan khusus (Merujuk ke SOP)';
         }
 
-        // Simpan ke Database
-        Kinerja::create([
+        // Simpan ke Database Induk
+        $kinerja = Kinerja::create([
             'pengurus_id' => $request->pengurus_id,
             'tanggal_penilaian' => $request->tanggal_penilaian,
-
-            // Skor
-            'skor_disiplin_waktu' => $request->skor_disiplin_waktu,
-            'skor_tanggung_jawab_izin' => $request->skor_tanggung_jawab_izin,
-            'skor_selesai_tugas' => $request->skor_selesai_tugas,
-            'skor_loyalitas' => $request->skor_loyalitas,
-            'skor_akhlak' => $request->skor_akhlak,
-            'skor_contoh' => $request->skor_contoh,
-            'skor_tupoksi' => $request->skor_tupoksi,
-            'skor_komunikasi' => $request->skor_komunikasi,
-            'skor_koordinasi' => $request->skor_koordinasi,
-            'skor_kebersamaan' => $request->skor_kebersamaan,
-
-            // Hasil
             'nilai_total' => $total,
             'huruf_mutu' => $huruf,
             'rekomendasi' => $rekomendasi,
             'catatan' => $request->catatan,
-
             'status_tindak_lanjut' => 'belum',
             'tanggal_tindak_lanjut' => null,
         ]);
+
+        // Simpan Detail Skor
+        foreach ($instrumens as $instrumen) {
+            $skorInput = $request->input('skor_' . $instrumen->id);
+            KinerjaDetail::create([
+                'kinerja_id' => $kinerja->id,
+                'instrumen_id' => $instrumen->id,
+                'skor' => $skorInput,
+            ]);
+        }
 
         return redirect()->route('pokok.kinerja.index')->with('success', 'Penilaian Berhasil Disimpan!');
     }
@@ -182,7 +174,7 @@ class KinerjaController extends Controller
     public function show($id)
     {
         $pengurus = Pengurus::with(['kinerja' => function ($q) {
-            $q->latest();
+            $q->with(['kinerjaDetails.instrumen'])->latest();
         }])->findOrFail($id);
 
         return view('pokok.kinerja.show', compact('pengurus'));
@@ -223,7 +215,7 @@ class KinerjaController extends Controller
     public function exportPdf($id)
     {
         // 1. Ambil data pengurus beserta riwayat kinerjanya
-        $pengurus = \App\Models\Pengurus::with('kinerja')->findOrFail($id);
+        $pengurus = \App\Models\Pengurus::with(['kinerja.kinerjaDetails.instrumen'])->findOrFail($id);
 
         // 2. Load view khusus PDF (kita buat di langkah 4)
         $pdf = Pdf::loadView('pokok.kinerja.pdf', compact('pengurus'))

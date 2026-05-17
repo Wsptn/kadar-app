@@ -100,39 +100,39 @@
 
         <table>
             <thead>
-                <tr>
-                    <th colspan="2">1. Disiplin & Hadir</th>
-                    <th colspan="2">2. Tanggung Jawab</th>
-                    <th colspan="2">3. Akhlak & Teladan</th>
-                    <th colspan="2">4. Tupoksi & Komunikasi</th>
-                    <th colspan="2">5. Kerja Sama</th>
-                </tr>
-                <tr style="background-color: #6c757d;">
-                    <th>Waktu (13%)</th>
-                    <th>Izin (11%)</th>
-                    <th>Tugas (12%)</th>
-                    <th>Loyal (8%)</th>
-                    <th>Akhlak (14%)</th>
-                    <th>Contoh (12%)</th>
-                    <th>Tupoksi (11%)</th>
-                    <th>Komunikasi (7%)</th>
-                    <th>Koordinasi (7%)</th>
-                    <th>Bersama (5%)</th>
+                <tr style="background-color: #343a40;">
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 35%;">Aspek Utama</th>
+                    <th style="width: 45%;">Indikator Penilaian (Bobot)</th>
+                    <th style="width: 15%;">Skor</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>{{ $k->skor_disiplin_waktu }}</td>
-                    <td>{{ $k->skor_tanggung_jawab_izin }}</td>
-                    <td>{{ $k->skor_selesai_tugas }}</td>
-                    <td>{{ $k->skor_loyalitas }}</td>
-                    <td>{{ $k->skor_akhlak }}</td>
-                    <td>{{ $k->skor_contoh }}</td>
-                    <td>{{ $k->skor_tupoksi }}</td>
-                    <td>{{ $k->skor_komunikasi }}</td>
-                    <td>{{ $k->skor_koordinasi }}</td>
-                    <td>{{ $k->skor_kebersamaan }}</td>
-                </tr>
+                @php
+                    $groupedDetails = $k->kinerjaDetails->groupBy(function($detail) {
+                        return $detail->instrumen->aspek ?? 'Lainnya';
+                    });
+                    $noAspek = 1;
+                @endphp
+
+                @forelse($groupedDetails as $aspek => $details)
+                    @foreach($details as $index => $detail)
+                        <tr>
+                            @if($index == 0)
+                                <td rowspan="{{ count($details) }}">{{ $noAspek++ }}</td>
+                                <td rowspan="{{ count($details) }}" class="bg-light text-start">{{ $aspek }}</td>
+                            @endif
+                            <td class="text-start">{{ $detail->instrumen->indikator ?? '-' }} ({{ $detail->instrumen->bobot ?? 0 }}%)</td>
+                            <td class="{{ $detail->skor < 60 ? 'text-danger' : 'text-success' }}">
+                                {{ $detail->skor }}
+                            </td>
+                        </tr>
+                    @endforeach
+                @empty
+                    <tr>
+                        <td colspan="4">Detail skor tidak tersedia.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
 

@@ -67,6 +67,13 @@
                 </a>
             </li>
 
+            <li class="sidebar-item {{ request()->routeIs('master.instrumen.*') ? 'active' : '' }}">
+                <a class="sidebar-link" href="{{ route('master.instrumen.index') }}">
+                    <i class="align-middle" data-feather="check-square"></i>
+                    <span class="align-middle">Master Instrumen Penilaian</span>
+                </a>
+            </li>
+
             <li class="sidebar-item {{ request()->routeIs('master.jabatan.*') ? 'active' : '' }}">
                 <a class="sidebar-link" href="{{ route('master.jabatan.index') }}">
                     <i class="align-middle" data-feather="briefcase"></i>

@@ -141,6 +141,16 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{id}/destroy', [\App\Http\Controllers\EntitasDaerahController::class, 'destroy'])->name('destroy');
         });
 
+        // --- INSTRUMEN PENILAIAN ---
+        Route::prefix('instrumen')->name('instrumen.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\MasterInstrumenController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\MasterInstrumenController::class, 'create'])->name('create');
+            Route::post('/store', [\App\Http\Controllers\MasterInstrumenController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\MasterInstrumenController::class, 'edit'])->name('edit');
+            Route::put('/{id}/update', [\App\Http\Controllers\MasterInstrumenController::class, 'update'])->name('update');
+            Route::delete('/{id}/destroy', [\App\Http\Controllers\MasterInstrumenController::class, 'destroy'])->name('destroy');
+        });
+
         // --- JABATAN & KELEMBAGAAN ---
         Route::prefix('jabatan')->name('jabatan.')->group(function () {
             Route::get('/', [JabatanController::class, 'index'])->name('index');
