@@ -68,4 +68,15 @@ class AngkatanController extends Controller
             return back()->with('error', 'Gagal mengupdate data: ' . $e->getMessage());
         }
     }
+
+    public function destroy($id_angkatan)
+    {
+        try {
+            $item = MasterAngkatan::findOrFail($id_angkatan);
+            $item->delete();
+            return redirect()->route('master.angkatan.index')->with('success', 'Data berhasil dihapus.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
+    }
 }

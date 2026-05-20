@@ -204,6 +204,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', [FungsionalTugasController::class, 'store'])->name('store');
             Route::get('/{id_tugas}/edit', [FungsionalTugasController::class, 'edit'])->name('edit');
             Route::put('/{id_tugas}', [FungsionalTugasController::class, 'update'])->name('update');
+            Route::delete('/{id_tugas}', [FungsionalTugasController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('tugas_internal')->name('internal.')->group(function () {
@@ -212,6 +213,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', [TugasInternalController::class, 'store'])->name('store');
             Route::get('/{id_internal}/edit', [TugasInternalController::class, 'edit'])->name('edit');
             Route::put('/{id_internal}', [TugasInternalController::class, 'update'])->name('update');
+            Route::delete('/{id_internal}', [TugasInternalController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('tugas_eksternal')->name('eksternal.')->group(function () {
@@ -220,6 +222,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', [TugasEksternalController::class, 'store'])->name('store');
             Route::get('/{id_eksternal}/edit', [TugasEksternalController::class, 'edit'])->name('edit');
             Route::put('/{id_eksternal}', [TugasEksternalController::class, 'update'])->name('update');
+            Route::delete('/{id_eksternal}', [TugasEksternalController::class, 'destroy'])->name('destroy');
         });
 
         // --- PENDIDIKAN & ANGKATAN ---
@@ -229,6 +232,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', [PendidikanController::class, 'store'])->name('store');
             Route::get('/{id_pendidikan}/edit', [PendidikanController::class, 'edit'])->name('edit');
             Route::put('/{id_pendidikan}', [PendidikanController::class, 'update'])->name('update');
+            Route::delete('/{id_pendidikan}', [PendidikanController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('angkatan')->name('angkatan.')->group(function () {
@@ -237,6 +241,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', [AngkatanController::class, 'store'])->name('store');
             Route::get('/{id_angkatan}/edit', [AngkatanController::class, 'edit'])->name('edit');
             Route::put('/{id_angkatan}', [AngkatanController::class, 'update'])->name('update');
+            Route::delete('/{id_angkatan}', [AngkatanController::class, 'destroy'])->name('destroy');
         });
 
         // --- BERKAS ---

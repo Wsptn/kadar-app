@@ -38,10 +38,17 @@
                                     <td class="text-center">
                                         {{-- Cek apakah user Admin atau Biktren --}}
                                         @if (!Auth::user()->isDaerah())
-                                            <a href="{{ route('master.angkatan.edit', $item->id_angkatan) }}"
-                                                class="btn btn-sm btn-warning">
-                                                <i class="bi bi-pencil-square"></i> Edit
-                                            </a>
+                                            <div class="btn-group">
+                                                <a href="{{ route('master.angkatan.edit', $item->id_angkatan) }}"
+                                                    class="btn btn-outline-warning btn-sm">
+                                                    <i data-feather="edit-2" style="width: 14px;"></i>
+                                                </a>
+                                                <form action="{{ route('master.angkatan.destroy', $item->id_angkatan) }}" class="d-inline" method="POST" onsubmit="return confirm('Hapus data ini?')">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm"><i
+                                                            data-feather="trash-2" style="width: 14px;"></i></button>
+                                                </form>
+                                            </div>
                                         @else
                                             {{-- Jika bukan Admin/Biktren, tampilkan pesan --}}
                                             <span class="badge bg-secondary" style="font-size: 0.7rem; cursor: not-allowed;"
@@ -64,4 +71,12 @@
             </div>
         </div>
     </div>
+@endsection
+@section('scripts')
+<script src="https://unpkg.com/feather-icons"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof feather !== 'undefined') feather.replace();
+    });
+</script>
 @endsection

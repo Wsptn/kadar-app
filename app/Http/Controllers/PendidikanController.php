@@ -79,4 +79,15 @@ class PendidikanController extends Controller
             return back()->with('error', 'Gagal mengupdate data: ' . $e->getMessage());
         }
     }
+
+    public function destroy($id_pendidikan)
+    {
+        try {
+            $item = MasterPendidikan::findOrFail($id_pendidikan);
+            $item->delete();
+            return redirect()->route('master.pendidikan.index')->with('success', 'Data berhasil dihapus.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
+    }
 }

@@ -69,4 +69,15 @@ class TugasInternalController extends Controller
             return back()->with('error', 'Gagal mengupdate data: ' . $e->getMessage());
         }
     }
+
+    public function destroy($id_internal)
+    {
+        try {
+            $item = MasterTugasInternal::findOrFail($id_internal);
+            $item->delete();
+            return redirect()->route('master.internal.index')->with('success', 'Data berhasil dihapus.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
+    }
 }

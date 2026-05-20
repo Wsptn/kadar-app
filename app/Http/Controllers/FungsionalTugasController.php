@@ -69,4 +69,15 @@ class FungsionalTugasController extends Controller
             return back()->with('error', 'Gagal mengupdate data: ' . $e->getMessage());
         }
     }
+
+    public function destroy($id_tugas)
+    {
+        try {
+            $item = MasterFungsionalTugas::findOrFail($id_tugas);
+            $item->delete();
+            return redirect()->route('master.tugas.index')->with('success', 'Data berhasil dihapus.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
+    }
 }

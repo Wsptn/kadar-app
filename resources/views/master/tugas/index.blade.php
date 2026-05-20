@@ -37,8 +37,17 @@
                                     <td>{{ $item->keterangan ?? '-' }}</td>
                                     <td class="text-center">
                                         @if (!Auth::user()->isDaerah())
-                                            <a href="{{ route('master.tugas.edit', $item->id_tugas) }}"
-                                                class="btn btn-sm btn-warning">Edit</a>
+                                            <div class="btn-group">
+                                                <a href="{{ route('master.tugas.edit', $item->id_tugas) }}"
+                                                    class="btn btn-outline-warning btn-sm">
+                                                    <i data-feather="edit-2" style="width: 14px;"></i>
+                                                </a>
+                                                <form action="{{ route('master.tugas.destroy', $item->id_tugas) }}" class="d-inline" method="POST" onsubmit="return confirm('Hapus data ini?')">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm"><i
+                                                            data-feather="trash-2" style="width: 14px;"></i></button>
+                                                </form>
+                                            </div>
                                         @else
                                             <span class="badge bg-secondary" style="font-size: 0.7rem; cursor: not-allowed;"
                                                 title="Hanya Admin & Biktren yang memiliki akses">
@@ -71,6 +80,13 @@
                 let rowText = row.textContent.toLowerCase();
                 row.style.display = rowText.includes(value) ? "" : "none";
             });
+        });
+    </script>
+
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof feather !== 'undefined') feather.replace();
         });
     </script>
 @endsection
