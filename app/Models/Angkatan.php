@@ -12,7 +12,6 @@ class Angkatan extends Model
 
     // Kolom yang boleh diisi (fillable)
     protected $fillable = [
-        'angkatan',
-        'keterangan'
+        'angkatan'
     ];
 }

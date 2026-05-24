@@ -134,7 +134,7 @@
                             @foreach ($entitasDaerahs as $ed)
                                 <option value="{{ $ed->id }}"
                                     {{ old('entitas_daerah_id', $pengurus->entitas_daerah_id) == $ed->id ? 'selected' : '' }}>
-                                    {{ $ed->nama_entitas }}
+                                    {{ $ed->nama_entitas_daerah }}
                                 </option>
                             @endforeach
                         </select>
@@ -163,12 +163,12 @@
                     {{-- ENTITAS --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Entitas</label>
-                        <select name="entitas_id" id="entitasSelect" class="form-select">
+                        <select id="entitasSelect" class="form-select">
                             <option value="">-- Pilih Entitas --</option>
-                            @foreach ($entitas as $e)
-                                <option value="{{ $e->id }}"
-                                    {{ old('entitas_id', $pengurus->entitas_id) == $e->id ? 'selected' : '' }}>
-                                    {{ $e->nama_entitas }}
+                            @foreach ($entitasList as $e)
+                                <option value="{{ $e->entitas }}"
+                                    {{ (old('entitas', $pengurus->strukturJabatan?->entitas) == $e->entitas) ? 'selected' : '' }}>
+                                    {{ $e->entitas }}
                                 </option>
                             @endforeach
                         </select>
@@ -177,12 +177,12 @@
                     {{-- JABATAN --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Jabatan</label>
-                        <select name="jabatan_id" id="jabatanSelect" class="form-select">
+                        <select id="jabatanSelect" class="form-select">
                             <option value="">-- Pilih Jabatan --</option>
                             @foreach ($jabatans as $j)
-                                <option value="{{ $j->id }}"
-                                    {{ old('jabatan_id', $pengurus->jabatan_id) == $j->id ? 'selected' : '' }}>
-                                    {{ $j->nama_jabatan }}
+                                <option value="{{ $j->jabatan }}"
+                                    {{ (old('jabatan', $pengurus->strukturJabatan?->jabatan) == $j->jabatan) ? 'selected' : '' }}>
+                                    {{ $j->jabatan }}
                                 </option>
                             @endforeach
                         </select>
@@ -191,11 +191,11 @@
                     {{-- JENIS JABATAN --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Jenis Jabatan</label>
-                        <select name="jenis_jabatan_id" id="jenisSelect" class="form-select">
+                        <select id="jenisSelect" class="form-select">
                             <option value="">-- Pilih Jenis Jabatan --</option>
                             @foreach ($jenis_jabatans as $jj)
-                                <option value="{{ $jj->id }}"
-                                    {{ old('jenis_jabatan_id', $pengurus->jenis_jabatan_id) == $jj->id ? 'selected' : '' }}>
+                                <option value="{{ $jj->jenis_jabatan }}"
+                                    {{ (old('jenis_jabatan', $pengurus->strukturJabatan?->jenis_jabatan) == $jj->jenis_jabatan) ? 'selected' : '' }}>
                                     {{ $jj->jenis_jabatan }}
                                 </option>
                             @endforeach
@@ -205,11 +205,11 @@
                     {{-- GRADE --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Grade Jabatan</label>
-                        <select name="grade_jabatan_id" id="gradeSelect" class="form-select">
+                        <select name="struktur_jabatan_id" id="gradeSelect" class="form-select">
                             <option value="">-- Pilih Grade --</option>
                             @foreach ($grade_jabatans as $g)
                                 <option value="{{ $g->id }}"
-                                    {{ old('grade_jabatan_id', $pengurus->grade_jabatan_id) == $g->id ? 'selected' : '' }}>
+                                    {{ (old('struktur_jabatan_id', $pengurus->struktur_jabatan_id) == $g->id) ? 'selected' : '' }}>
                                     {{ $g->grade }}
                                 </option>
                             @endforeach
@@ -232,72 +232,65 @@
                         <div class="card p-3 bg-light border">
                             @foreach ($fungsionalTugas as $index => $ft)
                                 @php
-                                    // Cek apakah pengurus ini memiliki tugas tersebut (lewat tabel pivot)
-                                    // Asumsi model Pengurus sudah memiliki relasi 'fungsionalTugas'
-                                    $pivotRecord = $pengurus->fungsionalTugas->firstWhere('id_tugas', $ft->id_tugas);
+                                    $pivotRecord = $pengurus->tugas->firstWhere('id_tugas', $ft->id_tugas);
                                     $isChecked = !is_null($pivotRecord);
-
-                                    // Jika ada di pivot, ambil statusnya. Jika tidak, default 'aktif'
                                     $currentStatus = $isChecked ? $pivotRecord->pivot->status : 'aktif';
                                 @endphp
-
                                 <div class="row align-items-center mb-2 pb-2 border-bottom">
-                                    {{-- CHECKBOX --}}
                                     <div class="col-md-7">
                                         <div class="form-check">
                                             <input class="form-check-input tugas-checkbox" type="checkbox"
-                                                name="tugas[{{ $index }}][id]" value="{{ $ft->id_tugas }}"
-                                                id="tugas_{{ $index }}" data-index="{{ $index }}"
+                                                name="tugas[{{ $ft->id_tugas }}][id]" value="{{ $ft->id_tugas }}"
+                                                id="tugas_{{ $ft->id_tugas }}" data-index="{{ $ft->id_tugas }}"
                                                 {{ $isChecked ? 'checked' : '' }}>
-
-                                            <label class="form-check-label fw-bold" for="tugas_{{ $index }}">
-                                                {{ $ft->tugas }}
+                                            <label class="form-check-label fw-bold" for="tugas_{{ $ft->id_tugas }}">
+                                                {{ $ft->nama_tugas }}
                                             </label>
                                         </div>
                                     </div>
-
-                                    {{-- PILIHAN STATUS --}}
                                     <div class="col-md-5">
-                                        <select name="tugas[{{ $index }}][status]"
+                                        <select name="tugas[{{ $ft->id_tugas }}][status]"
                                             class="form-select form-select-sm status-select"
-                                            id="status_{{ $index }}" {{ $isChecked ? '' : 'disabled' }}>
-                                            <option value="aktif" {{ $currentStatus == 'aktif' ? 'selected' : '' }}>Aktif
-                                            </option>
-                                            <option value="non_aktif"
-                                                {{ $currentStatus == 'non_aktif' ? 'selected' : '' }}>Non Aktif</option>
+                                            id="status_{{ $ft->id_tugas }}" {{ $isChecked ? '' : 'disabled' }}>
+                                            <option value="aktif" {{ $currentStatus == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                                            <option value="non_aktif" {{ $currentStatus == 'non_aktif' ? 'selected' : '' }}>Non Aktif</option>
                                         </select>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
-                        <small class="text-muted fst-italic">*Centang tugas untuk mengaktifkan pilihan status.</small>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Rangkap Internal</label>
-                            <select name="rangkap_internal_id" class="form-select">
-                                <option value="">-- Pilih --</option>
-                                @foreach ($rangkapInternals as $ri)
-                                    <option value="{{ $ri->id_internal }}"
-                                        {{ old('rangkap_internal_id', $pengurus->rangkap_internal_id) == $ri->id_internal ? 'selected' : '' }}>
-                                        {{ $ri->internal }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Rangkap Eksternal</label>
-                            <select name="rangkap_eksternal_id" class="form-select">
-                                <option value="">-- Pilih --</option>
-                                @foreach ($rangkapEksternals as $re)
-                                    <option value="{{ $re->id_eksternal }}"
-                                        {{ old('rangkap_eksternal_id', $pengurus->rangkap_eksternal_id) == $re->id_eksternal ? 'selected' : '' }}>
-                                        {{ $re->eksternal }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                    {{-- TUGAS INTERNAL (SINGLE SELECT) --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tugas Internal</label>
+                        @php
+                            $internalRecord = $pengurus->internalTugas->first();
+                        @endphp
+                        <select name="tugas_internal_id" class="form-select">
+                            <option value="">-- Tidak Ada --</option>
+                            @foreach ($rangkapInternals as $ri)
+                                <option value="{{ $ri->id_tugas }}" {{ ($internalRecord && $internalRecord->id_tugas == $ri->id_tugas) ? 'selected' : '' }}>
+                                    {{ $ri->nama_tugas }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- TUGAS EKSTERNAL (SINGLE SELECT) --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tugas Eksternal</label>
+                        @php
+                            $eksternalRecord = $pengurus->eksternalTugas->first();
+                        @endphp
+                        <select name="tugas_eksternal_id" class="form-select">
+                            <option value="">-- Tidak Ada --</option>
+                            @foreach ($rangkapEksternals as $re)
+                                <option value="{{ $re->id_tugas }}" {{ ($eksternalRecord && $eksternalRecord->id_tugas == $re->id_tugas) ? 'selected' : '' }}>
+                                    {{ $re->nama_tugas }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="row">
@@ -505,52 +498,52 @@
 
         // === KELEMBAGAAN ===
 
-        async function loadJabatan(eid, selectedId = null) {
+        function loadJabatan(entitas, selectedId = null) {
             const el = document.getElementById('jabatanSelect');
             el.innerHTML = '<option>Memuat...</option>';
             el.disabled = true;
-            const data = await fetchJson(`/master/jabatan/get-jabatan/${eid}`);
-            if (data) {
-                let html = '<option value="">-- Pilih Jabatan --</option>';
-                data.forEach(j => {
-                    let sel = (selectedId == j.id) ? 'selected' : '';
-                    html += `<option value="${j.id}" ${sel}>${j.nama_jabatan}</option>`;
+            $.get(`/master/struktur_jabatan/get-jabatan/${encodeURIComponent(entitas)}`)
+                .done(function(data) {
+                    let html = '<option value="">-- Pilih Jabatan --</option>';
+                    data.forEach(j => {
+                        let sel = (selectedId == j.jabatan) ? 'selected' : '';
+                        html += `<option value="${j.jabatan}" ${sel}>${j.jabatan}</option>`;
+                    });
+                    el.innerHTML = html;
+                    el.disabled = false;
                 });
-                el.innerHTML = html;
-                el.disabled = false;
-            }
         }
 
-        async function loadJenis(jid, selectedId = null) {
+        function loadJenis(entitas, jabatan, selectedId = null) {
             const el = document.getElementById('jenisSelect');
             el.innerHTML = '<option>Memuat...</option>';
             el.disabled = true;
-            const data = await fetchJson(`/master/jabatan/get-jenis/${jid}`);
-            if (data) {
-                let html = '<option value="">-- Pilih Jenis --</option>';
-                data.forEach(jj => {
-                    let sel = (selectedId == jj.id) ? 'selected' : '';
-                    html += `<option value="${jj.id}" ${sel}>${jj.jenis_jabatan}</option>`;
+            $.get(`/master/struktur_jabatan/get-jenis/${encodeURIComponent(entitas)}/${encodeURIComponent(jabatan)}`)
+                .done(function(data) {
+                    let html = '<option value="">-- Pilih Jenis Jabatan --</option>';
+                    data.forEach(jj => {
+                        let sel = (selectedId == jj.jenis_jabatan) ? 'selected' : '';
+                        html += `<option value="${jj.jenis_jabatan}" ${sel}>${jj.jenis_jabatan}</option>`;
+                    });
+                    el.innerHTML = html;
+                    el.disabled = false;
                 });
-                el.innerHTML = html;
-                el.disabled = false;
-            }
         }
 
-        async function loadGrade(jid, selectedId = null) {
+        function loadGrade(entitas, jabatan, jenis, selectedId = null) {
             const el = document.getElementById('gradeSelect');
             el.innerHTML = '<option>Memuat...</option>';
             el.disabled = true;
-            const data = await fetchJson(`/master/jabatan/get-grade/${jid}`);
-            if (data) {
-                let html = '<option value="">-- Pilih Grade --</option>';
-                data.forEach(g => {
-                    let sel = (selectedId == g.id) ? 'selected' : '';
-                    html += `<option value="${g.id}" ${sel}>${g.grade}</option>`;
+            $.get(`/master/struktur_jabatan/get-grade/${encodeURIComponent(entitas)}/${encodeURIComponent(jabatan)}/${encodeURIComponent(jenis)}`)
+                .done(function(data) {
+                    let html = '<option value="">-- Pilih Grade --</option>';
+                    data.forEach(g => {
+                        let sel = (selectedId == g.id) ? 'selected' : '';
+                        html += `<option value="${g.id}" ${sel}>${g.grade}</option>`;
+                    });
+                    el.innerHTML = html;
+                    el.disabled = false;
                 });
-                el.innerHTML = html;
-                el.disabled = false;
-            }
         }
 
         document.getElementById('entitasSelect')?.addEventListener('change', function() {
@@ -559,11 +552,11 @@
             document.getElementById('gradeSelect').innerHTML = '<option>-- Pilih Jenis Dulu --</option>';
         });
         document.getElementById('jabatanSelect')?.addEventListener('change', function() {
-            loadJenis(this.value);
+            loadJenis(document.getElementById('entitasSelect').value, this.value);
             document.getElementById('gradeSelect').innerHTML = '<option>-- Pilih Jenis Dulu --</option>';
         });
         document.getElementById('jenisSelect')?.addEventListener('change', function() {
-            loadGrade(this.value);
+            loadGrade(document.getElementById('entitasSelect').value, document.getElementById('jabatanSelect').value, this.value);
         });
     </script>
 @endsection

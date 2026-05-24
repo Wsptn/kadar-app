@@ -15,14 +15,10 @@ class Pengurus extends Model
         'daerah_id',
         'entitas_daerah_id',
         'kamar_id',
-        'entitas_id',
-        'jabatan_id',
-        'jenis_jabatan_id',
-        'grade_jabatan_id',
+        'entitas_id', // keeping this for now just in case? No, wait, entitas_id is used for what? Ah, wait, in penguruses I dropped entitas_id! Let's just put struktur_jabatan_id
+        'struktur_jabatan_id',
         'sk_kepengurusan',
         // 'fungsional_tugas_id',  <-- SUDAH DIHAPUS (Karena pindah ke tabel pivot)
-        'rangkap_internal_id',
-        'rangkap_eksternal_id',
         'status',
         'pendidikan_id',
         'angkatan_id',
@@ -57,37 +53,21 @@ class Pengurus extends Model
         return $this->belongsTo(Kamar::class, 'kamar_id');
     }
 
-    public function entitas()
+    public function strukturJabatan()
     {
-        return $this->belongsTo(Entitas::class, 'entitas_id');
-    }
-
-    public function jabatan()
-    {
-        return $this->belongsTo(Jabatan::class, 'jabatan_id');
-    }
-
-    public function jenisJabatan()
-    {
-        return $this->belongsTo(JenisJabatan::class, 'jenis_jabatan_id');
-    }
-
-    public function gradeJabatan()
-    {
-        return $this->belongsTo(GradeJabatan::class, 'grade_jabatan_id');
+        return $this->belongsTo(MasterStrukturJabatan::class, 'struktur_jabatan_id');
     }
 
     /**
-     * PERBAIKAN UTAMA DI SINI
-     * Mengubah relasi menjadi Many-to-Many ke MasterFungsionalTugas
+     * Relasi ke semua Master Tugas (Fungsional, Internal, Eksternal)
      */
-    public function fungsionalTugas()
+    public function tugas()
     {
         return $this->belongsToMany(
-            MasterFungsionalTugas::class,
-            'pengurus_fungsional_tugas',
+            MasterTugas::class,
+            'detail_tugas',
             'pengurus_id',
-            'master_fungsional_tugas_id',
+            'master_tugas_id',
             'id',
             'id_tugas'
         )
@@ -95,16 +75,19 @@ class Pengurus extends Model
             ->withTimestamps();
     }
 
-    public function rangkapInternal()
+    public function fungsionalTugas()
     {
-        // Pastikan nama kolom PK di MasterTugasInternal benar 'id_internal'
-        return $this->belongsTo(MasterTugasInternal::class, 'rangkap_internal_id', 'id_internal');
+        return $this->tugas()->where('jenis_tugas', 'fungsional');
     }
 
-    public function rangkapEksternal()
+    public function internalTugas()
     {
-        // Pastikan nama kolom PK di MasterTugasEksternal benar 'id_eksternal'
-        return $this->belongsTo(MasterTugasEksternal::class, 'rangkap_eksternal_id', 'id_eksternal');
+        return $this->tugas()->where('jenis_tugas', 'internal');
+    }
+
+    public function eksternalTugas()
+    {
+        return $this->tugas()->where('jenis_tugas', 'eksternal');
     }
 
     public function pendidikan()

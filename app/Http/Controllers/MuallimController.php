@@ -11,9 +11,9 @@ class MuallimController extends Controller
     {
         $search = $request->input('search');
 
-        $muallim = \App\Models\Pengurus::with(['fungsionalTugas'])
+        $muallim = \App\Models\Pengurus::with(['fungsionalTugas', 'wilayah'])
             ->whereHas('fungsionalTugas', function ($q) {
-                $q->where('tugas', "Mu'allim");
+                $q->where('nama_tugas', "Mu'allim");
             })
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($query) use ($search) {

@@ -9,7 +9,7 @@ class EntitasDaerahController extends Controller
 {
     public function index()
     {
-        $entitasDaerah = EntitasDaerah::orderBy('nama_entitas')->get();
+        $entitasDaerah = EntitasDaerah::orderBy('nama_entitas_daerah')->get();
         return view('master.entitas_daerah.index', compact('entitasDaerah'));
     }
 
@@ -24,11 +24,11 @@ class EntitasDaerahController extends Controller
         abort_if(!in_array(auth()->user()->level, ['Admin', 'Wilayah']), 403, 'Unauthorized action.');
 
         $request->validate([
-            'nama_entitas' => 'required|string|max:255|unique:entitas_daerahs,nama_entitas',
+            'nama_entitas_daerah' => 'required|string|max:255|unique:entitas_daerahs,nama_entitas_daerah',
         ]);
 
         EntitasDaerah::create([
-            'nama_entitas' => $request->nama_entitas,
+            'nama_entitas_daerah' => $request->nama_entitas_daerah,
         ]);
 
         return redirect()->route('master.entitas_daerah.index')->with('success', 'Entitas Daerah berhasil ditambahkan.');
@@ -48,11 +48,11 @@ class EntitasDaerahController extends Controller
         $entitasDaerah = EntitasDaerah::findOrFail($id);
         
         $request->validate([
-            'nama_entitas' => 'required|string|max:255|unique:entitas_daerahs,nama_entitas,' . $id,
+            'nama_entitas_daerah' => 'required|string|max:255|unique:entitas_daerahs,nama_entitas_daerah,' . $id,
         ]);
 
         $entitasDaerah->update([
-            'nama_entitas' => $request->nama_entitas,
+            'nama_entitas_daerah' => $request->nama_entitas_daerah,
         ]);
 
         return redirect()->route('master.entitas_daerah.index')->with('success', 'Entitas Daerah berhasil diperbarui.');

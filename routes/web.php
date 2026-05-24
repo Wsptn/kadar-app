@@ -6,7 +6,6 @@ use App\Http\Controllers\DaerahController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DomisiliController;
 use App\Http\Controllers\EntitasController;
-use App\Http\Controllers\FungsionalTugasController;
 use App\Http\Controllers\GradeJabatanController;
 use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\JenisBerkasController;
@@ -17,11 +16,10 @@ use App\Http\Controllers\PendidikanController;
 use App\Http\Controllers\PengajarController;
 use App\Http\Controllers\PengurusController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TugasEksternalController;
-use App\Http\Controllers\TugasInternalController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WaliAsuhController;
 use App\Http\Controllers\WilayahController;
+use App\Http\Controllers\MasterTugasController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KinerjaController;
 
@@ -151,78 +149,40 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{id}/destroy', [\App\Http\Controllers\MasterInstrumenController::class, 'destroy'])->name('destroy');
         });
 
-        // --- JABATAN & KELEMBAGAAN ---
-        Route::prefix('jabatan')->name('jabatan.')->group(function () {
-            Route::get('/', [JabatanController::class, 'index'])->name('index');
+        // --- STRUKTUR JABATAN (FLAT/PIPIH) ---
+        Route::prefix('struktur_jabatan')->name('struktur_jabatan.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'create'])->name('create');
+            Route::post('/store', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'edit'])->name('edit');
+            Route::put('/{id}/update', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'update'])->name('update');
+            Route::delete('/{id}/destroy', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'destroy'])->name('destroy');
 
-            // ================= ENTITAS =================
-            Route::get('/entitas/create', [EntitasController::class, 'create'])->name('entitas.create');
-            Route::post('/entitas/store', [EntitasController::class, 'store'])->name('entitas.store');
-            Route::get('/entitas/{id}/edit', [EntitasController::class, 'edit'])->name('entitas.edit');
-            Route::put('/entitas/{id}/update', [EntitasController::class, 'update'])->name('entitas.update');
-            Route::delete('/entitas/{id}', [EntitasController::class, 'destroy'])->name('entitas.destroy');
+            // Ajax Routes Struktur Jabatan
+            Route::get('/get-jabatan/{entitas}', function ($entitas) {
+                return \App\Models\MasterStrukturJabatan::where('entitas', $entitas)->select('jabatan')->distinct()->get();
+            })->name('ajax.jabatan');
 
-            // ================= JABATAN =================
-            Route::get('/jabatan/create', [JabatanController::class, 'create'])->name('jabatan.create');
-            Route::post('/jabatan/store', [JabatanController::class, 'store'])->name('jabatan.store');
-            Route::get('/jabatan/{id}/edit', [JabatanController::class, 'edit'])->name('jabatan.edit');
-            Route::put('/jabatan/{id}/update', [JabatanController::class, 'update'])->name('jabatan.update');
-            Route::delete('/jabatan/{id}', [JabatanController::class, 'destroy'])->name('jabatan.destroy');
+            Route::get('/get-jenis/{entitas}/{jabatan}', function ($entitas, $jabatan) {
+                return \App\Models\MasterStrukturJabatan::where('entitas', $entitas)->where('jabatan', $jabatan)->select('jenis_jabatan')->distinct()->get();
+            })->name('ajax.jenis');
 
-            // ================= JENIS JABATAN =================
-            Route::get('/jenis/create', [JenisJabatanController::class, 'create'])->name('jenis.create');
-            Route::post('/jenis/store', [JenisJabatanController::class, 'store'])->name('jenis.store');
-            Route::get('/jenis/{id}/edit', [JenisJabatanController::class, 'edit'])->name('jenis.edit');
-            Route::put('/jenis/{id}/update', [JenisJabatanController::class, 'update'])->name('jenis.update');
-            Route::delete('/jenis/{id}', [JenisJabatanController::class, 'destroy'])->name('jenis.destroy');
-
-            // ================= GRADE JABATAN =================
-            Route::get('/grade/create', [GradeJabatanController::class, 'create'])->name('grade.create');
-            Route::post('/grade/store', [GradeJabatanController::class, 'store'])->name('grade.store');
-            Route::get('/grade/{id}/edit', [GradeJabatanController::class, 'edit'])->name('grade.edit');
-            Route::put('/grade/{id}/update', [GradeJabatanController::class, 'update'])->name('grade.update');
-            Route::delete('/grade/{id}', [GradeJabatanController::class, 'destroy'])->name('grade.destroy');
-
-            // Ajax Routes Jabatan (Tetap Sama)
-            Route::get('/get-jabatan/{entitas_id}', function ($entitas_id) {
-                return \App\Models\Jabatan::where('entitas_id', $entitas_id)->get();
-            })->name('jabatan.byEntitas');
-
-            Route::get('/get-jenis/{jabatan_id}', function ($jabatan_id) {
-                return \App\Models\JenisJabatan::where('jabatan_id', $jabatan_id)->get();
-            })->name('jenis.byJabatan');
-
-            Route::get('/get-grade/{jenis_jabatan_id}', function ($jenis_jabatan_id) {
-                return \App\Models\GradeJabatan::where('jenis_jabatan_id', $jenis_jabatan_id)->get();
-            })->name('grade.byJenis');
+            Route::get('/get-grade/{entitas}/{jabatan}/{jenis}', function ($entitas, $jabatan, $jenis) {
+                return \App\Models\MasterStrukturJabatan::where('entitas', $entitas)->where('jabatan', $jabatan)->where('jenis_jabatan', $jenis)->select('id', 'grade')->get();
+            })->name('ajax.grade');
         });
 
-        // --- TUGAS & FUNGSIONAL ---
-        Route::prefix('fungsional_tugas')->name('tugas.')->group(function () {
-            Route::get('/', [FungsionalTugasController::class, 'index'])->name('index');
-            Route::get('/create', [FungsionalTugasController::class, 'create'])->name('create');
-            Route::post('/store', [FungsionalTugasController::class, 'store'])->name('store');
-            Route::get('/{id_tugas}/edit', [FungsionalTugasController::class, 'edit'])->name('edit');
-            Route::put('/{id_tugas}', [FungsionalTugasController::class, 'update'])->name('update');
-            Route::delete('/{id_tugas}', [FungsionalTugasController::class, 'destroy'])->name('destroy');
-        });
-
-        Route::prefix('tugas_internal')->name('internal.')->group(function () {
-            Route::get('/', [TugasInternalController::class, 'index'])->name('index');
-            Route::get('/create', [TugasInternalController::class, 'create'])->name('create');
-            Route::post('/store', [TugasInternalController::class, 'store'])->name('store');
-            Route::get('/{id_internal}/edit', [TugasInternalController::class, 'edit'])->name('edit');
-            Route::put('/{id_internal}', [TugasInternalController::class, 'update'])->name('update');
-            Route::delete('/{id_internal}', [TugasInternalController::class, 'destroy'])->name('destroy');
-        });
-
-        Route::prefix('tugas_eksternal')->name('eksternal.')->group(function () {
-            Route::get('/', [TugasEksternalController::class, 'index'])->name('index');
-            Route::get('/create', [TugasEksternalController::class, 'create'])->name('create');
-            Route::post('/store', [TugasEksternalController::class, 'store'])->name('store');
-            Route::get('/{id_eksternal}/edit', [TugasEksternalController::class, 'edit'])->name('edit');
-            Route::put('/{id_eksternal}', [TugasEksternalController::class, 'update'])->name('update');
-            Route::delete('/{id_eksternal}', [TugasEksternalController::class, 'destroy'])->name('destroy');
+        // --- TUGAS (FUNGSIONAL, INTERNAL, EKSTERNAL) ---
+        Route::prefix('tugas')->name('tugas.')->group(function () {
+            Route::get('/', [MasterTugasController::class, 'index'])->name('index');
+            
+            Route::middleware(['role:Admin,Biktren,Wilayah'])->group(function () {
+                Route::get('/create', [MasterTugasController::class, 'create'])->name('create');
+                Route::post('/store', [MasterTugasController::class, 'store'])->name('store');
+                Route::get('/{id}/edit', [MasterTugasController::class, 'edit'])->name('edit');
+                Route::put('/{id}', [MasterTugasController::class, 'update'])->name('update');
+                Route::delete('/{id}', [MasterTugasController::class, 'destroy'])->name('destroy');
+            });
         });
 
         // --- PENDIDIKAN & ANGKATAN ---
@@ -245,7 +205,7 @@ Route::middleware('auth')->group(function () {
         });
 
         // --- BERKAS ---
-        Route::get('/berkas', [JenisBerkasController::class, 'index'])->name('berkas.index');
+        // Route::get('/berkas', [JenisBerkasController::class, 'index'])->name('berkas.index');
     });
 
 

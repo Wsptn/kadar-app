@@ -106,7 +106,7 @@
 
                                 @foreach ($entitasDaerahs as $ed)
                                     <option value="{{ $ed->id }}" {{ old('entitas_daerah_id') == $ed->id ? 'selected' : '' }}>
-                                        {{ $ed->nama_entitas }}
+                                        {{ $ed->nama_entitas_daerah }}
                                     </option>
                                 @endforeach
                             </select>
@@ -138,52 +138,38 @@
                         {{-- Entitas (Wajib) --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Entitas <span class="text-danger">*</span></label>
-                            <select id="entitasSelect" name="entitas_id"
-                                class="form-select @error('entitas_id') is-invalid @enderror" required>
+                            <select id="entitasSelect" class="form-select" required>
                                 <option value="">-- Pilih Entitas --</option>
-                                @foreach ($entitas as $e)
-                                    <option value="{{ $e->id }}"
-                                        {{ old('entitas_id') == $e->id ? 'selected' : '' }}>
-                                        {{ $e->nama_entitas }}</option>
+                                @foreach ($entitasList as $e)
+                                    <option value="{{ $e->entitas }}">{{ $e->entitas }}</option>
                                 @endforeach
                             </select>
-                            @error('entitas_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         {{-- Jabatan (Wajib) --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Jabatan <span class="text-danger">*</span></label>
-                            <select id="jabatanSelect" name="jabatan_id"
-                                class="form-select @error('jabatan_id') is-invalid @enderror" disabled required>
+                            <select id="jabatanSelect" class="form-select" disabled required>
                                 <option value="">-- Pilih Entitas Terlebih Dahulu --</option>
                             </select>
-                            @error('jabatan_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         {{-- Jenis Jabatan (Wajib) --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Jenis Jabatan <span class="text-danger">*</span></label>
-                            <select id="jenisSelect" name="jenis_jabatan_id"
-                                class="form-select @error('jenis_jabatan_id') is-invalid @enderror" disabled required>
+                            <select id="jenisSelect" class="form-select" disabled required>
                                 <option value="">-- Pilih Jabatan Terlebih Dahulu --</option>
                             </select>
-                            @error('jenis_jabatan_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         {{-- Grade Jabatan (Wajib) --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Grade Jabatan <span class="text-danger">*</span></label>
-                            <select id="gradeSelect" name="grade_jabatan_id"
-                                class="form-select @error('grade_jabatan_id') is-invalid @enderror" disabled required>
+                            <select id="gradeSelect" name="struktur_jabatan_id"
+                                class="form-select @error('struktur_jabatan_id') is-invalid @enderror" disabled required>
                                 <option value="">-- Pilih Jenis Jabatan Terlebih Dahulu --</option>
                             </select>
-                            @error('grade_jabatan_id')
+                            @error('struktur_jabatan_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -205,25 +191,21 @@
                             <div class="card p-3 bg-light border">
                                 @foreach ($fungsionalTugas as $index => $ft)
                                     <div class="row align-items-center mb-2 pb-2 border-bottom">
-                                        {{-- CHECKBOX NAMA TUGAS --}}
                                         <div class="col-md-7">
                                             <div class="form-check">
-                                                {{-- ID Tugas dikirim sebagai array tugas[index][id] --}}
                                                 <input class="form-check-input tugas-checkbox" type="checkbox"
-                                                    name="tugas[{{ $index }}][id]" value="{{ $ft->id_tugas }}"
-                                                    {{-- Pastikan ini ID primary key tabel master tugas --}} id="tugas_{{ $index }}"
-                                                    data-index="{{ $index }}">
-                                                <label class="form-check-label fw-bold" for="tugas_{{ $index }}">
-                                                    {{ $ft->tugas }}
+                                                    name="tugas[{{ $ft->id_tugas }}][id]" value="{{ $ft->id_tugas }}"
+                                                    id="tugas_{{ $ft->id_tugas }}"
+                                                    data-index="{{ $ft->id_tugas }}">
+                                                <label class="form-check-label fw-bold" for="tugas_{{ $ft->id_tugas }}">
+                                                    {{ $ft->nama_tugas }}
                                                 </label>
                                             </div>
                                         </div>
-
-                                        {{-- PILIHAN STATUS (Aktif/Non) --}}
                                         <div class="col-md-5">
-                                            <select name="tugas[{{ $index }}][status]"
+                                            <select name="tugas[{{ $ft->id_tugas }}][status]"
                                                 class="form-select form-select-sm status-select"
-                                                id="status_{{ $index }}" disabled>
+                                                id="status_{{ $ft->id_tugas }}" disabled>
                                                 <option value="aktif">Aktif</option>
                                                 <option value="non_aktif">Non Aktif</option>
                                             </select>
@@ -231,10 +213,30 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <small class="text-muted fst-italic">*Centang tugas untuk mengaktifkan pilihan status.</small>
                         </div>
 
-                        {{-- Script Khusus Checkbox (Taruh langsung di bawah div ini atau di section scripts) --}}
+                        {{-- Tugas Internal (SINGLE SELECT) --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tugas Internal</label>
+                            <select name="tugas_internal_id" class="form-select">
+                                <option value="">-- Tidak Ada --</option>
+                                @foreach ($rangkapInternals as $ri)
+                                    <option value="{{ $ri->id_tugas }}">{{ $ri->nama_tugas }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Tugas Eksternal (SINGLE SELECT) --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tugas Eksternal</label>
+                            <select name="tugas_eksternal_id" class="form-select">
+                                <option value="">-- Tidak Ada --</option>
+                                @foreach ($rangkapEksternals as $re)
+                                    <option value="{{ $re->id_tugas }}">{{ $re->nama_tugas }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
                         <script>
                             document.addEventListener("DOMContentLoaded", function() {
                                 const checkboxes = document.querySelectorAll('.tugas-checkbox');
@@ -251,34 +253,6 @@
                                 });
                             });
                         </script>
-
-                        {{-- Rangkap Tugas --}}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold">Rangkap Tugas Internal</label>
-                                <select name="rangkap_internal_id" class="form-select">
-                                    <option value="">-- Pilih --</option>
-                                    @foreach ($rangkapInternals as $ri)
-                                        <option value="{{ $ri->id_internal }}"
-                                            {{ old('rangkap_internal_id') == $ri->id_internal ? 'selected' : '' }}>
-                                            {{ $ri->internal }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold">Rangkap Tugas Eksternal</label>
-                                <select name="rangkap_eksternal_id" class="form-select">
-                                    <option value="">-- Pilih --</option>
-                                    @foreach ($rangkapEksternals as $re)
-                                        <option value="{{ $re->id_eksternal }}"
-                                            {{ old('rangkap_eksternal_id') == $re->id_eksternal ? 'selected' : '' }}>
-                                            {{ $re->eksternal }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
 
                         {{-- Pendidikan & Angkatan --}}
                         <div class="row">
@@ -436,66 +410,60 @@
 
             // Entitas -> Jabatan
             $('#entitasSelect').on('change', function() {
-                const entitasId = $(this).val();
+                const entitas = $(this).val();
                 $('#jabatanSelect').prop('disabled', true).html('<option value="">Memuat...</option>');
-                $('#jenisSelect').prop('disabled', true).html(
-                    '<option value="">-- Pilih Jabatan Terlebih Dahulu --</option>');
-                $('#gradeSelect').prop('disabled', true).html(
-                    '<option value="">-- Pilih Jenis Jabatan Terlebih Dahulu --</option>');
+                $('#jenisSelect').prop('disabled', true).html('<option value="">-- Pilih Jabatan Terlebih Dahulu --</option>');
+                $('#gradeSelect').prop('disabled', true).html('<option value="">-- Pilih Jenis Jabatan Terlebih Dahulu --</option>');
 
-                if (!entitasId) {
-                    $('#jabatanSelect').prop('disabled', true).html(
-                        '<option value="">-- Pilih Entitas Terlebih Dahulu --</option>');
+                if (!entitas) {
+                    $('#jabatanSelect').prop('disabled', true).html('<option value="">-- Pilih Entitas Terlebih Dahulu --</option>');
                     return;
                 }
 
-                $.get(`/master/jabatan/get-jabatan/${entitasId}`)
+                $.get(`/master/struktur_jabatan/get-jabatan/${encodeURIComponent(entitas)}`)
                     .done(function(data) {
                         let html = '<option value="">-- Pilih Jabatan --</option>';
-                        data.forEach(j => html +=
-                            `<option value="${j.id}">${j.nama_jabatan}</option>`);
+                        data.forEach(j => html += `<option value="${j.jabatan}">${j.jabatan}</option>`);
                         $('#jabatanSelect').html(html).prop('disabled', false);
                     });
             });
 
             // Jabatan -> Jenis
             $('#jabatanSelect').on('change', function() {
-                const jabatanId = $(this).val();
+                const entitas = $('#entitasSelect').val();
+                const jabatan = $(this).val();
                 $('#jenisSelect').prop('disabled', true).html('<option value="">Memuat...</option>');
-                $('#gradeSelect').prop('disabled', true).html(
-                    '<option value="">-- Pilih Jenis Jabatan Terlebih Dahulu --</option>');
+                $('#gradeSelect').prop('disabled', true).html('<option value="">-- Pilih Jenis Jabatan Terlebih Dahulu --</option>');
 
-                if (!jabatanId) {
-                    $('#jenisSelect').prop('disabled', true).html(
-                        '<option value="">-- Pilih Jabatan Terlebih Dahulu --</option>');
+                if (!jabatan) {
+                    $('#jenisSelect').prop('disabled', true).html('<option value="">-- Pilih Jabatan Terlebih Dahulu --</option>');
                     return;
                 }
 
-                $.get(`/master/jabatan/get-jenis/${jabatanId}`)
+                $.get(`/master/struktur_jabatan/get-jenis/${encodeURIComponent(entitas)}/${encodeURIComponent(jabatan)}`)
                     .done(function(data) {
                         let html = '<option value="">-- Pilih Jenis Jabatan --</option>';
-                        data.forEach(j => html +=
-                            `<option value="${j.id}">${j.jenis_jabatan}</option>`);
+                        data.forEach(j => html += `<option value="${j.jenis_jabatan}">${j.jenis_jabatan}</option>`);
                         $('#jenisSelect').html(html).prop('disabled', false);
                     });
             });
 
             // Jenis -> Grade
             $('#jenisSelect').on('change', function() {
-                const jenisId = $(this).val();
+                const entitas = $('#entitasSelect').val();
+                const jabatan = $('#jabatanSelect').val();
+                const jenis = $(this).val();
                 $('#gradeSelect').prop('disabled', true).html('<option value="">Memuat...</option>');
 
-                if (!jenisId) {
-                    $('#gradeSelect').prop('disabled', true).html(
-                        '<option value="">-- Pilih Jenis Jabatan Terlebih Dahulu --</option>');
+                if (!jenis) {
+                    $('#gradeSelect').prop('disabled', true).html('<option value="">-- Pilih Jenis Jabatan Terlebih Dahulu --</option>');
                     return;
                 }
 
-                $.get(`/master/jabatan/get-grade/${jenisId}`)
+                $.get(`/master/struktur_jabatan/get-grade/${encodeURIComponent(entitas)}/${encodeURIComponent(jabatan)}/${encodeURIComponent(jenis)}`)
                     .done(function(data) {
                         let html = '<option value="">-- Pilih Grade --</option>';
-                        data.forEach(g => html +=
-                            `<option value="${g.id}">${g.grade}</option>`);
+                        data.forEach(g => html += `<option value="${g.id}">${g.grade}</option>`);
                         $('#gradeSelect').html(html).prop('disabled', false);
                     });
             });

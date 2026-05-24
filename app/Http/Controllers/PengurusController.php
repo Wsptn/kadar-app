@@ -4,14 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Angkatan;
 use App\Models\Daerah;
-use App\Models\Entitas;
-use App\Models\GradeJabatan;
-use App\Models\Jabatan;
-use App\Models\JenisJabatan;
+use App\Models\MasterStrukturJabatan;
 use App\Models\Kamar;
-use App\Models\MasterFungsionalTugas;
-use App\Models\MasterTugasEksternal;
-use App\Models\MasterTugasInternal;
+use App\Models\MasterTugas;
 use App\Models\EntitasDaerah;
 use App\Models\Pendidikan;
 use App\Models\Pengurus;
@@ -33,7 +28,7 @@ class PengurusController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $query = Pengurus::with(['wilayah', 'daerah', 'kamar', 'entitas', 'jabatan', 'fungsionalTugas']);
+        $query = Pengurus::with(['wilayah', 'daerah', 'kamar', 'strukturJabatan', 'tugas']);
 
         // FILTER PERAN
         if ($user->isWilayah()) {
@@ -48,17 +43,41 @@ class PengurusController extends Controller
         }
         if ($request->filled('daerah')) $query->where('daerah_id', $request->daerah);
         if ($request->filled('entitas_daerah_id')) $query->where('entitas_daerah_id', $request->entitas_daerah_id);
-        if ($request->filled('entitas')) $query->where('entitas_id', $request->entitas);
-        if ($request->filled('jabatan')) $query->where('jabatan_id', $request->jabatan);
-
-        if ($request->filled('tugas')) {
-            $query->whereHas('fungsionalTugas', function ($q) use ($request) {
-                $q->where('master_fungsional_tugas_id', $request->tugas);
+        if ($request->filled('entitas')) {
+            $query->whereHas('strukturJabatan', function($q) use ($request) {
+                $q->where('entitas', $request->entitas);
+            });
+        }
+        if ($request->filled('jabatan')) {
+            $query->whereHas('strukturJabatan', function($q) use ($request) {
+                $q->where('jabatan', $request->jabatan);
             });
         }
 
-        if ($request->filled('internal')) $query->where('rangkap_internal_id', $request->internal);
-        if ($request->filled('eksternal')) $query->where('rangkap_eksternal_id', $request->eksternal);
+        // FILTER JENIS TUGAS
+        if ($request->filled('jenis_tugas')) {
+            $query->whereHas('tugas', function ($q) use ($request) {
+                $q->where('jenis_tugas', $request->jenis_tugas);
+            });
+        }
+
+        // FILTER SPECIFIC TUGAS
+        if ($request->filled('tugas')) {
+            $query->whereHas('fungsionalTugas', function ($q) use ($request) {
+                $q->where('master_tugas.id_tugas', $request->tugas);
+            });
+        }
+        if ($request->filled('internal')) {
+            $query->whereHas('internalTugas', function ($q) use ($request) {
+                $q->where('master_tugas.id_tugas', $request->internal);
+            });
+        }
+        if ($request->filled('eksternal')) {
+            $query->whereHas('eksternalTugas', function ($q) use ($request) {
+                $q->where('master_tugas.id_tugas', $request->eksternal);
+            });
+        }
+
         if ($request->filled('pendidikan')) $query->where('pendidikan_id', $request->pendidikan);
         if ($request->filled('angkatan')) $query->where('angkatan_id', $request->angkatan);
         if ($request->filled('status')) $query->where('status', $request->status);
@@ -81,16 +100,14 @@ class PengurusController extends Controller
             ? Daerah::where('wilayah_id', $request->wilayah)->orderBy('nama_daerah')->get()
             : Daerah::orderBy('nama_daerah')->get();
 
-        $fungsionalList = MasterFungsionalTugas::orderBy('tugas')->get();
-        $internalList   = MasterTugasInternal::orderBy('internal')->get();
-        $eksternalList  = MasterTugasEksternal::orderBy('eksternal')->get();
+        $fungsionalList = MasterTugas::where('jenis_tugas', 'fungsional')->orderBy('nama_tugas')->get();
+        $internalList   = MasterTugas::where('jenis_tugas', 'internal')->orderBy('nama_tugas')->get();
+        $eksternalList  = MasterTugas::where('jenis_tugas', 'eksternal')->orderBy('nama_tugas')->get();
         $pendidikanList = Pendidikan::orderBy('nama_pendidikan')->get();
         $angkatanList   = Angkatan::orderBy('angkatan')->get();
-        $entitasList      = Entitas::orderBy('nama_entitas')->get();
-        $jabatanList      = Jabatan::orderBy('nama_jabatan')->get();
-        $jenisJabatanList = JenisJabatan::orderBy('jenis_jabatan')->get();
-        $gradeJabatanList = GradeJabatan::orderBy('grade')->get();
-        $entitasDaerahList = EntitasDaerah::orderBy('nama_entitas')->get();
+        $entitasList    = MasterStrukturJabatan::select('entitas')->distinct()->orderBy('entitas')->get();
+        $jabatanList    = MasterStrukturJabatan::select('jabatan')->distinct()->orderBy('jabatan')->get();
+        $entitasDaerahList = EntitasDaerah::orderBy('nama_entitas_daerah')->get();
 
         return view('pokok.pengurus.index', compact(
             'pengurus',
@@ -103,8 +120,6 @@ class PengurusController extends Controller
             'angkatanList',
             'entitasList',
             'jabatanList',
-            'jenisJabatanList',
-            'gradeJabatanList',
             'entitasDaerahList'
         ));
     }
@@ -117,13 +132,13 @@ class PengurusController extends Controller
 
         return view('pokok.pengurus.create', [
             'wilayahs'          => Wilayah::orderBy('nama_wilayah')->get(),
-            'entitas'           => Entitas::orderBy('nama_entitas')->get(),
-            'fungsionalTugas'   => MasterFungsionalTugas::orderBy('tugas')->get(),
-            'rangkapInternals'  => MasterTugasInternal::orderBy('internal')->get(),
-            'rangkapEksternals' => MasterTugasEksternal::orderBy('eksternal')->get(),
+            'entitasList'       => MasterStrukturJabatan::select('entitas')->distinct()->orderBy('entitas')->get(),
+            'fungsionalTugas'   => MasterTugas::where('jenis_tugas', 'fungsional')->orderBy('nama_tugas')->get(),
+            'rangkapInternals'  => MasterTugas::where('jenis_tugas', 'internal')->orderBy('nama_tugas')->get(),
+            'rangkapEksternals' => MasterTugas::where('jenis_tugas', 'eksternal')->orderBy('nama_tugas')->get(),
             'pendidikans'       => Pendidikan::orderBy('nama_pendidikan')->get(),
             'angkatans'         => Angkatan::orderBy('angkatan')->get(),
-            'entitasDaerahs'    => EntitasDaerah::orderBy('nama_entitas')->get(),
+            'entitasDaerahs'    => EntitasDaerah::orderBy('nama_entitas_daerah')->get(),
         ]);
     }
 
@@ -139,14 +154,9 @@ class PengurusController extends Controller
             'wilayah_id'           => 'required',
             'daerah_id'            => 'required',
             'kamar_id'             => 'required|exists:kamars,id',
-            'entitas_id'           => 'required|exists:entitas,id',
-            'jabatan_id'           => 'required|exists:jabatans,id',
-            'jenis_jabatan_id'     => 'required|exists:jenis_jabatans,id',
-            'grade_jabatan_id'     => 'required|exists:grade_jabatans,id',
-            // Status tidak divalidasi karena default 'aktif'
+            'struktur_jabatan_id'  => 'required|exists:master_struktur_jabatans,id',
             'foto'                 => 'nullable|image|mimes:jpeg,png,jpg|max:15360|dimensions:min_width=1080,min_height=1080',
         ], [
-            // --- PESAN ERROR CUSTOM AGAR BISA DIBACA USER ---
             'foto.max'        => 'Ukuran foto terlalu besar. Maksimal 15 MB.',
             'foto.dimensions' => 'Resolusi foto kurang tajam. Minimal dimensi gambar adalah 1080 x 1080 piksel.',
             'foto.image'      => 'File yang diunggah harus berupa file gambar.',
@@ -186,13 +196,8 @@ class PengurusController extends Controller
             'daerah_id'            => $daerahId,
             'entitas_daerah_id'    => $request->entitas_daerah_id,
             'kamar_id'             => $request->kamar_id,
-            'entitas_id'           => $request->entitas_id,
-            'jabatan_id'           => $request->jabatan_id,
-            'jenis_jabatan_id'     => $request->jenis_jabatan_id,
-            'grade_jabatan_id'     => $request->grade_jabatan_id,
+            'struktur_jabatan_id'  => $request->struktur_jabatan_id,
             'sk_kepengurusan'      => $request->sk_kepengurusan,
-            'rangkap_internal_id'  => $request->rangkap_internal_id,
-            'rangkap_eksternal_id' => $request->rangkap_eksternal_id,
             'pendidikan_id'        => $request->pendidikan_id,
             'angkatan_id'          => $request->angkatan_id,
             'status'               => 'aktif', // Default Aktif
@@ -203,33 +208,42 @@ class PengurusController extends Controller
             'berkas_lain'          => $lainPath,
         ]);
 
-        // LOGIK TUGAS MULTI-SELECT
-        if ($request->has('tugas')) {
-            foreach ($request->tugas as $item) {
+        // LOGIK TUGAS MULTI-SELECT & SINGLE-SELECT
+        $tugasArray = $request->input('tugas', []);
+        
+        if ($request->filled('tugas_internal_id')) {
+            $tugasArray[] = ['id' => $request->tugas_internal_id, 'status' => 'aktif'];
+        }
+        if ($request->filled('tugas_eksternal_id')) {
+            $tugasArray[] = ['id' => $request->tugas_eksternal_id, 'status' => 'aktif'];
+        }
+
+        if (!empty($tugasArray)) {
+            foreach ($tugasArray as $item) {
                 if (isset($item['id'])) {
                     $tugasId = $item['id'];
                     $status  = $item['status'];
 
                     // A. Simpan ke Pivot
-                    $pengurus->fungsionalTugas()->attach($tugasId, ['status' => $status]);
+                    $pengurus->tugas()->attach($tugasId, ['status' => $status]);
 
-                    // B. Otomatisasi (Copy Nama & NIUP)
-                    $masterTugas = MasterFungsionalTugas::where('id_tugas', $tugasId)->first();
+                    // B. Otomatisasi (Copy Nama & NIUP) khusus untuk fungsional tertentu
+                    $masterTugas = MasterTugas::where('id_tugas', $tugasId)->first();
                     if ($masterTugas) {
-                        $namaTugas = strtolower($masterTugas->tugas);
+                        $namaTugas = strtolower($masterTugas->nama_tugas);
                         $dataLengkap = [
                             'status' => 'aktif',
                             'nama'   => $pengurus->nama,
                             'niup'   => $pengurus->niup
                         ];
 
-                        if (str_contains($namaTugas, "mu'allim") || str_contains($namaTugas, "muallim")) {
+                        if ($namaTugas === "mu'allim" || $namaTugas === "muallim") {
                             if ($status == 'aktif') Muallim::firstOrCreate(['pengurus_id' => $pengurus->id], $dataLengkap);
                         }
-                        if (str_contains($namaTugas, "wali asuh")) {
+                        if ($namaTugas === "wali asuh") {
                             if ($status == 'aktif') WaliAsuh::firstOrCreate(['pengurus_id' => $pengurus->id], $dataLengkap);
                         }
-                        if (str_contains($namaTugas, "pengajar")) {
+                        if ($namaTugas === "pengajar") {
                             if ($status == 'aktif') Pengajar::firstOrCreate(['pengurus_id' => $pengurus->id], $dataLengkap);
                         }
                     }
@@ -247,13 +261,8 @@ class PengurusController extends Controller
             'wilayah',
             'daerah',
             'kamar',
-            'entitas',
-            'jabatan',
-            'jenisJabatan',
-            'gradeJabatan',
-            'fungsionalTugas',
-            'rangkapInternal',
-            'rangkapEksternal',
+            'strukturJabatan',
+            'tugas',
             'pendidikan',
             'angkatan',
         ])->findOrFail($id);
@@ -268,7 +277,7 @@ class PengurusController extends Controller
 
     public function edit($id)
     {
-        $pengurus = Pengurus::with('fungsionalTugas')->findOrFail($id);
+        $pengurus = Pengurus::with('tugas')->findOrFail($id);
         /** @var \App\Models\User $user */
         $user = Auth::user();
         if ($user->isWilayah() && $pengurus->wilayah_id != $user->wilayah_id) abort(403);
@@ -279,16 +288,16 @@ class PengurusController extends Controller
             'wilayahs'          => Wilayah::orderBy('nama_wilayah')->get(),
             'daerahs'           => Daerah::where('wilayah_id', $pengurus->wilayah_id)->orderBy('nama_daerah')->get(),
             'kamars'            => Kamar::where('daerah_id', $pengurus->daerah_id)->orderBy('id')->get(),
-            'entitas'           => Entitas::orderBy('nama_entitas')->get(),
-            'jabatans'          => Jabatan::where('entitas_id', $pengurus->entitas_id)->get(),
-            'jenis_jabatans'    => JenisJabatan::where('jabatan_id', $pengurus->jabatan_id)->get(),
-            'grade_jabatans'    => GradeJabatan::where('jenis_jabatan_id', $pengurus->jenis_jabatan_id)->get(),
-            'fungsionalTugas'   => MasterFungsionalTugas::orderBy('tugas')->get(),
-            'rangkapInternals'  => MasterTugasInternal::orderBy('internal')->get(),
-            'rangkapEksternals' => MasterTugasEksternal::orderBy('eksternal')->get(),
+            'entitasList'       => MasterStrukturJabatan::select('entitas')->distinct()->orderBy('entitas')->get(),
+            'jabatans'          => MasterStrukturJabatan::where('entitas', $pengurus->strukturJabatan?->entitas)->select('jabatan')->distinct()->get(),
+            'jenis_jabatans'    => MasterStrukturJabatan::where('entitas', $pengurus->strukturJabatan?->entitas)->where('jabatan', $pengurus->strukturJabatan?->jabatan)->select('jenis_jabatan')->distinct()->get(),
+            'grade_jabatans'    => MasterStrukturJabatan::where('entitas', $pengurus->strukturJabatan?->entitas)->where('jabatan', $pengurus->strukturJabatan?->jabatan)->where('jenis_jabatan', $pengurus->strukturJabatan?->jenis_jabatan)->get(),
+            'fungsionalTugas'   => MasterTugas::where('jenis_tugas', 'fungsional')->orderBy('nama_tugas')->get(),
+            'rangkapInternals'  => MasterTugas::where('jenis_tugas', 'internal')->orderBy('nama_tugas')->get(),
+            'rangkapEksternals' => MasterTugas::where('jenis_tugas', 'eksternal')->orderBy('nama_tugas')->get(),
             'pendidikans'       => Pendidikan::orderBy('nama_pendidikan')->get(),
             'angkatans'         => Angkatan::orderBy('angkatan')->get(),
-            'entitasDaerahs'    => EntitasDaerah::orderBy('nama_entitas')->get(),
+            'entitasDaerahs'    => EntitasDaerah::orderBy('nama_entitas_daerah')->get(),
         ]);
     }
 
@@ -304,7 +313,6 @@ class PengurusController extends Controller
         $request->validate([
             'niup'   => 'required',
             'nama'   => 'required',
-            // 'status' => 'required', // Status sudah dihandle di logic bawah
             'foto'   => 'nullable|image|mimes:jpeg,png,jpg|max:15360|dimensions:min_width=1080,min_height=1080',
         ], [
             'foto.max'        => 'Ukuran foto terlalu besar. Maksimal 15 MB.',
@@ -318,12 +326,7 @@ class PengurusController extends Controller
         $pengurus->nama                 = $request->nama;
         $pengurus->kamar_id             = $request->kamar_id;
         $pengurus->entitas_daerah_id    = $request->entitas_daerah_id;
-        $pengurus->entitas_id           = $request->entitas_id;
-        $pengurus->jabatan_id           = $request->jabatan_id;
-        $pengurus->jenis_jabatan_id     = $request->jenis_jabatan_id;
-        $pengurus->grade_jabatan_id     = $request->grade_jabatan_id;
-        $pengurus->rangkap_internal_id  = $request->rangkap_internal_id;
-        $pengurus->rangkap_eksternal_id = $request->rangkap_eksternal_id;
+        $pengurus->struktur_jabatan_id  = $request->struktur_jabatan_id;
         $pengurus->pendidikan_id        = $request->pendidikan_id;
         $pengurus->angkatan_id          = $request->angkatan_id;
         $pengurus->sk_kepengurusan      = $request->sk_kepengurusan;
@@ -364,16 +367,21 @@ class PengurusController extends Controller
         $pengurus->save();
 
         // 2. LOGIKA SINKRONISASI TUGAS (RELASI)
-
-        // Bersihkan dulu semua relasi lama di pivot
-        $pengurus->fungsionalTugas()->detach();
+        $pengurus->tugas()->detach();
 
         // Ambil input tugas dari form
-        $inputTugas = collect($request->input('tugas', []));
-        $allMasterTugas = MasterFungsionalTugas::all();
+        $tugasArray = $request->input('tugas', []);
+        if ($request->filled('tugas_internal_id')) {
+            $tugasArray[] = ['id' => $request->tugas_internal_id, 'status' => 'aktif'];
+        }
+        if ($request->filled('tugas_eksternal_id')) {
+            $tugasArray[] = ['id' => $request->tugas_eksternal_id, 'status' => 'aktif'];
+        }
+        $inputTugas = collect($tugasArray);
+        $allMasterTugas = MasterTugas::all();
 
         foreach ($allMasterTugas as $master) {
-            $namaTugas = strtolower($master->tugas);
+            $namaTugas = strtolower($master->nama_tugas);
 
             // Cek apakah tugas ini ada di inputan user (dicentang)?
             $selectedItem = $inputTugas->firstWhere('id', $master->id_tugas);
@@ -389,7 +397,7 @@ class PengurusController extends Controller
 
             // SIMPAN KE PIVOT (Hanya jika dicentang oleh user)
             if ($isDipilih) {
-                $pengurus->fungsionalTugas()->attach($master->id_tugas, ['status' => $statusTugas]);
+                $pengurus->tugas()->attach($master->id_tugas, ['status' => $statusTugas]);
             }
 
             // 3. SINKRONISASI KE TABEL SPESIFIK (Muallim/WaliAsuh)
@@ -400,7 +408,7 @@ class PengurusController extends Controller
             ];
 
             // --- MU'ALLIM ---
-            if (str_contains($namaTugas, "mu'allim") || str_contains($namaTugas, "muallim")) {
+            if ($namaTugas === "mu'allim" || $namaTugas === "muallim") {
                 if ($isDipilih) {
                     Muallim::updateOrCreate(['pengurus_id' => $pengurus->id], $dataSync);
                 } else {
@@ -409,7 +417,7 @@ class PengurusController extends Controller
             }
 
             // --- WALI ASUH ---
-            if (str_contains($namaTugas, "wali asuh")) {
+            if ($namaTugas === "wali asuh") {
                 if ($isDipilih) {
                     WaliAsuh::updateOrCreate(['pengurus_id' => $pengurus->id], $dataSync);
                 } else {
@@ -418,7 +426,7 @@ class PengurusController extends Controller
             }
 
             // --- PENGAJAR ---
-            if (str_contains($namaTugas, "pengajar")) {
+            if ($namaTugas === "pengajar") {
                 if ($isDipilih) {
                     Pengajar::updateOrCreate(['pengurus_id' => $pengurus->id], $dataSync);
                 } else {

@@ -2,11 +2,11 @@
 
 @section('this-page-contain')
     <div class="container-fluid px-4">
-        <h1 class="mb-4">Master Fungsional Tugas</h1>
+        <h1 class="mb-4">Master Tugas</h1>
 
         {{-- Breadcrumb --}}
         <div class="bg-light p-2 mb-3 border rounded small">
-            <span>Data Master / <span class="text-success fw-semibold">Fungsional Tugas</span></span>
+            <span>Data Master / <span class="text-success fw-semibold">Master Tugas</span></span>
         </div>
 
         {{-- Tombol + Search --}}
@@ -24,17 +24,25 @@
                         <thead class="table-success text-center">
                             <tr>
                                 <th style="width: 60px;">No</th>
-                                <th>Fungsional Tugas</th>
-                                <th>Keterangan</th>
+                                <th>Nama Tugas</th>
+                                <th>Jenis Tugas</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($FungsionalTugas as $index => $item)
+                            @forelse ($tugasList as $index => $item)
                                 <tr>
                                     <td class="text-center">{{ $index + 1 }}</td>
-                                    <td>{{ $item->tugas }}</td>
-                                    <td>{{ $item->keterangan ?? '-' }}</td>
+                                    <td>{{ $item->nama_tugas }}</td>
+                                    <td class="text-center">
+                                        @if ($item->jenis_tugas == 'fungsional')
+                                            <span class="badge bg-primary">Fungsional</span>
+                                        @elseif ($item->jenis_tugas == 'internal')
+                                            <span class="badge bg-info">Internal</span>
+                                        @else
+                                            <span class="badge bg-warning text-dark">Eksternal</span>
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         @if (!Auth::user()->isDaerah())
                                             <div class="btn-group">
@@ -72,7 +80,7 @@
 {{-- Script pencarian --}}
 @section('scripts')
     <script>
-        document.getElementById("search-input").addEventListener("keyup", function() {
+        document.getElementById("search-input")?.addEventListener("keyup", function() {
             let value = this.value.toLowerCase();
             let rows = document.querySelectorAll("#data-table tbody tr");
 

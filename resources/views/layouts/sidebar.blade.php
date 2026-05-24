@@ -74,31 +74,17 @@
                 </a>
             </li>
 
-            <li class="sidebar-item {{ request()->routeIs('master.jabatan.*') ? 'active' : '' }}">
-                <a class="sidebar-link" href="{{ route('master.jabatan.index') }}">
+            <li class="sidebar-item {{ request()->routeIs('master.struktur_jabatan.*') ? 'active' : '' }}">
+                <a class="sidebar-link" href="{{ route('master.struktur_jabatan.index') }}">
                     <i class="align-middle" data-feather="briefcase"></i>
-                    <span class="align-middle">Master Jabatan</span>
+                    <span class="align-middle">Master Struktur Jabatan</span>
                 </a>
             </li>
 
             <li class="sidebar-item {{ request()->routeIs('master.tugas.*') ? 'active' : '' }}">
                 <a class="sidebar-link" href="{{ route('master.tugas.index') }}">
                     <i class="align-middle" data-feather="clipboard"></i>
-                    <span class="align-middle">Master Fungsional Tugas</span>
-                </a>
-            </li>
-
-            <li class="sidebar-item {{ request()->routeIs('master.internal.*') ? 'active' : '' }}">
-                <a class="sidebar-link" href="{{ route('master.internal.index') }}">
-                    <i class="align-middle" data-feather="git-merge"></i>
-                    <span class="align-middle">Master Rangkap Internal</span>
-                </a>
-            </li>
-
-            <li class="sidebar-item {{ request()->routeIs('master.eksternal.*') ? 'active' : '' }}">
-                <a class="sidebar-link" href="{{ route('master.eksternal.index') }}">
-                    <i class="align-middle" data-feather="git-branch"></i>
-                    <span class="align-middle">Master Rangkap Eksternal</span>
+                    <span class="align-middle">Master Tugas</span>
                 </a>
             </li>
 

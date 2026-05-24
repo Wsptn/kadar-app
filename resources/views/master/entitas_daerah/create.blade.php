@@ -9,9 +9,9 @@
                 <form action="{{ route('master.entitas_daerah.store') }}" method="POST">
                     @csrf
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Nama Entitas Daerah</label>
-                        <input type="text" name="nama_entitas" class="form-control @error('nama_entitas') is-invalid @enderror" value="{{ old('nama_entitas') }}" required>
-                        @error('nama_entitas')
+                        <label class="form-label fw-bold">Nama Entitas Daerah</label>
+                        <input type="text" name="nama_entitas_daerah" class="form-control @error('nama_entitas_daerah') is-invalid @enderror" value="{{ old('nama_entitas_daerah') }}" required>
+                        @error('nama_entitas_daerah')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

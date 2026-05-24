@@ -20,10 +20,24 @@ class DashboardController extends Controller
         // Gunakan 'penguruses.status' agar aman dari error ambiguous column
         $totalPengurus = Pengurus::where('penguruses.status', 'aktif')->count();
 
-        // Hitung Data Pendukung
-        $totalMuallim  = Muallim::where('status', 'aktif')->count();
-        $totalWaliAsuh = WaliAsuh::where('status', 'aktif')->count();
-        $totalPengajar = Pengajar::where('status', 'aktif')->count();
+        // Hitung Data Pendukung berdasarkan Fungsional Tugas Pengurus
+        $totalMuallim = Pengurus::where('status', 'aktif')
+            ->whereHas('fungsionalTugas', function ($q) {
+                $q->where('nama_tugas', "Mu'allim")
+                  ->where('detail_tugas.status', 'aktif');
+            })->count();
+
+        $totalWaliAsuh = Pengurus::where('status', 'aktif')
+            ->whereHas('fungsionalTugas', function ($q) {
+                $q->where('nama_tugas', "Wali Asuh")
+                  ->where('detail_tugas.status', 'aktif');
+            })->count();
+
+        $totalPengajar = Pengurus::where('status', 'aktif')
+            ->whereHas('fungsionalTugas', function ($q) {
+                $q->where('nama_tugas', "Pengajar")
+                  ->where('detail_tugas.status', 'aktif');
+            })->count();
 
         // ===============================
         // 2. GRAFIK PENGURUS PER WILAYAH (LOGIKA BARU)
@@ -51,12 +65,16 @@ class DashboardController extends Controller
         // 3. GRAFIK RANGKAP TUGAS (Hanya Pengurus Aktif)
         // ===============================
         $rangkapInternal = Pengurus::where('penguruses.status', 'aktif')
-            ->whereNotNull('rangkap_internal_id')->count();
+            ->whereHas('internalTugas', function ($q) {
+                $q->where('detail_tugas.status', 'aktif');
+            })->count();
 
         $tidakInternal   = $totalPengurus - $rangkapInternal;
 
         $rangkapEksternal = Pengurus::where('penguruses.status', 'aktif')
-            ->whereNotNull('rangkap_eksternal_id')->count();
+            ->whereHas('eksternalTugas', function ($q) {
+                $q->where('detail_tugas.status', 'aktif');
+            })->count();
 
         $tidakEksternal   = $totalPengurus - $rangkapEksternal;
 
@@ -64,24 +82,25 @@ class DashboardController extends Controller
         // 4. GRAFIK FUNGSIONAL TUGAS (METODE LEFT JOIN)
         // ===============================
 
-        $fungsional = DB::table('master_fungsional_tugas')
-            ->leftJoin('pengurus_fungsional_tugas', function ($join) {
-                $join->on('pengurus_fungsional_tugas.master_fungsional_tugas_id', '=', 'master_fungsional_tugas.id_tugas')
-                    ->where('pengurus_fungsional_tugas.status', '=', 'aktif');
+        $fungsional = DB::table('master_tugas')
+            ->where('jenis_tugas', 'fungsional')
+            ->leftJoin('detail_tugas', function ($join) {
+                $join->on('detail_tugas.master_tugas_id', '=', 'master_tugas.id_tugas')
+                    ->where('detail_tugas.status', '=', 'aktif');
             })
             ->leftJoin('penguruses', function ($join) {
-                $join->on('penguruses.id', '=', 'pengurus_fungsional_tugas.pengurus_id')
+                $join->on('penguruses.id', '=', 'detail_tugas.pengurus_id')
                     ->where('penguruses.status', '=', 'aktif');
             })
             ->select(
-                'master_fungsional_tugas.tugas',
+                'master_tugas.nama_tugas',
                 DB::raw('COUNT(penguruses.id) as total')
             )
-            ->groupBy('master_fungsional_tugas.tugas')
-            ->orderBy('master_fungsional_tugas.tugas')
+            ->groupBy('master_tugas.nama_tugas')
+            ->orderBy('master_tugas.nama_tugas')
             ->get();
 
-        $labelFungsional = $fungsional->pluck('tugas');
+        $labelFungsional = $fungsional->pluck('nama_tugas');
         $dataFungsional  = $fungsional->pluck('total');
 
         // ===============================

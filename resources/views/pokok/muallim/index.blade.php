@@ -123,21 +123,22 @@
                                     {{-- Fungsional Tugas --}}
                                     <div class="small text-success fw-bold mb-1" title="Fungsional Tugas">
                                         <i data-feather="briefcase" style="width: 12px;" class="me-1"></i>
-
-                                        @if ($p->fungsionalTugas->count() > 0)
-                                            @foreach ($p->fungsionalTugas as $ft)
-                                                <span
-                                                    class="{{ $ft->pivot->status == 'non_aktif' ? 'text-decoration-line-through text-muted' : '' }}">
-                                                    {{ $ft->tugas }}
-                                                </span>
-                                                {{ !$loop->last ? ', ' : '' }}
-                                            @endforeach
+                                        @php
+                                            $ftMuallim = $p->fungsionalTugas->first(function ($val) {
+                                                $nama = strtolower($val->nama_tugas);
+                                                return str_contains($nama, "mu'allim") || str_contains($nama, "muallim");
+                                            });
+                                        @endphp
+                                        @if ($ftMuallim)
+                                            <span class="{{ $ftMuallim->pivot->status == 'non_aktif' ? 'text-decoration-line-through text-muted' : '' }}">
+                                                {{ $ftMuallim->nama_tugas }}
+                                            </span>
                                         @else
                                             -
                                         @endif
                                     </div>
 
-                                    {{-- Wilayah/Daerah --}}
+                                    {{-- Daerah --}}
                                     <div class="small text-muted text-truncate">
                                         <i data-feather="map-pin" style="width: 12px;" class="me-1"></i>
                                         {{ $p->daerah->nama_daerah ?? '-' }}

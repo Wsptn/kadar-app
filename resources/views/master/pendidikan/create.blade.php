@@ -32,16 +32,6 @@
                         @enderror
                     </div>
 
-                    {{-- Keterangan --}}
-                    <div class="mb-3">
-                        <label class="form-label">Keterangan</label>
-                        <textarea name="keterangan" rows="4" class="form-control @error('keterangan') is-invalid @enderror"
-                            placeholder="Tambahkan keterangan jika ada">{{ old('keterangan') }}</textarea>
-
-                        @error('keterangan')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
 
                     {{-- Tombol --}}
                     <div class="d-flex justify-content-end pt-2">

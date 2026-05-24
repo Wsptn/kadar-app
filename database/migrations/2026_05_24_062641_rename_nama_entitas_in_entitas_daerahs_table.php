@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('master_tugas_eksternals', function (Blueprint $table) {
-            $table->bigIncrements('id_eksternal');
-            $table->string('eksternal');
-            $table->text('keterangan')->nullable();
-            $table->timestamps();
+        Schema::table('entitas_daerahs', function (Blueprint $table) {
+            $table->renameColumn('nama_entitas', 'nama_entitas_daerah');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('master_tugas_eksternals');
+        Schema::table('entitas_daerahs', function (Blueprint $table) {
+            $table->renameColumn('nama_entitas_daerah', 'nama_entitas');
+        });
     }
 };

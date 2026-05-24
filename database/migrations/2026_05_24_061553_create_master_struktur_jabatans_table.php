@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('master_tugas_internals', function (Blueprint $table) {
-            $table->bigIncrements('id_internal');
-            $table->string('internal');
-            $table->text('keterangan')->nullable();
+        Schema::create('master_struktur_jabatans', function (Blueprint $table) {
+            $table->id();
+            $table->string('entitas')->nullable();
+            $table->string('jabatan')->nullable();
+            $table->string('jenis_jabatan')->nullable();
+            $table->string('grade')->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('master_tugas_internals');
+        Schema::dropIfExists('master_struktur_jabatans');
     }
 };

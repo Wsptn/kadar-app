@@ -29,13 +29,11 @@ class PendidikanController extends Controller
     {
         $request->validate([
             'nama_pendidikan' => 'required|string|max:50',
-            'keterangan' => 'nullable|string',
         ]);
 
         try {
             Pendidikan::create([
                 'nama_pendidikan' => $request->nama_pendidikan,
-                'keterangan' => $request->keterangan,
             ]);
 
             return redirect()->route('master.pendidikan.index')
@@ -62,7 +60,6 @@ class PendidikanController extends Controller
     {
         $request->validate([
             'nama_pendidikan' => 'required|string|max:50',
-            'keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -70,7 +67,6 @@ class PendidikanController extends Controller
 
             $pendidikan->update([
                 'nama_pendidikan' => $request->nama_pendidikan,
-                'keterangan' => $request->keterangan,
             ]);
 
             return redirect()->route('master.pendidikan.index')
@@ -83,7 +79,7 @@ class PendidikanController extends Controller
     public function destroy($id_pendidikan)
     {
         try {
-            $item = MasterPendidikan::findOrFail($id_pendidikan);
+            $item = Pendidikan::findOrFail($id_pendidikan);
             $item->delete();
             return redirect()->route('master.pendidikan.index')->with('success', 'Data berhasil dihapus.');
         } catch (\Exception $e) {

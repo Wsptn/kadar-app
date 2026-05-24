@@ -27,10 +27,6 @@
                             value="{{ old('angkatan', $angkatan->angkatan) }}" required>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Keterangan</label>
-                        <textarea name="keterangan" rows="4" class="form-control @error('keterangan') is-invalid @enderror">{{ old('keterangan', $angkatan->keterangan) }}</textarea>
-                    </div>
 
                     <div class="d-flex justify-content-end pt-2">
                         <button type="submit" class="btn btn-success px-4">Simpan</button>

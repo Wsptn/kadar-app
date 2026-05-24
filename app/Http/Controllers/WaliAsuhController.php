@@ -12,9 +12,9 @@ class WaliAsuhController extends Controller
     {
         $search = $request->input('search');
 
-        $waliasuh = \App\Models\Pengurus::with(['fungsionalTugas'])
+        $waliasuh = \App\Models\Pengurus::with(['fungsionalTugas', 'wilayah'])
             ->whereHas('fungsionalTugas', function ($q) {
-                $q->where('tugas', "Wali Asuh");
+                $q->where('nama_tugas', "Wali Asuh");
             })
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($query) use ($search) {

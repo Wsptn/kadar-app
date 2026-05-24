@@ -120,21 +120,19 @@
                                     {{-- Fungsional Tugas --}}
                                     <div class="small text-success fw-bold mb-1" title="Fungsional Tugas">
                                         <i data-feather="briefcase" style="width: 12px;" class="me-1"></i>
-
-                                        @if ($p->fungsionalTugas->count() > 0)
-                                            @foreach ($p->fungsionalTugas as $ft)
-                                                <span
-                                                    class="{{ $ft->pivot->status == 'non_aktif' ? 'text-decoration-line-through text-muted' : '' }}">
-                                                    {{ $ft->tugas }}
-                                                </span>
-                                                {{ !$loop->last ? ', ' : '' }}
-                                            @endforeach
+                                        @php
+                                            $ftWaliAsuh = $p->fungsionalTugas->firstWhere('nama_tugas', 'Wali Asuh');
+                                        @endphp
+                                        @if ($ftWaliAsuh)
+                                            <span class="{{ $ftWaliAsuh->pivot->status == 'non_aktif' ? 'text-decoration-line-through text-muted' : '' }}">
+                                                {{ $ftWaliAsuh->nama_tugas }}
+                                            </span>
                                         @else
                                             -
                                         @endif
                                     </div>
 
-                                    {{-- Wilayah/Daerah --}}
+                                    {{-- Daerah --}}
                                     <div class="small text-muted text-truncate">
                                         <i data-feather="map-pin" style="width: 12px;" class="me-1"></i>
                                         {{ $p->daerah->nama_daerah ?? '-' }}

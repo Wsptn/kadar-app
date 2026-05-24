@@ -118,7 +118,7 @@
                             @foreach ($entitasDaerahList as $ed)
                                 <option value="{{ $ed->id }}"
                                     {{ request('entitas_daerah_id') == $ed->id ? 'selected' : '' }}>
-                                    {{ $ed->nama_entitas }}
+                                    {{ $ed->nama_entitas_daerah }}
                                 </option>
                             @endforeach
                         </select>
@@ -129,8 +129,8 @@
                         <select name="entitas" id="entitasFilter" class="form-select filter-select">
                             <option value="">-- Entitas --</option>
                             @foreach ($entitasList as $e)
-                                <option value="{{ $e->id }}" {{ request('entitas') == $e->id ? 'selected' : '' }}>
-                                    {{ $e->nama_entitas }}
+                                <option value="{{ $e->entitas }}" {{ request('entitas') == $e->entitas ? 'selected' : '' }}>
+                                    {{ $e->entitas }}
                                 </option>
                             @endforeach
                         </select>
@@ -144,35 +144,43 @@
 
                         {{-- ============================================================== --}}
 
-                        {{-- 6. FUNGSIONAL TUGAS --}}
+                        {{-- 6. JENIS TUGAS --}}
+                        <select name="jenis_tugas" class="form-select filter-select auto-submit">
+                            <option value="">-- Jenis Tugas --</option>
+                            <option value="fungsional" {{ request('jenis_tugas') == 'fungsional' ? 'selected' : '' }}>Fungsional</option>
+                            <option value="internal" {{ request('jenis_tugas') == 'internal' ? 'selected' : '' }}>Internal</option>
+                            <option value="eksternal" {{ request('jenis_tugas') == 'eksternal' ? 'selected' : '' }}>Eksternal</option>
+                        </select>
+
+                        {{-- 7. FUNGSIONAL TUGAS --}}
                         <select name="tugas" class="form-select filter-select auto-submit">
                             <option value="">-- Fungsional --</option>
                             @foreach ($fungsionalList as $ft)
                                 <option value="{{ $ft->id_tugas }}"
                                     {{ request('tugas') == $ft->id_tugas ? 'selected' : '' }}>
-                                    {{ $ft->tugas }}
+                                    {{ $ft->nama_tugas }}
                                 </option>
                             @endforeach
                         </select>
 
-                        {{-- 7. TUGAS INTERNAL --}}
+                        {{-- 8. TUGAS INTERNAL --}}
                         <select name="internal" class="form-select filter-select auto-submit">
                             <option value="">-- Internal --</option>
                             @foreach ($internalList as $ti)
-                                <option value="{{ $ti->id_internal }}"
-                                    {{ request('internal') == $ti->id_internal ? 'selected' : '' }}>
-                                    {{ $ti->internal }}
+                                <option value="{{ $ti->id_tugas }}"
+                                    {{ request('internal') == $ti->id_tugas ? 'selected' : '' }}>
+                                    {{ $ti->nama_tugas }}
                                 </option>
                             @endforeach
                         </select>
 
-                        {{-- 8. TUGAS EKSTERNAL --}}
+                        {{-- 9. TUGAS EKSTERNAL --}}
                         <select name="eksternal" class="form-select filter-select auto-submit">
                             <option value="">-- Eksternal --</option>
                             @foreach ($eksternalList as $te)
-                                <option value="{{ $te->id_eksternal }}"
-                                    {{ request('eksternal') == $te->id_eksternal ? 'selected' : '' }}>
-                                    {{ $te->eksternal }}
+                                <option value="{{ $te->id_tugas }}"
+                                    {{ request('eksternal') == $te->id_tugas ? 'selected' : '' }}>
+                                    {{ $te->nama_tugas }}
                                 </option>
                             @endforeach
                         </select>
@@ -282,7 +290,7 @@
                                         </div>
                                         <div class="small text-muted mb-1">
                                             <i data-feather="briefcase" style="width: 12px;" class="me-1"></i>
-                                            {{ $p->jabatan->nama_jabatan ?? '-' }}
+                                            {{ $p->strukturJabatan->jabatan ?? '-' }}
                                         </div>
                                         <div class="small text-muted">
                                             <i data-feather="map-pin" style="width: 12px;" class="me-1"></i>
@@ -333,6 +341,9 @@
 
             // === FUNGSI SUBMIT FORM ===
             function submitForm() {
+                if (typeof updateTugasFilters === 'function') {
+                    updateTugasFilters();
+                }
                 loadingOverlay.classList.remove('d-none');
                 form.submit();
             }
@@ -381,8 +392,8 @@
 
                     let html = `<option value="">${placeholder}</option>`;
                     data.forEach(item => {
-                        let id = item.id;
-                        let name = item.nama_jabatan;
+                        let id = item.jabatan;
+                        let name = item.jabatan;
                         let isSelected = (selectedId == id) ? 'selected' : '';
                         html += `<option value="${id}" ${isSelected}>${name}</option>`;
                     });
@@ -398,14 +409,14 @@
 
             // A. Event Change ENTITAS
             entitasFilter.addEventListener('change', function() {
-                const id = this.value;
+                const entitas = this.value;
 
                 // Reset anak-anaknya
                 jabatanFilter.innerHTML = '<option value="">-- Pilih Entitas Dulu --</option>';
                 jabatanFilter.disabled = true;
 
-                if (id) {
-                    fetchOptions(`/master/jabatan/get-jabatan/${id}`, jabatanFilter, '-- Jabatan --');
+                if (entitas) {
+                    fetchOptions(`/master/struktur_jabatan/get-jabatan/${encodeURIComponent(entitas)}`, jabatanFilter, '-- Jabatan --');
                 }
             });
 
@@ -413,9 +424,35 @@
             // Agar saat page reload, dropdown bertingkat tidak reset.
             if (oldEntitas) {
                 // 1. Load Jabatan berdasarkan Entitas yg terpilih
-                fetchOptions(`/master/jabatan/get-jabatan/${oldEntitas}`, jabatanFilter, '-- Jabatan --',
-                    oldJabatan);
+                fetchOptions(`/master/struktur_jabatan/get-jabatan/${encodeURIComponent(oldEntitas)}`, jabatanFilter, '-- Jabatan --', oldJabatan);
             }
+
+            // === 5. LOGIKA FILTER JENIS TUGAS ===
+            function updateTugasFilters() {
+                const jenisTugasFilter = document.querySelector('select[name="jenis_tugas"]');
+                const tugasFilter = document.querySelector('select[name="tugas"]');
+                const internalFilter = document.querySelector('select[name="internal"]');
+                const eksternalFilter = document.querySelector('select[name="eksternal"]');
+
+                if (!jenisTugasFilter) return;
+
+                const val = jenisTugasFilter.value;
+                tugasFilter.disabled = (val !== 'fungsional');
+                internalFilter.disabled = (val !== 'internal');
+                eksternalFilter.disabled = (val !== 'eksternal');
+                
+                if (tugasFilter.disabled) tugasFilter.value = '';
+                if (internalFilter.disabled) internalFilter.value = '';
+                if (eksternalFilter.disabled) eksternalFilter.value = '';
+            }
+
+            // Jalankan saat load pertama kali
+            updateTugasFilters();
+
+            // Saat jenis_tugas berubah, panggil updateTugasFilters (form akan submit via event listener autoSubmit)
+            document.querySelector('select[name="jenis_tugas"]')?.addEventListener('change', function() {
+                updateTugasFilters();
+            });
 
         });
     </script>

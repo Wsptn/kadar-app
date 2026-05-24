@@ -11,9 +11,9 @@
                     @method('PUT')
                     
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Nama Entitas Daerah</label>
-                        <input type="text" name="nama_entitas" class="form-control @error('nama_entitas') is-invalid @enderror" value="{{ old('nama_entitas', $entitasDaerah->nama_entitas) }}" required>
-                        @error('nama_entitas')
+                        <label class="form-label fw-bold">Nama Entitas Daerah</label>
+                        <input type="text" name="nama_entitas_daerah" class="form-control @error('nama_entitas_daerah') is-invalid @enderror" value="{{ old('nama_entitas_daerah', $entitasDaerah->nama_entitas_daerah) }}" required>
+                        @error('nama_entitas_daerah')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

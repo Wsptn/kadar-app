@@ -9,6 +9,6 @@ class EntitasDaerah extends Model
     protected $table = 'entitas_daerahs';
 
     protected $fillable = [
-        'nama_entitas',
+        'nama_entitas_daerah',
     ];
 }

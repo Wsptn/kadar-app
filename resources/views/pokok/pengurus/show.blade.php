@@ -157,7 +157,7 @@
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Entitas Daerah</div>
-                        <div class="col-sm-8">: {{ $pengurus->entitasDaerah->nama_entitas ?? '-' }}</div>
+                        <div class="col-sm-8">: {{ $pengurus->entitasDaerah->nama_entitas_daerah ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Kamar</div>
@@ -169,17 +169,17 @@
                     {{-- BAGIAN 2: KELEMBAGAAN & TUGAS --}}
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Entitas</div>
-                        <div class="col-sm-8">: {{ $pengurus->entitas->nama_entitas ?? '-' }}</div>
+                        <div class="col-sm-8">: {{ $pengurus->strukturJabatan->entitas ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Jabatan</div>
-                        <div class="col-sm-8">: {{ $pengurus->jabatan->nama_jabatan ?? '-' }}</div>
+                        <div class="col-sm-8">: {{ $pengurus->strukturJabatan->jabatan ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Jenis & Grade</div>
                         <div class="col-sm-8">
-                            : {{ $pengurus->jenisJabatan->jenis_jabatan ?? '-' }} /
-                            {{ $pengurus->gradeJabatan->grade ?? '-' }}
+                            : {{ $pengurus->strukturJabatan->jenis_jabatan ?? '-' }} /
+                            {{ $pengurus->strukturJabatan->grade ?? '-' }}
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -198,7 +198,7 @@
                                         @foreach ($pengurus->fungsionalTugas as $ft)
                                             <span
                                                 class="badge {{ $ft->pivot->status == 'aktif' ? 'bg-primary' : 'bg-secondary' }} bg-opacity-75">
-                                                {{ $ft->tugas }}
+                                                {{ $ft->nama_tugas }}
                                                 @if ($ft->pivot->status != 'aktif')
                                                     (Non-Aktif)
                                                 @endif
@@ -213,12 +213,12 @@
                     </div>
 
                     <div class="row mb-2">
-                        <div class="col-sm-4 fw-semibold text-muted">Rangkap Internal</div>
-                        <div class="col-sm-8">: {{ $pengurus->rangkapInternal->internal ?? '-' }}</div>
+                        <div class="col-sm-4 fw-semibold text-muted">Tugas Internal</div>
+                        <div class="col-sm-8">: {{ $pengurus->internalTugas->first()->nama_tugas ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-sm-4 fw-semibold text-muted">Rangkap Eksternal</div>
-                        <div class="col-sm-8">: {{ $pengurus->rangkapEksternal->eksternal ?? '-' }}</div>
+                        <div class="col-sm-4 fw-semibold text-muted">Tugas Eksternal</div>
+                        <div class="col-sm-8">: {{ $pengurus->eksternalTugas->first()->nama_tugas ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Pendidikan</div>

@@ -9,6 +9,7 @@
             <span>Data Master / <span class="text-success fw-semibold">Pendidikan</span></span>
         </div>
         @if (!Auth::user()->isDaerah())
+
             <div class="d-flex align-items-center mb-4 flex-wrap gap-2">
                 <a href="{{ route('master.pendidikan.create') }}" class="btn btn-success btn-sm">+ Tambah</a>
             </div>
@@ -23,7 +24,6 @@
                             <tr class="text-center">
                                 <th style="width: 60px;">No</th>
                                 <th>Pendidikan</th>
-                                <th>Keterangan</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -32,7 +32,6 @@
                                 <tr>
                                     <td class="text-center">{{ $index + 1 }}</td>
                                     <td>{{ $item->nama_pendidikan }}</td>
-                                    <td>{{ $item->keterangan ?? '-' }}</td>
                                     <td class="text-center">
                                         @if (!Auth::user()->isDaerah())
                                             <div class="btn-group">
@@ -56,7 +55,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">
+                                    <td colspan="3" class="text-center text-muted">
                                         Belum ada data.
                                     </td>
                                 </tr>

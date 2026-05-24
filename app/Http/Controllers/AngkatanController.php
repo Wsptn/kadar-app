@@ -24,14 +24,12 @@ class AngkatanController extends Controller
     {
         $request->validate([
             'angkatan' => 'required|string|max:25',
-            'keterangan' => 'nullable|string',
         ]);
 
         try {
 
             Angkatan::create([
                 'angkatan' => $request->angkatan,
-                'keterangan' => $request->keterangan,
             ]);
 
             return redirect()->route('master.angkatan.index')
@@ -50,7 +48,6 @@ class AngkatanController extends Controller
     {
         $request->validate([
             'angkatan' => 'required|string|max:25',
-            'keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -58,7 +55,6 @@ class AngkatanController extends Controller
 
             $angkatan->update([
                 'angkatan' => $request->angkatan,
-                'keterangan' => $request->keterangan,
             ]);
 
             return redirect()
@@ -72,7 +68,7 @@ class AngkatanController extends Controller
     public function destroy($id_angkatan)
     {
         try {
-            $item = MasterAngkatan::findOrFail($id_angkatan);
+            $item = Angkatan::findOrFail($id_angkatan);
             $item->delete();
             return redirect()->route('master.angkatan.index')->with('success', 'Data berhasil dihapus.');
         } catch (\Exception $e) {

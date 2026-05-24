@@ -25,7 +25,6 @@
                             <tr class="text-center">
                                 <th style="width: 60px;">No</th>
                                 <th>Angkatan</th>
-                                <th>Keterangan</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -34,7 +33,6 @@
                                 <tr>
                                     <td class="text-center">{{ $index + 1 }}</td>
                                     <td>{{ $item->angkatan }}</td>
-                                    <td>{{ $item->keterangan ?? '-' }}</td>
                                     <td class="text-center">
                                         {{-- Cek apakah user Admin atau Biktren --}}
                                         @if (!Auth::user()->isDaerah())
@@ -60,7 +58,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">
+                                    <td colspan="3" class="text-center text-muted py-4">
                                         Belum ada data.
                                     </td>
                                 </tr>

@@ -17,7 +17,7 @@ class KinerjaController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $query = \App\Models\Pengurus::with(['kinerja', 'jabatan', 'wilayah', 'daerah']);
+        $query = \App\Models\Pengurus::with(['kinerja', 'strukturJabatan', 'wilayah', 'daerah']);
 
         if ($user->isAdmin() || $user->isBiktren()) {
         } elseif ($user->isWilayah()) {
@@ -66,21 +66,21 @@ class KinerjaController extends Controller
 
         if ($user->isAdmin()) {
         } elseif ($user->isBiktren()) {
-            $query->whereHas('jabatan', function ($q) {
-                $q->where('nama_jabatan', 'like', '%Kepala Wilayah%');
+            $query->whereHas('strukturJabatan', function ($q) {
+                $q->where('jabatan', 'like', '%Kepala Wilayah%');
             });
         } elseif ($user->isWilayah()) {
             $query->where('wilayah_id', $user->wilayah_id)
                 ->where('id', '!=', $user->pengurus_id) // Tidak bisa menilai diri sendiri
-                ->whereHas('jabatan', function ($q) {
-                    $q->where('nama_jabatan', 'not like', '%Kepala Wilayah%');
+                ->whereHas('strukturJabatan', function ($q) {
+                    $q->where('jabatan', 'not like', '%Kepala Wilayah%');
                 });
         } elseif ($user->isDaerah()) {
             $query->where('daerah_id', $user->daerah_id)
                 ->where('id', '!=', $user->pengurus_id)
-                ->whereHas('jabatan', function ($q) {
-                    $q->where('nama_jabatan', 'like', '%Daerah%')
-                        ->where('nama_jabatan', 'not like', '%Kepala Daerah%');
+                ->whereHas('strukturJabatan', function ($q) {
+                    $q->where('jabatan', 'like', '%Daerah%')
+                        ->where('jabatan', 'not like', '%Kepala Daerah%');
                 });
         }
 
