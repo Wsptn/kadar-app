@@ -67,20 +67,27 @@ class KinerjaController extends Controller
         if ($user->isAdmin()) {
         } elseif ($user->isBiktren()) {
             $query->whereHas('strukturJabatan', function ($q) {
-                $q->where('jabatan', 'like', '%Kepala Wilayah%');
+                $q->where('entitas', 'Pengurus Wilayah')
+                  ->where('jabatan', 'like', '%Kepala Wilayah%');
             });
         } elseif ($user->isWilayah()) {
             $query->whereHas('domisili', function ($q) use ($user) { $q->where('wilayah', $user->wilayah); })
                 ->where('id', '!=', $user->pengurus_id) // Tidak bisa menilai diri sendiri
                 ->whereHas('strukturJabatan', function ($q) {
-                    $q->where('jabatan', 'not like', '%Kepala Wilayah%');
+                    $q->where(function ($q2) {
+                        $q2->where('entitas', 'Pengurus Wilayah')
+                           ->where('jabatan', 'not like', '%Kepala Wilayah%');
+                    })->orWhere(function ($q2) {
+                        $q2->where('entitas', 'Pengurus Daerah')
+                           ->where('jabatan', 'like', '%Kepala Daerah%');
+                    });
                 });
         } elseif ($user->isDaerah()) {
             $query->whereHas('domisili', function ($q) use ($user) { $q->where('daerah', $user->daerah); })
                 ->where('id', '!=', $user->pengurus_id)
                 ->whereHas('strukturJabatan', function ($q) {
-                    $q->where('jabatan', 'like', '%Daerah%')
-                        ->where('jabatan', 'not like', '%Kepala Daerah%');
+                    $q->where('entitas', 'Pengurus Daerah')
+                      ->where('jabatan', 'not like', '%Kepala Daerah%');
                 });
         }
 
