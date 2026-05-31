@@ -189,7 +189,7 @@
     {{-- Perbaikan: Menghapus class 'text-muted' agar tidak bentrok dengan CSS putih --}}
     <div class="mt-4 text-center footer-text" style="font-size: 0.9rem;">
         <p class="mb-1">
-            &copy; {{ date('Y') }} <strong>Nurul Jadid</strong>. All rights reserved.
+            &copy; {{ date('Y') }} <a href="https://www.nuruljadid.net/" target="_blank" style="text-decoration: none; color: inherit;"><strong>Nurul Jadid</strong></a>. All rights reserved.
         </p>
         <p>
             Developed by
