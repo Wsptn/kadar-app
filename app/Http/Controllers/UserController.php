@@ -56,8 +56,8 @@ class UserController extends Controller
         // Hanya Admin dan Biktren yang boleh akses form ini
         if ($user->isAdmin() || $user->isBiktren()) {
             // KIRIM DATA WILAYAH & DAERAH UNTUK DROPDOWN
-            $wilayahs = Wilayah::all();
-            $daerahs  = Daerah::all();
+            $wilayahs = \App\Models\Domisili::select('wilayah')->distinct()->pluck('wilayah');
+            $daerahs  = \App\Models\Domisili::select('daerah')->distinct()->pluck('daerah');
 
             return view('user.create', compact('wilayahs', 'daerahs'));
         }
@@ -78,9 +78,9 @@ class UserController extends Controller
             'level'      => 'required|in:Admin,Biktren,Wilayah,Daerah',
             'aktif'      => 'nullable',
             // Validasi Kondisional: Wajib isi wilayah jika level Wilayah
-            'wilayah_id' => 'nullable|required_if:level,Wilayah|exists:wilayahs,id',
+            'wilayah'    => 'nullable|required_if:level,Wilayah|string',
             // Validasi Kondisional: Wajib isi daerah jika level Daerah
-            'daerah_id'  => 'nullable|required_if:level,Daerah|exists:daerahs,id',
+            'daerah'     => 'nullable|required_if:level,Daerah|string',
         ]);
 
         $currentUser = Auth::user();
@@ -104,9 +104,9 @@ class UserController extends Controller
             'password'   => $validated['password'], // Password otomatis di-hash oleh Model (casts)
             'level'      => $validated['level'],
             'status'     => $request->has('aktif') ? 'aktif' : 'nonaktif',
-            // Simpan ID lokasi jika ada
-            'wilayah_id' => $request->wilayah_id ?? null,
-            'daerah_id'  => $request->daerah_id ?? null,
+            // Simpan lokasi jika ada
+            'wilayah'    => $request->wilayah ?? null,
+            'daerah'     => $request->daerah ?? null,
         ]);
 
         return redirect()->route('user.index')

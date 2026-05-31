@@ -11,10 +11,8 @@ class Pengurus extends Model
     protected $fillable = [
         'niup',
         'nama',
-        'wilayah_id',
-        'daerah_id',
-        'entitas_daerah_id',
-        'kamar_id',
+        'domisili_id',
+        'entitas_daerah',
         'entitas_id', // keeping this for now just in case? No, wait, entitas_id is used for what? Ah, wait, in penguruses I dropped entitas_id! Let's just put struktur_jabatan_id
         'struktur_jabatan_id',
         'sk_kepengurusan',
@@ -33,24 +31,9 @@ class Pengurus extends Model
 
     // === RELATIONS ===
 
-    public function wilayah()
+    public function domisili()
     {
-        return $this->belongsTo(Wilayah::class, 'wilayah_id');
-    }
-
-    public function daerah()
-    {
-        return $this->belongsTo(Daerah::class, 'daerah_id');
-    }
-
-    public function entitasDaerah()
-    {
-        return $this->belongsTo(EntitasDaerah::class, 'entitas_daerah_id');
-    }
-
-    public function kamar()
-    {
-        return $this->belongsTo(Kamar::class, 'kamar_id');
+        return $this->belongsTo(Domisili::class, 'domisili_id');
     }
 
     public function strukturJabatan()

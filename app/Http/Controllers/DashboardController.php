@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterFungsionalTugas;
 use App\Models\Pengurus;
-use App\Models\Muallim;
-use App\Models\WaliAsuh;
-use App\Models\Pengajar;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -45,17 +43,17 @@ class DashboardController extends Controller
         // KITA UBAH: Start dari tabel 'wilayahs' (Master), bukan 'pengurus'.
         // Tujuannya agar SEMUA wilayah tetap terambil meski jumlah pengurusnya sedikit atau 0.
 
-        $pengurusPerWilayah = DB::table('wilayahs')
+        $pengurusPerWilayah = DB::table('domisilis')
             ->leftJoin('penguruses', function ($join) {
-                $join->on('wilayahs.id', '=', 'penguruses.wilayah_id')
+                $join->on('domisilis.id', '=', 'penguruses.domisili_id')
                     ->where('penguruses.status', '=', 'aktif'); // Hanya hitung yang aktif
             })
             ->select(
-                'wilayahs.nama_wilayah',
+                'domisilis.wilayah as nama_wilayah',
                 DB::raw('COUNT(penguruses.id) as total')
             )
-            ->groupBy('wilayahs.nama_wilayah')
-            ->orderBy('wilayahs.nama_wilayah', 'asc') // Urutkan nama wilayah A-Z agar rapi di grafik
+            ->groupBy('domisilis.wilayah')
+            ->orderBy('domisilis.wilayah', 'asc') // Urutkan nama wilayah A-Z agar rapi di grafik
             ->get();
 
         $labelsWilayah = $pengurusPerWilayah->pluck('nama_wilayah');

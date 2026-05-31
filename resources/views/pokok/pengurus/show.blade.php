@@ -149,19 +149,19 @@
                     {{-- BAGIAN 1: LOKASI --}}
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Wilayah</div>
-                        <div class="col-sm-8 fw-bold text-dark">: {{ $pengurus->wilayah->nama_wilayah ?? '-' }}</div>
+                        <div class="col-sm-8 fw-bold text-dark">: {{ $pengurus->domisili?->wilayah ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Daerah</div>
-                        <div class="col-sm-8 fw-bold text-dark">: {{ $pengurus->daerah->nama_daerah ?? '-' }}</div>
+                        <div class="col-sm-8 fw-bold text-dark">: {{ $pengurus->domisili?->daerah ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Entitas Daerah</div>
-                        <div class="col-sm-8">: {{ $pengurus->entitasDaerah->nama_entitas_daerah ?? '-' }}</div>
+                        <div class="col-sm-8">: {{ $pengurus->entitas_daerah ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Kamar</div>
-                        <div class="col-sm-8">: {{ $pengurus->kamar->nomor_kamar ?? '-' }}</div>
+                        <div class="col-sm-8">: {{ $pengurus->domisili?->kamar ?? '-' }}</div>
                     </div>
 
                     <hr class="my-3 text-muted opacity-50">

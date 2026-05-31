@@ -80,14 +80,14 @@
                     {{-- Container Select Wilayah (Hidden by Default) --}}
                     <div class="mb-3 d-none" id="wilayahContainer">
                         <label class="form-label">Pilih Wilayah</label>
-                        <select name="wilayah_id" id="selectWilayah"
-                            class="form-select @error('wilayah_id') is-invalid @enderror">
+                        <select name="wilayah" id="selectWilayah"
+                            class="form-select @error('wilayah') is-invalid @enderror">
                             <option value="">-- Pilih Wilayah --</option>
-                            @foreach (\App\Models\Wilayah::all() as $w)
-                                <option value="{{ $w->id }}">{{ $w->nama_wilayah }}</option>
+                            @foreach (\App\Models\Domisili::select('wilayah')->distinct()->orderBy('wilayah')->pluck('wilayah') as $w)
+                                <option value="{{ $w }}">{{ $w }}</option>
                             @endforeach
                         </select>
-                        @error('wilayah_id')
+                        @error('wilayah')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -95,16 +95,16 @@
                     {{-- Container Select Daerah (Hidden by Default) --}}
                     <div class="mb-3 d-none" id="daerahContainer">
                         <label class="form-label">Pilih Daerah</label>
-                        <select name="daerah_id" id="selectDaerah"
-                            class="form-select @error('daerah_id') is-invalid @enderror">
+                        <select name="daerah" id="selectDaerah"
+                            class="form-select @error('daerah') is-invalid @enderror">
                             <option value="">-- Pilih Daerah --</option>
                             {{-- Data Daerah akan di-load via AJAX atau load semua jika data sedikit --}}
-                            @foreach (\App\Models\Daerah::all() as $d)
-                                <option value="{{ $d->id }}">{{ $d->nama_daerah }}</option>
+                            @foreach (\App\Models\Domisili::select('daerah')->distinct()->orderBy('daerah')->pluck('daerah') as $d)
+                                <option value="{{ $d }}">{{ $d }}</option>
                             @endforeach
                         </select>
                         <small class="text-muted">*Pastikan Wilayah Daerah sesuai</small>
-                        @error('daerah_id')
+                        @error('daerah')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

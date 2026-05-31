@@ -91,9 +91,9 @@
                             <select name="wilayah" id="wilayahSelect" class="form-select filter-select auto-submit">
                                 <option value="">-- Wilayah --</option>
                                 @foreach ($wilayahList as $w)
-                                    <option value="{{ $w->id }}"
-                                        {{ request('wilayah') == $w->id ? 'selected' : '' }}>
-                                        {{ $w->nama_wilayah }}
+                                    <option value="{{ $w }}"
+                                        {{ request('wilayah') == $w ? 'selected' : '' }}>
+                                        {{ $w }}
                                     </option>
                                 @endforeach
                             </select>
@@ -105,8 +105,8 @@
                                 {{ (Auth::user()->isAdmin() || Auth::user()->isBiktren()) && empty(request('wilayah')) ? 'disabled' : '' }}>
                                 <option value="">-- Daerah --</option>
                                 @foreach ($daerahList as $d)
-                                    <option value="{{ $d->id }}" {{ request('daerah') == $d->id ? 'selected' : '' }}>
-                                        {{ $d->nama_daerah }}
+                                    <option value="{{ $d }}" {{ request('daerah') == $d ? 'selected' : '' }}>
+                                        {{ $d }}
                                     </option>
                                 @endforeach
                             </select>
@@ -116,9 +116,9 @@
                         <select name="entitas_daerah_id" class="form-select filter-select auto-submit">
                             <option value="">-- Entitas Daerah --</option>
                             @foreach ($entitasDaerahList as $ed)
-                                <option value="{{ $ed->id }}"
-                                    {{ request('entitas_daerah_id') == $ed->id ? 'selected' : '' }}>
-                                    {{ $ed->nama_entitas_daerah }}
+                                <option value="{{ $ed }}"
+                                    {{ request('entitas_daerah') == $ed ? 'selected' : '' }}>
+                                    {{ $ed }}
                                 </option>
                             @endforeach
                         </select>
@@ -294,7 +294,7 @@
                                         </div>
                                         <div class="small text-muted">
                                             <i data-feather="map-pin" style="width: 12px;" class="me-1"></i>
-                                            {{ $p->daerah->nama_daerah ?? '-' }}
+                                            {{ $p->domisili?->daerah ?? '-' }}
                                         </div>
                                     </div>
                                 </div>

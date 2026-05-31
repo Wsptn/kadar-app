@@ -2,25 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Angkatan;
-use App\Models\Daerah;
-use App\Models\MasterStrukturJabatan;
-use App\Models\Kamar;
-use App\Models\MasterTugas;
-use App\Models\EntitasDaerah;
+use App\Models\Domisili;
 use App\Models\Pendidikan;
 use App\Models\Pengurus;
-use App\Models\Wilayah;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PengurusExport;
+use App\Models\Angkatan;
+use App\Models\MasterTugas;
+use App\Models\MasterStrukturJabatan;
 use Illuminate\Http\Request;
 
-// Model Otomatisasi
-use App\Models\Muallim;
-use App\Models\WaliAsuh;
-use App\Models\Pengajar;
 
 class PengurusController extends Controller
 {
@@ -28,21 +21,23 @@ class PengurusController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $query = Pengurus::with(['wilayah', 'daerah', 'kamar', 'strukturJabatan', 'tugas']);
+        $query = Pengurus::with(['domisili', 'strukturJabatan', 'tugas']);
 
         // FILTER PERAN
         if ($user->isWilayah()) {
-            $query->where('wilayah_id', $user->wilayah_id);
+            $query->whereHas('domisili', function($q) use ($user) { $q->where('wilayah', $user->wilayah); });
         } elseif ($user->isDaerah()) {
-            $query->where('daerah_id', $user->daerah_id);
+            $query->whereHas('domisili', function($q) use ($user) { $q->where('daerah', $user->daerah); });
         }
 
         // FILTER PERMINTAAN
         if ($request->filled('wilayah') && ($user->isAdmin() || $user->isBiktren())) {
-            $query->where('wilayah_id', $request->wilayah);
+            $query->whereHas('domisili', function($q) use ($request) { $q->where('wilayah', $request->wilayah); });
         }
-        if ($request->filled('daerah')) $query->where('daerah_id', $request->daerah);
-        if ($request->filled('entitas_daerah_id')) $query->where('entitas_daerah_id', $request->entitas_daerah_id);
+        if ($request->filled('daerah')) {
+            $query->whereHas('domisili', function($q) use ($request) { $q->where('daerah', $request->daerah); });
+        }
+        if ($request->filled('entitas_daerah_id')) $query->where('entitas_daerah', $request->entitas_daerah_id);
         if ($request->filled('entitas')) {
             $query->whereHas('strukturJabatan', function($q) use ($request) {
                 $q->where('entitas', $request->entitas);
@@ -95,10 +90,10 @@ class PengurusController extends Controller
             ->appends($request->all());
 
         // DATA MASTER
-        $wilayahList = Wilayah::orderBy('nama_wilayah')->get();
+        $wilayahList = Domisili::select('wilayah')->distinct()->orderBy('wilayah')->pluck('wilayah');
         $daerahList  = $request->filled('wilayah')
-            ? Daerah::where('wilayah_id', $request->wilayah)->orderBy('nama_daerah')->get()
-            : Daerah::orderBy('nama_daerah')->get();
+            ? Domisili::where('wilayah', $request->wilayah)->select('daerah')->distinct()->orderBy('daerah')->pluck('daerah')
+            : Domisili::select('daerah')->distinct()->orderBy('daerah')->pluck('daerah');
 
         $fungsionalList = MasterTugas::where('jenis_tugas', 'fungsional')->orderBy('nama_tugas')->get();
         $internalList   = MasterTugas::where('jenis_tugas', 'internal')->orderBy('nama_tugas')->get();
@@ -107,7 +102,7 @@ class PengurusController extends Controller
         $angkatanList   = Angkatan::orderBy('angkatan')->get();
         $entitasList    = MasterStrukturJabatan::select('entitas')->distinct()->orderBy('entitas')->get();
         $jabatanList    = MasterStrukturJabatan::select('jabatan')->distinct()->orderBy('jabatan')->get();
-        $entitasDaerahList = EntitasDaerah::orderBy('nama_entitas_daerah')->get();
+        $entitasDaerahList = Domisili::whereNotNull('entitas_daerah')->select('entitas_daerah')->distinct()->orderBy('entitas_daerah')->pluck('entitas_daerah');
 
         return view('pokok.pengurus.index', compact(
             'pengurus',
@@ -131,14 +126,14 @@ class PengurusController extends Controller
         if ($user->isDaerah()) abort(403, 'Maaf, akun Daerah tidak diizinkan menambah data pengurus.');
 
         return view('pokok.pengurus.create', [
-            'wilayahs'          => Wilayah::orderBy('nama_wilayah')->get(),
+            'wilayahs'          => Domisili::select('wilayah')->distinct()->orderBy('wilayah')->pluck('wilayah'),
             'entitasList'       => MasterStrukturJabatan::select('entitas')->distinct()->orderBy('entitas')->get(),
             'fungsionalTugas'   => MasterTugas::where('jenis_tugas', 'fungsional')->orderBy('nama_tugas')->get(),
             'rangkapInternals'  => MasterTugas::where('jenis_tugas', 'internal')->orderBy('nama_tugas')->get(),
             'rangkapEksternals' => MasterTugas::where('jenis_tugas', 'eksternal')->orderBy('nama_tugas')->get(),
             'pendidikans'       => Pendidikan::orderBy('nama_pendidikan')->get(),
             'angkatans'         => Angkatan::orderBy('angkatan')->get(),
-            'entitasDaerahs'    => EntitasDaerah::orderBy('nama_entitas_daerah')->get(),
+            'entitasDaerahs'    => Domisili::whereNotNull('entitas_daerah')->select('entitas_daerah')->distinct()->orderBy('entitas_daerah')->pluck('entitas_daerah'),
         ]);
     }
 
@@ -151,9 +146,8 @@ class PengurusController extends Controller
         $request->validate([
             'niup'                 => 'required|string|max:50|unique:penguruses,niup',
             'nama'                 => 'required|string|max:255',
-            'wilayah_id'           => 'required',
-            'daerah_id'            => 'required',
-            'kamar_id'             => 'required|exists:kamars,id',
+            'domisili_id'          => 'required|exists:domisilis,id',
+            'entitas_daerah'       => 'nullable|string',
             'struktur_jabatan_id'  => 'required|exists:master_struktur_jabatans,id',
             'foto'                 => 'nullable|image|mimes:jpeg,png,jpg|max:15360|dimensions:min_width=1080,min_height=1080',
         ], [
@@ -164,14 +158,9 @@ class PengurusController extends Controller
         ]);
 
         // LOGIK LOKASI
-        $wilayahId = $request->wilayah_id;
-        $daerahId  = $request->daerah_id;
-        if ($user->isWilayah()) {
-            $wilayahId = $user->wilayah_id;
-            $daerahId  = $request->daerah_id;
-        }
-        if (!$wilayahId || !$daerahId) {
-            return back()->withErrors(['daerah_id' => 'Wilayah dan Daerah wajib diisi.'])->withInput();
+        $domisiliId = $request->domisili_id;
+        if (!$domisiliId) {
+            return back()->withErrors(['domisili_id' => 'Kamar/Domisili wajib diisi.'])->withInput();
         }
 
         // UPLOAD FOTO
@@ -192,10 +181,8 @@ class PengurusController extends Controller
         $pengurus = Pengurus::create([
             'niup'                 => $request->niup,
             'nama'                 => $request->nama,
-            'wilayah_id'           => $wilayahId,
-            'daerah_id'            => $daerahId,
-            'entitas_daerah_id'    => $request->entitas_daerah_id,
-            'kamar_id'             => $request->kamar_id,
+            'domisili_id'          => $domisiliId,
+            'entitas_daerah'       => $request->entitas_daerah,
             'struktur_jabatan_id'  => $request->struktur_jabatan_id,
             'sk_kepengurusan'      => $request->sk_kepengurusan,
             'pendidikan_id'        => $request->pendidikan_id,
@@ -227,26 +214,7 @@ class PengurusController extends Controller
                     // A. Simpan ke Pivot
                     $pengurus->tugas()->attach($tugasId, ['status' => $status]);
 
-                    // B. Otomatisasi (Copy Nama & NIUP) khusus untuk fungsional tertentu
-                    $masterTugas = MasterTugas::where('id_tugas', $tugasId)->first();
-                    if ($masterTugas) {
-                        $namaTugas = strtolower($masterTugas->nama_tugas);
-                        $dataLengkap = [
-                            'status' => 'aktif',
-                            'nama'   => $pengurus->nama,
-                            'niup'   => $pengurus->niup
-                        ];
 
-                        if ($namaTugas === "mu'allim" || $namaTugas === "muallim") {
-                            if ($status == 'aktif') Muallim::firstOrCreate(['pengurus_id' => $pengurus->id], $dataLengkap);
-                        }
-                        if ($namaTugas === "wali asuh") {
-                            if ($status == 'aktif') WaliAsuh::firstOrCreate(['pengurus_id' => $pengurus->id], $dataLengkap);
-                        }
-                        if ($namaTugas === "pengajar") {
-                            if ($status == 'aktif') Pengajar::firstOrCreate(['pengurus_id' => $pengurus->id], $dataLengkap);
-                        }
-                    }
                 }
             }
         }
@@ -258,9 +226,7 @@ class PengurusController extends Controller
     public function show($id)
     {
         $pengurus = Pengurus::with([
-            'wilayah',
-            'daerah',
-            'kamar',
+            'domisili',
             'strukturJabatan',
             'tugas',
             'pendidikan',
@@ -269,8 +235,8 @@ class PengurusController extends Controller
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if ($user->isWilayah() && $pengurus->wilayah_id != $user->wilayah_id) abort(403);
-        if ($user->isDaerah() && $pengurus->daerah_id != $user->daerah_id) abort(403);
+        if ($user->isWilayah() && $pengurus->domisili?->wilayah != $user->wilayah) abort(403);
+        if ($user->isDaerah() && $pengurus->domisili?->daerah != $user->daerah) abort(403);
 
         return view('pokok.pengurus.show', compact('pengurus'));
     }
@@ -280,14 +246,14 @@ class PengurusController extends Controller
         $pengurus = Pengurus::with('tugas')->findOrFail($id);
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if ($user->isWilayah() && $pengurus->wilayah_id != $user->wilayah_id) abort(403);
-        if ($user->isDaerah() && $pengurus->daerah_id != $user->daerah_id) abort(403);
+        if ($user->isWilayah() && $pengurus->domisili?->wilayah != $user->wilayah) abort(403);
+        if ($user->isDaerah() && $pengurus->domisili?->daerah != $user->daerah) abort(403);
 
         return view('pokok.pengurus.edit', [
             'pengurus'          => $pengurus,
-            'wilayahs'          => Wilayah::orderBy('nama_wilayah')->get(),
-            'daerahs'           => Daerah::where('wilayah_id', $pengurus->wilayah_id)->orderBy('nama_daerah')->get(),
-            'kamars'            => Kamar::where('daerah_id', $pengurus->daerah_id)->orderBy('id')->get(),
+            'wilayahs'          => Domisili::select('wilayah')->distinct()->orderBy('wilayah')->pluck('wilayah'),
+            'daerahs'           => Domisili::where('wilayah', $pengurus->domisili?->wilayah)->select('daerah')->distinct()->orderBy('daerah')->pluck('daerah'),
+            'kamars'            => Domisili::where('daerah', $pengurus->domisili?->daerah)->orderBy('kamar')->get(),
             'entitasList'       => MasterStrukturJabatan::select('entitas')->distinct()->orderBy('entitas')->get(),
             'jabatans'          => MasterStrukturJabatan::where('entitas', $pengurus->strukturJabatan?->entitas)->select('jabatan')->distinct()->get(),
             'jenis_jabatans'    => MasterStrukturJabatan::where('entitas', $pengurus->strukturJabatan?->entitas)->where('jabatan', $pengurus->strukturJabatan?->jabatan)->select('jenis_jabatan')->distinct()->get(),
@@ -297,7 +263,7 @@ class PengurusController extends Controller
             'rangkapEksternals' => MasterTugas::where('jenis_tugas', 'eksternal')->orderBy('nama_tugas')->get(),
             'pendidikans'       => Pendidikan::orderBy('nama_pendidikan')->get(),
             'angkatans'         => Angkatan::orderBy('angkatan')->get(),
-            'entitasDaerahs'    => EntitasDaerah::orderBy('nama_entitas_daerah')->get(),
+            'entitasDaerahs'    => Domisili::whereNotNull('entitas_daerah')->select('entitas_daerah')->distinct()->orderBy('entitas_daerah')->pluck('entitas_daerah'),
         ]);
     }
 
@@ -307,8 +273,8 @@ class PengurusController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if ($user->isWilayah() && $pengurus->wilayah_id != $user->wilayah_id) abort(403);
-        if ($user->isDaerah() && $pengurus->daerah_id != $user->daerah_id) abort(403);
+        if ($user->isWilayah() && $pengurus->domisili?->wilayah != $user->wilayah) abort(403);
+        if ($user->isDaerah() && $pengurus->domisili?->daerah != $user->daerah) abort(403);
 
         $request->validate([
             'niup'   => 'required',
@@ -324,8 +290,8 @@ class PengurusController extends Controller
         // 1. UPDATE DATA UTAMA
         $pengurus->niup                 = $request->niup;
         $pengurus->nama                 = $request->nama;
-        $pengurus->kamar_id             = $request->kamar_id;
-        $pengurus->entitas_daerah_id    = $request->entitas_daerah_id;
+        $pengurus->domisili_id          = $request->domisili_id ?? $pengurus->domisili_id;
+        $pengurus->entitas_daerah       = $request->entitas_daerah;
         $pengurus->struktur_jabatan_id  = $request->struktur_jabatan_id;
         $pengurus->pendidikan_id        = $request->pendidikan_id;
         $pengurus->angkatan_id          = $request->angkatan_id;
@@ -336,11 +302,10 @@ class PengurusController extends Controller
             $pengurus->status = $request->status;
         }
 
-        if ($user->isAdmin() || $user->isBiktren()) {
-            $pengurus->wilayah_id = $request->wilayah_id;
-            $pengurus->daerah_id  = $request->daerah_id;
-        } elseif ($user->isWilayah()) {
-            $pengurus->daerah_id = $request->daerah_id;
+        if ($user->isAdmin() || $user->isBiktren() || $user->isWilayah()) {
+            if ($request->filled('domisili_id')) {
+                $pengurus->domisili_id = $request->domisili_id;
+            }
         }
 
         // UPDATE FOTO
@@ -400,39 +365,7 @@ class PengurusController extends Controller
                 $pengurus->tugas()->attach($master->id_tugas, ['status' => $statusTugas]);
             }
 
-            // 3. SINKRONISASI KE TABEL SPESIFIK (Muallim/WaliAsuh)
-            $dataSync = [
-                'status' => $statusTugas,
-                'nama'   => $pengurus->nama,
-                'niup'   => $pengurus->niup
-            ];
 
-            // --- MU'ALLIM ---
-            if ($namaTugas === "mu'allim" || $namaTugas === "muallim") {
-                if ($isDipilih) {
-                    Muallim::updateOrCreate(['pengurus_id' => $pengurus->id], $dataSync);
-                } else {
-                    Muallim::where('pengurus_id', $pengurus->id)->update(['status' => 'non_aktif']);
-                }
-            }
-
-            // --- WALI ASUH ---
-            if ($namaTugas === "wali asuh") {
-                if ($isDipilih) {
-                    WaliAsuh::updateOrCreate(['pengurus_id' => $pengurus->id], $dataSync);
-                } else {
-                    WaliAsuh::where('pengurus_id', $pengurus->id)->update(['status' => 'non_aktif']);
-                }
-            }
-
-            // --- PENGAJAR ---
-            if ($namaTugas === "pengajar") {
-                if ($isDipilih) {
-                    Pengajar::updateOrCreate(['pengurus_id' => $pengurus->id], $dataSync);
-                } else {
-                    Pengajar::where('pengurus_id', $pengurus->id)->update(['status' => 'non_aktif']);
-                }
-            }
         }
 
         return redirect()->route('pokok.pengurus.index')

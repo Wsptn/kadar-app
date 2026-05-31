@@ -97,11 +97,11 @@
                                 {{-- LOGIKA TAMPILAN LEVEL --}}
                                 @if ($user->isWilayah() && $user->wilayah)
                                     <span class="badge bg-primary status-badge ms-1">
-                                        {{ $user->wilayah->nama_wilayah }}
+                                        {{ $user->wilayah }}
                                     </span>
                                 @elseif ($user->isDaerah() && $user->daerah)
                                     <span class="badge bg-warning text-dark status-badge ms-1">
-                                        {{ $user->daerah->nama_daerah }}
+                                        {{ $user->daerah }}
                                     </span>
                                 @else
                                     <span class="badge bg-info status-badge ms-1">{{ $user->level }}</span>

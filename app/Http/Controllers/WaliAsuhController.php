@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pengurus;
-use App\Models\WaliAsuh;
+
 use Illuminate\Http\Request;
 
 class WaliAsuhController extends Controller
@@ -12,7 +12,7 @@ class WaliAsuhController extends Controller
     {
         $search = $request->input('search');
 
-        $waliasuh = \App\Models\Pengurus::with(['fungsionalTugas', 'wilayah'])
+        $waliasuh = \App\Models\Pengurus::with(['fungsionalTugas', 'domisili'])
             ->whereHas('fungsionalTugas', function ($q) {
                 $q->where('nama_tugas', "Wali Asuh");
             })

@@ -64,23 +64,23 @@
 
                             @if (Auth::user()->isWilayah())
                                 {{-- User Wilayah: Otomatis Terisi --}}
-                                <input type="hidden" id="wilayahSelect" name="wilayah_id"
-                                    value="{{ Auth::user()->wilayah_id }}">
+                                <input type="hidden" id="wilayahSelect" name="wilayah"
+                                    value="{{ Auth::user()->wilayah }}">
                                 <input type="text" class="form-control bg-light"
-                                    value="{{ Auth::user()->wilayah->nama_wilayah ?? '-' }}" readonly>
+                                    value="{{ Auth::user()->wilayah ?? '-' }}" readonly>
                             @else
                                 {{-- Admin/Biktren: Wajib Pilih --}}
-                                <select id="wilayahSelect" name="wilayah_id"
-                                    class="form-select @error('wilayah_id') is-invalid @enderror" required>
+                                <select id="wilayahSelect" name="wilayah"
+                                    class="form-select @error('wilayah') is-invalid @enderror" required>
                                     <option value="">-- Pilih Wilayah --</option>
                                     @foreach ($wilayahs as $w)
-                                        <option value="{{ $w->id }}"
-                                            {{ old('wilayah_id') == $w->id ? 'selected' : '' }}>
-                                            {{ $w->nama_wilayah }}</option>
+                                        <option value="{{ $w }}"
+                                            {{ old('wilayah') == $w ? 'selected' : '' }}>
+                                            {{ $w }}</option>
                                     @endforeach
                                 </select>
                             @endif
-                            @error('wilayah_id')
+                            @error('wilayah')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
@@ -88,11 +88,11 @@
                         {{-- Daerah (Wajib) --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Daerah <span class="text-danger">*</span></label>
-                            <select id="daerahSelect" name="daerah_id"
-                                class="form-select @error('daerah_id') is-invalid @enderror" disabled required>
+                            <select id="daerahSelect" name="daerah"
+                                class="form-select @error('daerah') is-invalid @enderror" disabled required>
                                 <option value="">-- Pilih Wilayah Terlebih Dahulu --</option>
                             </select>
-                            @error('daerah_id')
+                            @error('daerah')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -101,17 +101,17 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Entitas Daerah</label>
 
-                            <select name="entitas_daerah_id" class="form-select @error('entitas_daerah_id') is-invalid @enderror">
+                            <select name="entitas_daerah" class="form-select @error('entitas_daerah') is-invalid @enderror">
                                 <option value="">-- Pilih Entitas Daerah (Opsional) --</option>
 
                                 @foreach ($entitasDaerahs as $ed)
-                                    <option value="{{ $ed->id }}" {{ old('entitas_daerah_id') == $ed->id ? 'selected' : '' }}>
-                                        {{ $ed->nama_entitas_daerah }}
+                                    <option value="{{ $ed }}" {{ old('entitas_daerah') == $ed ? 'selected' : '' }}>
+                                        {{ $ed }}
                                     </option>
                                 @endforeach
                             </select>
 
-                            @error('entitas_daerah_id')
+                            @error('entitas_daerah')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -121,13 +121,13 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Kamar <span class="text-danger">*</span></label>
 
-                            <select id="kamarSelect" name="kamar_id"
-                                class="form-select @error('kamar_id') is-invalid @enderror" disabled required>
+                            <select id="kamarSelect" name="domisili_id"
+                                class="form-select @error('domisili_id') is-invalid @enderror" disabled required>
 
                                 <option value="">-- Pilih Daerah Terlebih Dahulu --</option>
                             </select>
 
-                            @error('kamar_id')
+                            @error('domisili_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -362,12 +362,12 @@
                 $('#kamarSelect').prop('disabled', true).html(
                     '<option value="">-- Pilih Daerah Terlebih Dahulu --</option>');
 
-                $.get(`/master/domisili/get-daerah/${wilayahId}`)
+                $.get(`/master/domisili/get-daerah/${encodeURIComponent(wilayahId)}`)
                     .done(function(data) {
                         let html = '<option value="">-- Pilih Daerah --</option>';
                         data.forEach(d => {
-                            let isSelected = (selectedDaerahId == d.id) ? 'selected' : '';
-                            html += `<option value="${d.id}" ${isSelected}>${d.nama_daerah}</option>`;
+                            let isSelected = (selectedDaerahId == d.daerah) ? 'selected' : '';
+                            html += `<option value="${d.daerah}" ${isSelected}>${d.daerah}</option>`;
                         });
                         $('#daerahSelect').html(html).prop('disabled', false);
                     })
@@ -383,7 +383,7 @@
 
             // Auto Run (User Wilayah)
             let initialWilayahId = $('#wilayahSelect').val();
-            let oldDaerahId = "{{ old('daerah_id') }}";
+            let oldDaerahId = "{{ old('daerah') }}";
             if (initialWilayahId) {
                 loadDaerah(initialWilayahId, oldDaerahId);
             }
@@ -391,19 +391,20 @@
             // Daerah -> Kamar
             $('#daerahSelect').on('change', function() {
                 const daerahId = $(this).val();
+                const wilayahId = $('#wilayahSelect').val();
                 $('#kamarSelect').prop('disabled', true).html('<option value="">Memuat...</option>');
 
-                if (!daerahId) {
+                if (!daerahId || !wilayahId) {
                     $('#kamarSelect').prop('disabled', true).html(
                         '<option value="">-- Pilih Daerah Terlebih Dahulu --</option>');
                     return;
                 }
 
-                $.get(`/master/domisili/get-kamar/${daerahId}`)
+                $.get(`/master/domisili/get-kamar/${encodeURIComponent(wilayahId)}/${encodeURIComponent(daerahId)}`)
                     .done(function(data) {
                         let html = '<option value="">-- Pilih Kamar --</option>';
                         data.forEach(k => html +=
-                            `<option value="${k.id}">${k.nomor_kamar}</option>`);
+                            `<option value="${k.id}">${k.kamar}</option>`);
                         $('#kamarSelect').html(html).prop('disabled', false);
                     });
             });

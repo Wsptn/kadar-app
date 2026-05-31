@@ -16,8 +16,8 @@ class User extends Authenticatable
         'password',
         'level',
         'status',
-        'wilayah_id',
-        'daerah_id',
+        'wilayah',
+        'daerah',
         'niup',
         'foto',
     ];
@@ -50,16 +50,6 @@ class User extends Authenticatable
     }
 
     // === RELASI ANTAR TABEL (Wajib Ada) ===
-
-    public function wilayah()
-    {
-        return $this->belongsTo(Wilayah::class);
-    }
-
-    public function daerah()
-    {
-        return $this->belongsTo(Daerah::class);
-    }
 
     // 2. Relasi Kinerja (Untuk cek history nilai)
     public function kinerja()

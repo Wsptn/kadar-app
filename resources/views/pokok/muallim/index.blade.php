@@ -141,7 +141,7 @@
                                     {{-- Daerah --}}
                                     <div class="small text-muted text-truncate">
                                         <i data-feather="map-pin" style="width: 12px;" class="me-1"></i>
-                                        {{ $p->daerah->nama_daerah ?? '-' }}
+                                        {{ $p->domisili?->daerah ?? '-' }}
                                     </div>
                                 </div>
                             </div>

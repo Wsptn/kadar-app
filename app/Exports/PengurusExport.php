@@ -20,9 +20,7 @@ class PengurusExport implements FromCollection, WithHeadings
     {
         // 1. QUERY UTAMA (Tampilkan Semua Status Pengurus)
         $query = Pengurus::with([
-            'wilayah',
-            'daerah',
-            'kamar',
+            'domisili',
             'strukturJabatan',
             'fungsionalTugas',
             'internalTugas',
@@ -34,13 +32,13 @@ class PengurusExport implements FromCollection, WithHeadings
         // === FILTER BERDASARKAN REQUEST ===
 
         if ($this->request->filled('wilayah')) {
-            $query->where('wilayah_id', $this->request->wilayah);
+            $query->whereHas('domisili', function($q) { $q->where('wilayah', $this->request->wilayah); });
         }
         if ($this->request->filled('daerah')) {
-            $query->where('daerah_id', $this->request->daerah);
+            $query->whereHas('domisili', function($q) { $q->where('daerah', $this->request->daerah); });
         }
         if ($this->request->filled('entitas_daerah_id')) {
-            $query->where('entitas_daerah_id', $this->request->entitas_daerah_id);
+            $query->where('entitas_daerah', $this->request->entitas_daerah_id);
         }
         if ($this->request->filled('entitas')) {
             $query->whereHas('strukturJabatan', function($q) {
@@ -126,10 +124,10 @@ class PengurusExport implements FromCollection, WithHeadings
                 'niup'                => $p->niup,
                 'nama'                => $p->nama,
 
-                'wilayah'             => $p->wilayah->nama_wilayah ?? '',
-                'daerah'              => $p->daerah->nama_daerah ?? '',
-                'entitas_daerah'      => $p->entitasDaerah->nama_entitas_daerah ?? '',
-                'kamar'               => $p->kamar->nomor_kamar ?? '',
+                'wilayah'             => $p->domisili->wilayah ?? '',
+                'daerah'              => $p->domisili->daerah ?? '',
+                'entitas_daerah'      => $p->entitas_daerah ?? '',
+                'kamar'               => $p->domisili->kamar ?? '',
                 'entitas'             => $p->strukturJabatan->entitas ?? '',
                 'jabatan'             => $p->strukturJabatan->jabatan ?? '',
                 'jenis_jabatan'       => $p->strukturJabatan->jenis_jabatan ?? '',

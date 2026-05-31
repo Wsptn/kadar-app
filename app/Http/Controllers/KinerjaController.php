@@ -17,13 +17,13 @@ class KinerjaController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $query = \App\Models\Pengurus::with(['kinerja', 'strukturJabatan', 'wilayah', 'daerah']);
+        $query = \App\Models\Pengurus::with(['kinerja', 'strukturJabatan', 'domisili']);
 
         if ($user->isAdmin() || $user->isBiktren()) {
         } elseif ($user->isWilayah()) {
-            $query->where('wilayah_id', $user->wilayah_id);
+            $query->whereHas('domisili', function ($q) use ($user) { $q->where('wilayah', $user->wilayah); });
         } elseif ($user->isDaerah()) {
-            $query->where('daerah_id', $user->daerah_id);
+            $query->whereHas('domisili', function ($q) use ($user) { $q->where('daerah', $user->daerah); });
         }
 
         if ($request->filled('search')) {
@@ -70,13 +70,13 @@ class KinerjaController extends Controller
                 $q->where('jabatan', 'like', '%Kepala Wilayah%');
             });
         } elseif ($user->isWilayah()) {
-            $query->where('wilayah_id', $user->wilayah_id)
+            $query->whereHas('domisili', function ($q) use ($user) { $q->where('wilayah', $user->wilayah); })
                 ->where('id', '!=', $user->pengurus_id) // Tidak bisa menilai diri sendiri
                 ->whereHas('strukturJabatan', function ($q) {
                     $q->where('jabatan', 'not like', '%Kepala Wilayah%');
                 });
         } elseif ($user->isDaerah()) {
-            $query->where('daerah_id', $user->daerah_id)
+            $query->whereHas('domisili', function ($q) use ($user) { $q->where('daerah', $user->daerah); })
                 ->where('id', '!=', $user->pengurus_id)
                 ->whereHas('strukturJabatan', function ($q) {
                     $q->where('jabatan', 'like', '%Daerah%')
@@ -204,7 +204,7 @@ class KinerjaController extends Controller
         if ($user->isAdmin() || $user->isBiktren()) {
             $bolehUpdate = true;
         } elseif ($user->isWilayah()) {
-            if ($target->entitas_id == 2 && $target->wilayah_id == $user->wilayah_id) {
+            if ($target->entitas_id == 2 && $target->domisili?->wilayah == $user->wilayah) {
                 $bolehUpdate = true;
             } else {
                 return redirect()->back()->with('error', 'Wewenang Wilayah hanya untuk level Daerah.');

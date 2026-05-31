@@ -89,20 +89,20 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Wilayah</label>
                         @if (Auth::user()->isAdmin() || Auth::user()->isBiktren())
-                            <select name="wilayah_id" id="wilayahSelect" class="form-select">
+                            <select name="wilayah" id="wilayahSelect" class="form-select">
                                 <option value="">-- Pilih Wilayah --</option>
                                 @foreach ($wilayahs as $w)
-                                    <option value="{{ $w->id }}"
-                                        {{ old('wilayah_id', $pengurus->wilayah_id) == $w->id ? 'selected' : '' }}>
-                                        {{ $w->nama_wilayah }}
+                                    <option value="{{ $w }}"
+                                        {{ old('wilayah', $pengurus->domisili?->wilayah) == $w ? 'selected' : '' }}>
+                                        {{ $w }}
                                     </option>
                                 @endforeach
                             </select>
                         @else
                             {{-- Readonly untuk user Wilayah/Daerah --}}
-                            <input type="hidden" id="wilayahSelect" name="wilayah_id" value="{{ $pengurus->wilayah_id }}">
+                            <input type="hidden" id="wilayahSelect" name="wilayah" value="{{ $pengurus->domisili?->wilayah }}">
                             <input type="text" class="form-control bg-light"
-                                value="{{ $pengurus->wilayah->nama_wilayah ?? '-' }}" readonly>
+                                value="{{ $pengurus->domisili?->wilayah ?? '-' }}" readonly>
                         @endif
                     </div>
 
@@ -110,35 +110,35 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Daerah</label>
                         @if (!Auth::user()->isDaerah())
-                            <select name="daerah_id" id="daerahSelect" class="form-select">
+                            <select name="daerah" id="daerahSelect" class="form-select">
                                 <option value="">-- Pilih Daerah --</option>
                                 @foreach ($daerahs as $d)
-                                    <option value="{{ $d->id }}"
-                                        {{ old('daerah_id', $pengurus->daerah_id) == $d->id ? 'selected' : '' }}>
-                                        {{ $d->nama_daerah }}
+                                    <option value="{{ $d }}"
+                                        {{ old('daerah', $pengurus->domisili?->daerah) == $d ? 'selected' : '' }}>
+                                        {{ $d }}
                                     </option>
                                 @endforeach
                             </select>
                         @else
-                            <input type="hidden" name="daerah_id" value="{{ $pengurus->daerah_id }}">
+                            <input type="hidden" name="daerah" value="{{ $pengurus->domisili?->daerah }}">
                             <input type="text" class="form-control bg-light"
-                                value="{{ $pengurus->daerah->nama_daerah ?? '-' }}" readonly>
+                                value="{{ $pengurus->domisili?->daerah ?? '-' }}" readonly>
                         @endif
                     </div>
 
                     {{-- ENTITAS DAERAH (DYNAMIC) --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Entitas Daerah</label>
-                        <select name="entitas_daerah_id" class="form-select @error('entitas_daerah_id') is-invalid @enderror">
+                        <select name="entitas_daerah" class="form-select @error('entitas_daerah') is-invalid @enderror">
                             <option value="">-- Pilih Entitas Daerah (Opsional) --</option>
                             @foreach ($entitasDaerahs as $ed)
-                                <option value="{{ $ed->id }}"
-                                    {{ old('entitas_daerah_id', $pengurus->entitas_daerah_id) == $ed->id ? 'selected' : '' }}>
-                                    {{ $ed->nama_entitas_daerah }}
+                                <option value="{{ $ed }}"
+                                    {{ old('entitas_daerah', $pengurus->entitas_daerah) == $ed ? 'selected' : '' }}>
+                                    {{ $ed }}
                                 </option>
                             @endforeach
                         </select>
-                        @error('entitas_daerah_id')
+                        @error('entitas_daerah')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -146,12 +146,12 @@
                     {{-- KAMAR --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Kamar</label>
-                        <select name="kamar_id" id="kamarSelect" class="form-select">
+                        <select name="domisili_id" id="kamarSelect" class="form-select">
                             <option value="">-- Pilih Kamar --</option>
                             @foreach ($kamars as $k)
                                 <option value="{{ $k->id }}"
-                                    {{ old('kamar_id', $pengurus->kamar_id) == $k->id ? 'selected' : '' }}>
-                                    {{ $k->nomor_kamar ?? ($k->nama_kamar ?? $k->id) }}
+                                    {{ old('domisili_id', $pengurus->domisili_id) == $k->id ? 'selected' : '' }}>
+                                    {{ $k->kamar }}
                                 </option>
                             @endforeach
                         </select>
@@ -440,9 +440,9 @@
             }
         }
 
-        const oldWilayah = "{{ old('wilayah_id', $pengurus->wilayah_id) }}";
-        const oldDaerah = "{{ old('daerah_id', $pengurus->daerah_id) }}";
-        const oldKamar = "{{ old('kamar_id', $pengurus->kamar_id) }}";
+        const oldWilayah = "{{ old('wilayah', $pengurus->domisili?->wilayah) }}";
+        const oldDaerah = "{{ old('daerah', $pengurus->domisili?->daerah) }}";
+        const oldKamar = "{{ old('domisili_id', $pengurus->domisili_id) }}";
 
         // Load Daerah
         async function loadDaerah(wid, selectedId = null) {
@@ -451,33 +451,33 @@
             el.innerHTML = '<option>Memuat...</option>';
             el.disabled = true;
 
-            const data = await fetchJson(`/master/domisili/get-daerah/${wid}`);
+            const data = await fetchJson(`/master/domisili/get-daerah/${encodeURIComponent(wid)}`);
             if (data) {
                 let html = '<option value="">-- Pilih Daerah --</option>';
                 data.forEach(d => {
-                    let sel = (selectedId == d.id) ? 'selected' : '';
-                    html += `<option value="${d.id}" ${sel}>${d.nama_daerah}</option>`;
+                    let sel = (selectedId == d.daerah) ? 'selected' : '';
+                    html += `<option value="${d.daerah}" ${sel}>${d.daerah}</option>`;
                 });
                 el.innerHTML = html;
                 el.disabled = false;
-                if (selectedId) loadKamar(selectedId, oldKamar);
+                if (selectedId) loadKamar(wid, selectedId, oldKamar);
             } else {
                 el.innerHTML = '<option>Gagal memuat</option>';
             }
         }
 
         // Load Kamar
-        async function loadKamar(did, selectedId = null) {
+        async function loadKamar(wid, did, selectedId = null) {
             const el = document.getElementById('kamarSelect');
             el.innerHTML = '<option>Memuat...</option>';
             el.disabled = true;
 
-            const data = await fetchJson(`/master/domisili/get-kamar/${did}`);
+            const data = await fetchJson(`/master/domisili/get-kamar/${encodeURIComponent(wid)}/${encodeURIComponent(did)}`);
             if (data) {
                 let html = '<option value="">-- Pilih Kamar --</option>';
                 data.forEach(k => {
                     let sel = (selectedId == k.id) ? 'selected' : '';
-                    let name = k.nomor_kamar || k.nama_kamar || k.id;
+                    let name = k.kamar;
                     html += `<option value="${k.id}" ${sel}>${name}</option>`;
                 });
                 el.innerHTML = html;
@@ -493,7 +493,8 @@
         });
 
         document.getElementById('daerahSelect')?.addEventListener('change', function() {
-            loadKamar(this.value);
+            const wid = document.getElementById('wilayahSelect').value;
+            loadKamar(wid, this.value);
         });
 
         // === KELEMBAGAAN ===
