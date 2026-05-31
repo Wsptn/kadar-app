@@ -9,7 +9,6 @@ class MasterStrukturJabatanController extends Controller
 {
     public function index()
     {
-        abort_if(!in_array(auth()->user()->level, ['Admin', 'Wilayah', 'Biktren']), 403, 'Unauthorized action.');
         $jabatans = MasterStrukturJabatan::orderBy('entitas')
             ->orderBy('jabatan')
             ->orderBy('jenis_jabatan')
@@ -20,13 +19,13 @@ class MasterStrukturJabatanController extends Controller
 
     public function create()
     {
-        abort_if(!in_array(auth()->user()->level, ['Admin', 'Wilayah', 'Biktren']), 403, 'Unauthorized action.');
+        abort_if(auth()->user()->level === 'Daerah', 403, 'Unauthorized action.');
         return view('master.struktur_jabatan.create');
     }
 
     public function store(Request $request)
     {
-        abort_if(!in_array(auth()->user()->level, ['Admin', 'Wilayah', 'Biktren']), 403, 'Unauthorized action.');
+        abort_if(auth()->user()->level === 'Daerah', 403, 'Unauthorized action.');
         $request->validate([
             'entitas' => 'required|string|max:255',
             'jabatan' => 'required|string|max:255',
@@ -42,14 +41,14 @@ class MasterStrukturJabatanController extends Controller
 
     public function edit($id)
     {
-        abort_if(!in_array(auth()->user()->level, ['Admin', 'Wilayah', 'Biktren']), 403, 'Unauthorized action.');
+        abort_if(auth()->user()->level === 'Daerah', 403, 'Unauthorized action.');
         $jabatan = MasterStrukturJabatan::findOrFail($id);
         return view('master.struktur_jabatan.edit', compact('jabatan'));
     }
 
     public function update(Request $request, $id)
     {
-        abort_if(!in_array(auth()->user()->level, ['Admin', 'Wilayah', 'Biktren']), 403, 'Unauthorized action.');
+        abort_if(auth()->user()->level === 'Daerah', 403, 'Unauthorized action.');
         $request->validate([
             'entitas' => 'required|string|max:255',
             'jabatan' => 'required|string|max:255',
@@ -66,7 +65,7 @@ class MasterStrukturJabatanController extends Controller
 
     public function destroy($id)
     {
-        abort_if(!in_array(auth()->user()->level, ['Admin', 'Wilayah', 'Biktren']), 403, 'Unauthorized action.');
+        abort_if(auth()->user()->level === 'Daerah', 403, 'Unauthorized action.');
         $jabatan = MasterStrukturJabatan::findOrFail($id);
         $jabatan->delete();
 

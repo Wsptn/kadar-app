@@ -11,7 +11,7 @@
         {{-- Logika Hak Akses --}}
         @php
             $userLevel = Auth::user()->level;
-            $hasAccess = in_array($userLevel, ['Admin', 'Wilayah', 'Biktren']);
+            $hasAccess = $userLevel !== 'Daerah';
         @endphp
 
         @if(session('success'))
