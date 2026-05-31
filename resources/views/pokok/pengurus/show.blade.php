@@ -1,6 +1,26 @@
 @extends('layouts.app')
 
 @section('this-page-contain')
+
+<style>
+    /* Custom Styling untuk Nav Tabs agar warnanya dinamis saat diklik */
+    .nav-tabs .nav-link {
+        color: #212529 !important; /* Warna hitam elegan untuk tab yang tidak aktif */
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: #198754 !important; /* Warna hijau saat di-hover */
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #198754 !important; /* Warna hijau untuk tab yang sedang aktif */
+        border-bottom: 3px solid #198754 !important; /* Garis bawah hijau agar lebih tegas */
+        background-color: transparent !important;
+    }
+</style>
+
     <div class="container-fluid px-4">
 
         {{-- Breadcrumb --}}
@@ -131,12 +151,12 @@
                 </div>
             </div>
 
-            {{-- DATA DETAIL (Kanan) --}}
+            {{-- DATA DETAIL & RIWAYAT (Kanan) --}}
             <div class="col-lg-8">
-                <div class="card shadow-sm p-4 position-relative h-100">
+                <div class="card shadow-sm p-0 position-relative h-100">
 
                     {{-- Tombol X (Tutup) --}}
-                    <div class="position-absolute top-0 end-0 p-3">
+                    <div class="position-absolute top-0 end-0 p-3 z-3">
                         <a href="{{ route('pokok.pengurus.index') }}"
                             class="btn btn-light btn-sm shadow-sm border text-secondary" data-bs-toggle="tooltip"
                             title="Kembali">
@@ -144,7 +164,28 @@
                         </a>
                     </div>
 
-                    <h5 class="fw-bold text-success border-bottom pb-2 mb-3">Informasi Detail</h5>
+                    {{-- NAV TABS UTAMA --}}
+                    <div class="card-header bg-white pt-4 pb-0 border-bottom">
+                        <ul class="nav nav-tabs border-bottom-0" id="mainTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active px-4" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail-pane" type="button" role="tab" aria-controls="detail-pane" aria-selected="true">
+                                    <i class="bi bi-person-lines-fill me-2"></i> Informasi Detail
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link px-4" id="riwayat-tab" data-bs-toggle="tab" data-bs-target="#riwayat-pane" type="button" role="tab" aria-controls="riwayat-pane" aria-selected="false">
+                                    <i class="bi bi-clock-history me-2"></i> Riwayat Pengurus
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="tab-content" id="mainTabContent">
+
+                            {{-- TAB 1: INFORMASI DETAIL --}}
+                            <div class="tab-pane fade show active" id="detail-pane" role="tabpanel" aria-labelledby="detail-tab" tabindex="0">
+
 
                     {{-- BAGIAN 1: LOKASI --}}
                     <div class="row mb-2">
@@ -259,27 +300,129 @@
                         </div>
                     @endforeach
 
-                    {{-- BUTTON EDIT + HAPUS --}}
-                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                        <a href="{{ route('pokok.pengurus.edit', $pengurus->id) }}"
-                            class="btn btn-warning me-2 px-4 text-white fw-bold">
-                            <i class="bi bi-pencil-square me-1"></i> Edit
-                        </a>
 
-                        @if (!Auth::user()->isDaerah())
-                            <form method="POST" action="{{ route('pokok.pengurus.destroy', $pengurus->id) }}"
-                                onsubmit="return confirm('Yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-danger px-4 fw-bold">
-                                    <i class="bi bi-trash me-1"></i> Hapus
-                                </button>
-                            </form>
-                        @endif
-                    </div>
 
-                </div>
-            </div>
-        </div>
+                            </div> {{-- Tutup Tab 1: Detail --}}
+
+                            {{-- TAB 2: RIWAYAT PENGURUS --}}
+                            <div class="tab-pane fade" id="riwayat-pane" role="tabpanel" aria-labelledby="riwayat-tab" tabindex="0">
+                    
+                    {{-- Nav Tabs --}}
+                    <ul class="nav nav-tabs mb-4" id="riwayatTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active px-4" id="jabatan-tab" data-bs-toggle="tab" data-bs-target="#jabatan-tab-pane" type="button" role="tab" aria-controls="jabatan-tab-pane" aria-selected="true">
+                                <i class="bi bi-diagram-3 me-2"></i>Jabatan Struktural
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link px-4" id="tugas-tab" data-bs-toggle="tab" data-bs-target="#tugas-tab-pane" type="button" role="tab" aria-controls="tugas-tab-pane" aria-selected="false">
+                                <i class="bi bi-card-checklist me-2"></i>Penugasan
+                            </button>
+                        </li>
+                    </ul>
+
+                    {{-- Tab Content --}}
+                    <div class="tab-content" id="riwayatTabContent">
+                        
+                        {{-- Tab Panel: Riwayat Jabatan --}}
+                        <div class="tab-pane fade show active" id="jabatan-tab-pane" role="tabpanel" aria-labelledby="jabatan-tab" tabindex="0">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="5%" class="text-center">No</th>
+                                            <th>Nama Jabatan</th>
+                                            <th>Tanggal Mulai</th>
+                                            <th>Tanggal Selesai</th>
+                                            <th width="15%" class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($pengurus->riwayatJabatans as $index => $rj)
+                                            <tr>
+                                                <td class="text-center">{{ $index + 1 }}</td>
+                                                <td class="fw-semibold">{{ $rj->strukturJabatan->jabatan ?? '-' }} - {{ $rj->strukturJabatan->entitas ?? '-' }}</td>
+                                                <td>{{ $rj->tgl_mulai ? \Carbon\Carbon::parse($rj->tgl_mulai)->translatedFormat('d F Y') : '-' }}</td>
+                                                <td>{{ $rj->tgl_selesai ? \Carbon\Carbon::parse($rj->tgl_selesai)->translatedFormat('d F Y') : 'Sekarang' }}</td>
+                                                <td class="text-center">
+                                                    @if($rj->status == 'aktif')
+                                                        <span class="badge bg-success bg-opacity-75 px-3 py-2 rounded-pill">Aktif</span>
+                                                    @else
+                                                        <span class="badge bg-secondary bg-opacity-75 px-3 py-2 rounded-pill">Selesai</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="5" class="text-center text-muted fst-italic py-3">Belum ada riwayat jabatan.</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {{-- Tab Panel: Riwayat Tugas --}}
+                        <div class="tab-pane fade" id="tugas-tab-pane" role="tabpanel" aria-labelledby="tugas-tab" tabindex="0">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="5%" class="text-center">No</th>
+                                            <th>Nama Tugas</th>
+                                            <th>Jenis Tugas</th>
+                                            <th>Tanggal Mulai</th>
+                                            <th>Tanggal Selesai</th>
+                                            <th width="15%" class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($pengurus->riwayatTugas as $index => $rt)
+                                            <tr>
+                                                <td class="text-center">{{ $index + 1 }}</td>
+                                                <td class="fw-semibold">{{ $rt->masterTugas->nama_tugas ?? '-' }}</td>
+                                                <td><span class="badge bg-info bg-opacity-50 text-dark">{{ ucfirst($rt->masterTugas->jenis_tugas ?? '-') }}</span></td>
+                                                <td>{{ $rt->tgl_mulai ? \Carbon\Carbon::parse($rt->tgl_mulai)->translatedFormat('d F Y') : '-' }}</td>
+                                                <td>{{ $rt->tgl_selesai ? \Carbon\Carbon::parse($rt->tgl_selesai)->translatedFormat('d F Y') : 'Sekarang' }}</td>
+                                                <td class="text-center">
+                                                    @if($rt->status == 'aktif')
+                                                        <span class="badge bg-success bg-opacity-75 px-3 py-2 rounded-pill">Aktif</span>
+                                                    @else
+                                                        <span class="badge bg-secondary bg-opacity-75 px-3 py-2 rounded-pill">Selesai</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="6" class="text-center text-muted fst-italic py-3">Belum ada riwayat penugasan.</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                            </div> {{-- Tutup Tab 2: Riwayat --}}
+                            
+                        </div> {{-- Tutup Tab Content Utama --}}
+                        
+                        {{-- BUTTON EDIT + HAPUS (Tetap Muncul di Bawah) --}}
+                        <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                            <a href="{{ route('pokok.pengurus.edit', $pengurus->id) }}"
+                                class="btn btn-warning me-2 px-4 text-white fw-bold">
+                                <i class="bi bi-pencil-square me-1"></i> Edit
+                            </a>
+
+                            @if (!Auth::user()->isDaerah())
+                                <form method="POST" action="{{ route('pokok.pengurus.destroy', $pengurus->id) }}"
+                                    onsubmit="return confirm('Yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger px-4 fw-bold">
+                                        <i class="bi bi-trash me-1"></i> Hapus
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+
+                    </div> {{-- Tutup Card Body Kanan --}}
+                </div> {{-- Tutup Card Kanan --}}
+            </div> {{-- Tutup col-lg-8 --}}
     </div>
 @endsection

@@ -20,6 +20,7 @@ class Pengurus extends Model
         'status',
         'pendidikan_id',
         'angkatan_id',
+        'tgl_mulai_tugas',
 
         // berkas / file
         'berkas_sk_pengurus',
@@ -86,5 +87,15 @@ class Pengurus extends Model
     public function kinerja()
     {
         return $this->hasMany(Kinerja::class, 'pengurus_id');
+    }
+
+    public function riwayatJabatans()
+    {
+        return $this->hasMany(RiwayatJabatan::class, 'pengurus_id')->orderBy('tgl_mulai', 'desc');
+    }
+
+    public function riwayatTugas()
+    {
+        return $this->hasMany(RiwayatTugas::class, 'pengurus_id')->orderBy('tgl_mulai', 'desc');
     }
 }

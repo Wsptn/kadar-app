@@ -223,6 +223,18 @@
                             value="{{ old('sk_kepengurusan', $pengurus->sk_kepengurusan) }}">
                     </div>
 
+                    {{-- Tanggal Mulai Jabatan --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tanggal Mulai Jabatan Struktural <span class="text-danger">*</span></label>
+                        @php
+                            $activeJabatan = $pengurus->riwayatJabatans->where('status', 'aktif')->first();
+                            $defaultTglJabatan = $activeJabatan ? \Carbon\Carbon::parse($activeJabatan->tgl_mulai)->format('Y-m-d') : date('Y-m-d');
+                        @endphp
+                        <input type="date" name="tgl_mulai_jabatan" class="form-control"
+                            value="{{ old('tgl_mulai_jabatan', $defaultTglJabatan) }}" required>
+                        <small class="text-muted">Jika jabatan di atas tidak Anda ubah, mengubah tanggal ini akan langsung mengoreksi riwayat jabatannya.</small>
+                    </div>
+
                     <hr class="my-4">
                     <h6 class="mb-3 fw-bold text-success">Data Pendukung</h6>
 
@@ -235,9 +247,13 @@
                                     $pivotRecord = $pengurus->tugas->firstWhere('id_tugas', $ft->id_tugas);
                                     $isChecked = !is_null($pivotRecord);
                                     $currentStatus = $isChecked ? $pivotRecord->pivot->status : 'aktif';
+                                    
+                                    // Cari tanggal mulai aktifnya
+                                    $activeTugas = $pengurus->riwayatTugas->where('master_tugas_id', $ft->id_tugas)->where('status', 'aktif')->first();
+                                    $defaultTglTugas = $activeTugas ? \Carbon\Carbon::parse($activeTugas->tgl_mulai)->format('Y-m-d') : date('Y-m-d');
                                 @endphp
                                 <div class="row align-items-center mb-2 pb-2 border-bottom">
-                                    <div class="col-md-7">
+                                    <div class="col-md-5">
                                         <div class="form-check">
                                             <input class="form-check-input tugas-checkbox" type="checkbox"
                                                 name="tugas[{{ $ft->id_tugas }}][id]" value="{{ $ft->id_tugas }}"
@@ -248,7 +264,15 @@
                                             </label>
                                         </div>
                                     </div>
-                                    <div class="col-md-5">
+                                    <div class="col-md-4">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light text-muted" title="Tanggal Mulai Tugas"><i class="bi bi-calendar"></i></span>
+                                            <input type="date" name="tugas[{{ $ft->id_tugas }}][tgl_mulai]" 
+                                                class="form-control" id="tgl_tugas_{{ $ft->id_tugas }}" 
+                                                value="{{ $defaultTglTugas }}" {{ $isChecked ? 'required' : 'disabled' }}>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
                                         <select name="tugas[{{ $ft->id_tugas }}][status]"
                                             class="form-select form-select-sm status-select"
                                             id="status_{{ $ft->id_tugas }}" {{ $isChecked ? '' : 'disabled' }}>
@@ -262,35 +286,51 @@
                     </div>
 
                     {{-- TUGAS INTERNAL (SINGLE SELECT) --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Tugas Internal</label>
+                    <div class="row mb-3">
                         @php
                             $internalRecord = $pengurus->internalTugas->first();
+                            $activeInternal = $internalRecord ? $pengurus->riwayatTugas->where('master_tugas_id', $internalRecord->id_tugas)->where('status', 'aktif')->first() : null;
+                            $defaultTglInternal = $activeInternal ? \Carbon\Carbon::parse($activeInternal->tgl_mulai)->format('Y-m-d') : date('Y-m-d');
                         @endphp
-                        <select name="tugas_internal_id" class="form-select">
-                            <option value="">-- Tidak Ada --</option>
-                            @foreach ($rangkapInternals as $ri)
-                                <option value="{{ $ri->id_tugas }}" {{ ($internalRecord && $internalRecord->id_tugas == $ri->id_tugas) ? 'selected' : '' }}>
-                                    {{ $ri->nama_tugas }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="col-md-7">
+                            <label class="form-label fw-semibold">Tugas Internal</label>
+                            <select name="tugas_internal_id" class="form-select">
+                                <option value="">-- Tidak Ada --</option>
+                                @foreach ($rangkapInternals as $ri)
+                                    <option value="{{ $ri->id_tugas }}" {{ ($internalRecord && $internalRecord->id_tugas == $ri->id_tugas) ? 'selected' : '' }}>
+                                        {{ $ri->nama_tugas }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-semibold">Tgl Mulai Internal</label>
+                            <input type="date" name="tgl_mulai_tugas_internal" value="{{ $defaultTglInternal }}" class="form-control">
+                        </div>
                     </div>
 
                     {{-- TUGAS EKSTERNAL (SINGLE SELECT) --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Tugas Eksternal</label>
+                    <div class="row mb-3">
                         @php
                             $eksternalRecord = $pengurus->eksternalTugas->first();
+                            $activeEksternal = $eksternalRecord ? $pengurus->riwayatTugas->where('master_tugas_id', $eksternalRecord->id_tugas)->where('status', 'aktif')->first() : null;
+                            $defaultTglEksternal = $activeEksternal ? \Carbon\Carbon::parse($activeEksternal->tgl_mulai)->format('Y-m-d') : date('Y-m-d');
                         @endphp
-                        <select name="tugas_eksternal_id" class="form-select">
-                            <option value="">-- Tidak Ada --</option>
-                            @foreach ($rangkapEksternals as $re)
-                                <option value="{{ $re->id_tugas }}" {{ ($eksternalRecord && $eksternalRecord->id_tugas == $re->id_tugas) ? 'selected' : '' }}>
-                                    {{ $re->nama_tugas }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="col-md-7">
+                            <label class="form-label fw-semibold">Tugas Eksternal</label>
+                            <select name="tugas_eksternal_id" class="form-select">
+                                <option value="">-- Tidak Ada --</option>
+                                @foreach ($rangkapEksternals as $re)
+                                    <option value="{{ $re->id_tugas }}" {{ ($eksternalRecord && $eksternalRecord->id_tugas == $re->id_tugas) ? 'selected' : '' }}>
+                                        {{ $re->nama_tugas }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-semibold">Tgl Mulai Eksternal</label>
+                            <input type="date" name="tgl_mulai_tugas_eksternal" value="{{ $defaultTglEksternal }}" class="form-control">
+                        </div>
                     </div>
 
                     <div class="row">
@@ -414,10 +454,15 @@
                 chk.addEventListener('change', function() {
                     const idx = this.getAttribute('data-index');
                     const select = document.getElementById(`status_${idx}`);
+                    const tglInput = document.getElementById(`tgl_tugas_${idx}`);
                     if (this.checked) {
                         select.removeAttribute('disabled');
+                        tglInput.removeAttribute('disabled');
+                        tglInput.setAttribute('required', 'required');
                     } else {
                         select.setAttribute('disabled', true);
+                        tglInput.setAttribute('disabled', true);
+                        tglInput.removeAttribute('required');
                         select.value = 'aktif'; // Reset ke default
                     }
                 });

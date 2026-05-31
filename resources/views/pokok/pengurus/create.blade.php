@@ -181,6 +181,12 @@
                                 class="form-control" placeholder="Contoh: SK/2024/001">
                         </div>
 
+                        {{-- Tanggal Mulai Jabatan --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tanggal Mulai Jabatan Struktural <span class="text-danger">*</span></label>
+                            <input type="date" name="tgl_mulai_jabatan" value="{{ old('tgl_mulai_jabatan', date('Y-m-d')) }}"
+                                class="form-control" required>
+                        </div>
                         <hr class="my-4">
                         <h6 class="mb-3 fw-bold text-success">Data Pendukung</h6>
 
@@ -191,7 +197,7 @@
                             <div class="card p-3 bg-light border">
                                 @foreach ($fungsionalTugas as $index => $ft)
                                     <div class="row align-items-center mb-2 pb-2 border-bottom">
-                                        <div class="col-md-7">
+                                        <div class="col-md-5">
                                             <div class="form-check">
                                                 <input class="form-check-input tugas-checkbox" type="checkbox"
                                                     name="tugas[{{ $ft->id_tugas }}][id]" value="{{ $ft->id_tugas }}"
@@ -202,7 +208,15 @@
                                                 </label>
                                             </div>
                                         </div>
-                                        <div class="col-md-5">
+                                        <div class="col-md-4">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-light text-muted" title="Tanggal Mulai Tugas"><i class="bi bi-calendar"></i></span>
+                                                <input type="date" name="tugas[{{ $ft->id_tugas }}][tgl_mulai]" 
+                                                    class="form-control" id="tgl_tugas_{{ $ft->id_tugas }}" 
+                                                    value="{{ date('Y-m-d') }}" disabled>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
                                             <select name="tugas[{{ $ft->id_tugas }}][status]"
                                                 class="form-select form-select-sm status-select"
                                                 id="status_{{ $ft->id_tugas }}" disabled>
@@ -216,25 +230,37 @@
                         </div>
 
                         {{-- Tugas Internal (SINGLE SELECT) --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Tugas Internal</label>
-                            <select name="tugas_internal_id" class="form-select">
-                                <option value="">-- Tidak Ada --</option>
-                                @foreach ($rangkapInternals as $ri)
-                                    <option value="{{ $ri->id_tugas }}">{{ $ri->nama_tugas }}</option>
-                                @endforeach
-                            </select>
+                        <div class="row mb-3">
+                            <div class="col-md-7">
+                                <label class="form-label fw-semibold">Tugas Internal</label>
+                                <select name="tugas_internal_id" class="form-select">
+                                    <option value="">-- Tidak Ada --</option>
+                                    @foreach ($rangkapInternals as $ri)
+                                        <option value="{{ $ri->id_tugas }}">{{ $ri->nama_tugas }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label fw-semibold">Tgl Mulai Internal</label>
+                                <input type="date" name="tgl_mulai_tugas_internal" value="{{ date('Y-m-d') }}" class="form-control">
+                            </div>
                         </div>
 
                         {{-- Tugas Eksternal (SINGLE SELECT) --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Tugas Eksternal</label>
-                            <select name="tugas_eksternal_id" class="form-select">
-                                <option value="">-- Tidak Ada --</option>
-                                @foreach ($rangkapEksternals as $re)
-                                    <option value="{{ $re->id_tugas }}">{{ $re->nama_tugas }}</option>
-                                @endforeach
-                            </select>
+                        <div class="row mb-3">
+                            <div class="col-md-7">
+                                <label class="form-label fw-semibold">Tugas Eksternal</label>
+                                <select name="tugas_eksternal_id" class="form-select">
+                                    <option value="">-- Tidak Ada --</option>
+                                    @foreach ($rangkapEksternals as $re)
+                                        <option value="{{ $re->id_tugas }}">{{ $re->nama_tugas }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label fw-semibold">Tgl Mulai Eksternal</label>
+                                <input type="date" name="tgl_mulai_tugas_eksternal" value="{{ date('Y-m-d') }}" class="form-control">
+                            </div>
                         </div>
                         
                         <script>
@@ -244,10 +270,15 @@
                                     chk.addEventListener('change', function() {
                                         const idx = this.getAttribute('data-index');
                                         const select = document.getElementById(`status_${idx}`);
+                                        const tglInput = document.getElementById(`tgl_tugas_${idx}`);
                                         if (this.checked) {
                                             select.removeAttribute('disabled');
+                                            tglInput.removeAttribute('disabled');
+                                            tglInput.setAttribute('required', 'required');
                                         } else {
                                             select.setAttribute('disabled', true);
+                                            tglInput.setAttribute('disabled', true);
+                                            tglInput.removeAttribute('required');
                                         }
                                     });
                                 });

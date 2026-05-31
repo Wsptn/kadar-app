@@ -12,8 +12,9 @@ use App\Exports\PengurusExport;
 use App\Models\Angkatan;
 use App\Models\MasterTugas;
 use App\Models\MasterStrukturJabatan;
+use App\Models\RiwayatJabatan;
+use App\Models\RiwayatTugas;
 use Illuminate\Http\Request;
-
 
 class PengurusController extends Controller
 {
@@ -178,6 +179,8 @@ class PengurusController extends Controller
         }
 
         // SIMPAN DATA
+        $tglMulaiJabatan = $request->tgl_mulai_jabatan ?? date('Y-m-d');
+
         $pengurus = Pengurus::create([
             'niup'                 => $request->niup,
             'nama'                 => $request->nama,
@@ -188,6 +191,7 @@ class PengurusController extends Controller
             'pendidikan_id'        => $request->pendidikan_id,
             'angkatan_id'          => $request->angkatan_id,
             'status'               => 'aktif', // Default Aktif
+            'tgl_mulai_tugas'      => $tglMulaiJabatan, // Fallback legacy
             'foto'                 => $fotoPath,
             'berkas_sk_pengurus'   => $skPath,
             'berkas_surat_tugas'   => $suratPath,
@@ -195,14 +199,32 @@ class PengurusController extends Controller
             'berkas_lain'          => $lainPath,
         ]);
 
+        // LOGIK RIWAYAT JABATAN AWAL
+        if ($request->struktur_jabatan_id) {
+            RiwayatJabatan::create([
+                'pengurus_id'         => $pengurus->id,
+                'struktur_jabatan_id' => $request->struktur_jabatan_id,
+                'tgl_mulai'           => $tglMulaiJabatan,
+                'status'              => 'aktif',
+            ]);
+        }
+
         // LOGIK TUGAS MULTI-SELECT & SINGLE-SELECT
         $tugasArray = $request->input('tugas', []);
         
         if ($request->filled('tugas_internal_id')) {
-            $tugasArray[] = ['id' => $request->tugas_internal_id, 'status' => 'aktif'];
+            $tugasArray[] = [
+                'id' => $request->tugas_internal_id, 
+                'status' => 'aktif',
+                'tgl_mulai' => $request->tgl_mulai_tugas_internal ?? date('Y-m-d')
+            ];
         }
         if ($request->filled('tugas_eksternal_id')) {
-            $tugasArray[] = ['id' => $request->tugas_eksternal_id, 'status' => 'aktif'];
+            $tugasArray[] = [
+                'id' => $request->tugas_eksternal_id, 
+                'status' => 'aktif',
+                'tgl_mulai' => $request->tgl_mulai_tugas_eksternal ?? date('Y-m-d')
+            ];
         }
 
         if (!empty($tugasArray)) {
@@ -210,11 +232,18 @@ class PengurusController extends Controller
                 if (isset($item['id'])) {
                     $tugasId = $item['id'];
                     $status  = $item['status'];
+                    $tglTugas = $item['tgl_mulai'] ?? date('Y-m-d'); // Tanggal independen tiap tugas
 
                     // A. Simpan ke Pivot
                     $pengurus->tugas()->attach($tugasId, ['status' => $status]);
 
-
+                    // B. Simpan ke Riwayat Tugas
+                    RiwayatTugas::create([
+                        'pengurus_id'     => $pengurus->id,
+                        'master_tugas_id' => $tugasId,
+                        'tgl_mulai'       => $tglTugas,
+                        'status'          => $status,
+                    ]);
                 }
             }
         }
@@ -231,6 +260,8 @@ class PengurusController extends Controller
             'tugas',
             'pendidikan',
             'angkatan',
+            'riwayatJabatans.strukturJabatan',
+            'riwayatTugas.masterTugas'
         ])->findOrFail($id);
 
         /** @var \App\Models\User $user */
@@ -243,7 +274,7 @@ class PengurusController extends Controller
 
     public function edit($id)
     {
-        $pengurus = Pengurus::with('tugas')->findOrFail($id);
+        $pengurus = Pengurus::with(['tugas', 'riwayatJabatans', 'riwayatTugas'])->findOrFail($id);
         /** @var \App\Models\User $user */
         $user = Auth::user();
         if ($user->isWilayah() && $pengurus->domisili?->wilayah != $user->wilayah) abort(403);
@@ -302,6 +333,46 @@ class PengurusController extends Controller
             $pengurus->status = $request->status;
         }
 
+        $tglMulaiJabatan = $request->tgl_mulai_jabatan ?? date('Y-m-d');
+        
+        $activeRiwayatJabatan = RiwayatJabatan::where('pengurus_id', $pengurus->id)
+                ->where('status', 'aktif')
+                ->first();
+
+        // Jika jabatan diubah, atau di non-aktifkan
+        if ($pengurus->isDirty('struktur_jabatan_id') || ($pengurus->isDirty('status') && $pengurus->status == 'non_aktif')) {
+            // Tutup jabatan lama yang masih aktif
+            if ($activeRiwayatJabatan) {
+                $activeRiwayatJabatan->update([
+                    'tgl_selesai' => date('Y-m-d'),
+                    'status' => 'non_aktif'
+                ]);
+            }
+                
+            // Jika pengurus aktif dan jabatan berubah, buat riwayat baru
+            if ($pengurus->status == 'aktif') {
+                RiwayatJabatan::create([
+                    'pengurus_id' => $pengurus->id,
+                    'struktur_jabatan_id' => $request->struktur_jabatan_id,
+                    'tgl_mulai' => $tglMulaiJabatan,
+                    'status' => 'aktif'
+                ]);
+            }
+        } else {
+            // Jika jabatan tidak berubah, tapi ini data lama (belum punya riwayat aktif), buatkan baru!
+            if (!$activeRiwayatJabatan && $pengurus->status == 'aktif') {
+                RiwayatJabatan::create([
+                    'pengurus_id' => $pengurus->id,
+                    'struktur_jabatan_id' => $pengurus->struktur_jabatan_id,
+                    'tgl_mulai' => $tglMulaiJabatan,
+                    'status' => 'aktif'
+                ]);
+            } elseif ($activeRiwayatJabatan && $activeRiwayatJabatan->tgl_mulai != $tglMulaiJabatan) {
+                // Jika jabatan tidak berubah, tapi admin mengedit tanggal mulainya dari form
+                $activeRiwayatJabatan->update(['tgl_mulai' => $tglMulaiJabatan]);
+            }
+        }
+
         if ($user->isAdmin() || $user->isBiktren() || $user->isWilayah()) {
             if ($request->filled('domisili_id')) {
                 $pengurus->domisili_id = $request->domisili_id;
@@ -332,40 +403,78 @@ class PengurusController extends Controller
         $pengurus->save();
 
         // 2. LOGIKA SINKRONISASI TUGAS (RELASI)
-        $pengurus->tugas()->detach();
-
-        // Ambil input tugas dari form
         $tugasArray = $request->input('tugas', []);
+        
+        // Tugas Internal & Eksternal
         if ($request->filled('tugas_internal_id')) {
-            $tugasArray[] = ['id' => $request->tugas_internal_id, 'status' => 'aktif'];
+            $tugasArray[] = [
+                'id' => $request->tugas_internal_id, 
+                'status' => 'aktif',
+                'tgl_mulai' => $request->tgl_mulai_tugas_internal ?? date('Y-m-d')
+            ];
         }
         if ($request->filled('tugas_eksternal_id')) {
-            $tugasArray[] = ['id' => $request->tugas_eksternal_id, 'status' => 'aktif'];
+            $tugasArray[] = [
+                'id' => $request->tugas_eksternal_id, 
+                'status' => 'aktif',
+                'tgl_mulai' => $request->tgl_mulai_tugas_eksternal ?? date('Y-m-d')
+            ];
         }
         $inputTugas = collect($tugasArray);
+        $inputTugasIds = $inputTugas->pluck('id')->toArray();
+
+        // A. Kelola Riwayat Tugas
+        $activeRiwayatTugas = RiwayatTugas::where('pengurus_id', $pengurus->id)
+                                ->where('status', 'aktif')
+                                ->get();
+                                
+        // 1. Cek mana yang dicabut centangnya (atau jika pengurus non-aktif)
+        foreach ($activeRiwayatTugas as $riwayat) {
+            if ($pengurus->status == 'non_aktif' || !in_array($riwayat->master_tugas_id, $inputTugasIds)) {
+                $riwayat->update([
+                    'tgl_selesai' => date('Y-m-d'),
+                    'status' => 'non_aktif'
+                ]);
+            }
+        }
+
+        // 2. Cek mana yang baru ditambah atau update tanggal mulainya
+        if ($pengurus->status == 'aktif') {
+            foreach ($inputTugas as $item) {
+                $existingActive = $activeRiwayatTugas->firstWhere('master_tugas_id', $item['id']);
+                $tglTugas = $item['tgl_mulai'] ?? date('Y-m-d');
+                
+                if (!$existingActive) {
+                    RiwayatTugas::create([
+                        'pengurus_id' => $pengurus->id,
+                        'master_tugas_id' => $item['id'],
+                        'tgl_mulai' => $tglTugas,
+                        'status' => 'aktif'
+                    ]);
+                } elseif ($existingActive->tgl_mulai != $tglTugas) {
+                    // Update tanggal mulainya jika ada perubahan di form
+                    $existingActive->update(['tgl_mulai' => $tglTugas]);
+                }
+            }
+        }
+
+        // B. Sinkronisasi Pivot (Untuk state terakhir)
+        $pengurus->tugas()->detach();
         $allMasterTugas = MasterTugas::all();
 
         foreach ($allMasterTugas as $master) {
-            $namaTugas = strtolower($master->nama_tugas);
-
-            // Cek apakah tugas ini ada di inputan user (dicentang)?
             $selectedItem = $inputTugas->firstWhere('id', $master->id_tugas);
             $isDipilih    = !is_null($selectedItem);
 
-            // LOGIKA BARU: Jika Pengurus Utama NON-AKTIF -> Paksa Tugas NON-AKTIF
             if ($pengurus->status == 'non_aktif') {
                 $statusTugas = 'non_aktif';
             } else {
-                // Jika Pengurus Aktif -> Ikuti inputan dropdown tugas (default non_aktif jika tak dipilih)
                 $statusTugas = $isDipilih ? $selectedItem['status'] : 'non_aktif';
             }
 
-            // SIMPAN KE PIVOT (Hanya jika dicentang oleh user)
             if ($isDipilih) {
                 $pengurus->tugas()->attach($master->id_tugas, ['status' => $statusTugas]);
             }
-
-
         }
 
         return redirect()->route('pokok.pengurus.index')
