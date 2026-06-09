@@ -20,22 +20,21 @@ class PengurusExport implements FromCollection, WithHeadings
     {
         // 1. QUERY UTAMA (Tampilkan Semua Status Pengurus)
         $query = Pengurus::with([
-            'domisili',
+            'kamar.daerah.wilayah',
             'strukturJabatan',
             'fungsionalTugas',
             'internalTugas',
             'eksternalTugas',
             'pendidikan',
-            'angkatan',
         ])->orderBy('nama');
 
         // === FILTER BERDASARKAN REQUEST ===
 
         if ($this->request->filled('wilayah')) {
-            $query->whereHas('domisili', function($q) { $q->where('wilayah', $this->request->wilayah); });
+            $query->whereHas('kamar.daerah.wilayah', function($q) { $q->where('nama_wilayah', $this->request->wilayah); });
         }
         if ($this->request->filled('daerah')) {
-            $query->whereHas('domisili', function($q) { $q->where('daerah', $this->request->daerah); });
+            $query->whereHas('kamar.daerah', function($q) { $q->where('nama_daerah', $this->request->daerah); });
         }
         if ($this->request->filled('entitas_daerah_id')) {
             $query->where('entitas_daerah', $this->request->entitas_daerah_id);
@@ -59,25 +58,22 @@ class PengurusExport implements FromCollection, WithHeadings
         }
         if ($this->request->filled('tugas')) {
             $query->whereHas('fungsionalTugas', function ($q) {
-                $q->where('master_tugas.id_tugas', $this->request->tugas);
+                $q->where('tugas.id', $this->request->tugas);
             });
         }
         if ($this->request->filled('internal')) {
             $query->whereHas('internalTugas', function ($q) {
-                $q->where('master_tugas.id_tugas', $this->request->internal);
+                $q->where('tugas.id', $this->request->internal);
             });
         }
         if ($this->request->filled('eksternal')) {
             $query->whereHas('eksternalTugas', function ($q) {
-                $q->where('master_tugas.id_tugas', $this->request->eksternal);
+                $q->where('tugas.id', $this->request->eksternal);
             });
         }
 
         if ($this->request->filled('pendidikan')) {
             $query->where('pendidikan_id', $this->request->pendidikan);
-        }
-        if ($this->request->filled('angkatan')) {
-            $query->where('angkatan_id', $this->request->angkatan);
         }
 
         // Filter Status Pengurus (Hanya jika user memilih di dropdown)
@@ -124,10 +120,10 @@ class PengurusExport implements FromCollection, WithHeadings
                 'niup'                => $p->niup,
                 'nama'                => $p->nama,
 
-                'wilayah'             => $p->domisili->wilayah ?? '',
-                'daerah'              => $p->domisili->daerah ?? '',
+                'wilayah'             => $p->kamar->daerah->wilayah->nama_wilayah ?? '',
+                'daerah'              => $p->kamar->daerah->nama_daerah ?? '',
                 'entitas_daerah'      => $p->entitas_daerah ?? '',
-                'kamar'               => $p->domisili->kamar ?? '',
+                'kamar'               => $p->kamar->nomor_kamar ?? '',
                 'entitas'             => $p->strukturJabatan->entitas ?? '',
                 'jabatan'             => $p->strukturJabatan->jabatan ?? '',
                 'jenis_jabatan'       => $p->strukturJabatan->jenis_jabatan ?? '',
@@ -141,7 +137,6 @@ class PengurusExport implements FromCollection, WithHeadings
                 
                 'status'              => $p->status,
                 'pendidikan'          => $p->pendidikan->nama_pendidikan ?? '',
-                'angkatan'            => $p->angkatan->angkatan ?? '',
 
                 // FILE
                 'berkas_sk_pengurus'  => $file($p->berkas_sk_pengurus),
@@ -171,7 +166,6 @@ class PengurusExport implements FromCollection, WithHeadings
             'Tugas Eksternal',
             'Status Pengurus',
             'Pendidikan',
-            'Angkatan',
             'Berkas SK Pengurus',
             'Berkas Surat Tugas',
             'Berkas PLT',

@@ -17,13 +17,13 @@ class KinerjaController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $query = \App\Models\Pengurus::with(['kinerja', 'strukturJabatan', 'domisili']);
+        $query = \App\Models\Pengurus::with(['kinerja', 'strukturJabatan', 'kamar.daerah.wilayah']);
 
         if ($user->isAdmin() || $user->isBiktren()) {
         } elseif ($user->isWilayah()) {
-            $query->whereHas('domisili', function ($q) use ($user) { $q->where('wilayah', $user->wilayah); });
+            $query->whereHas('kamar.daerah.wilayah', function ($q) use ($user) { $q->where('nama_wilayah', $user->wilayah); });
         } elseif ($user->isDaerah()) {
-            $query->whereHas('domisili', function ($q) use ($user) { $q->where('daerah', $user->daerah); });
+            $query->whereHas('kamar.daerah', function ($q) use ($user) { $q->where('nama_daerah', $user->daerah); });
         }
 
         if ($request->filled('search')) {
@@ -71,7 +71,7 @@ class KinerjaController extends Controller
                   ->where('jabatan', 'like', '%Kepala Wilayah%');
             });
         } elseif ($user->isWilayah()) {
-            $query->whereHas('domisili', function ($q) use ($user) { $q->where('wilayah', $user->wilayah); })
+            $query->whereHas('kamar.daerah.wilayah', function ($q) use ($user) { $q->where('nama_wilayah', $user->wilayah); })
                 ->where('id', '!=', $user->pengurus_id) // Tidak bisa menilai diri sendiri
                 ->whereHas('strukturJabatan', function ($q) {
                     $q->where(function ($q2) {
@@ -83,7 +83,7 @@ class KinerjaController extends Controller
                     });
                 });
         } elseif ($user->isDaerah()) {
-            $query->whereHas('domisili', function ($q) use ($user) { $q->where('daerah', $user->daerah); })
+            $query->whereHas('kamar.daerah', function ($q) use ($user) { $q->where('nama_daerah', $user->daerah); })
                 ->where('id', '!=', $user->pengurus_id)
                 ->whereHas('strukturJabatan', function ($q) {
                     $q->where('entitas', 'Pengurus Daerah')
@@ -211,7 +211,7 @@ class KinerjaController extends Controller
         if ($user->isAdmin() || $user->isBiktren()) {
             $bolehUpdate = true;
         } elseif ($user->isWilayah()) {
-            if ($target->entitas_id == 2 && $target->domisili?->wilayah == $user->wilayah) {
+            if ($target->entitas_id == 2 && $target->kamar?->daerah?->wilayah?->nama_wilayah == $user->wilayah) {
                 $bolehUpdate = true;
             } else {
                 return redirect()->back()->with('error', 'Wewenang Wilayah hanya untuk level Daerah.');

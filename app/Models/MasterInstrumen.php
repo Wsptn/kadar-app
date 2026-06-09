@@ -9,6 +9,7 @@ class MasterInstrumen extends Model
 {
     use HasFactory;
 
+    protected $table = 'instrumen';
     protected $guarded = [];
 
     public function kinerjaDetails()

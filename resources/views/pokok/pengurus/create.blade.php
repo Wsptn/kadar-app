@@ -101,7 +101,7 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Entitas Daerah</label>
 
-                            <select name="entitas_daerah" class="form-select @error('entitas_daerah') is-invalid @enderror">
+                            <select name="entitas_daerah" id="entitasDaerahSelect" class="form-select @error('entitas_daerah') is-invalid @enderror">
                                 <option value="">-- Pilih Entitas Daerah (Opsional) --</option>
 
                                 @foreach ($entitasDaerahs as $ed)
@@ -165,11 +165,11 @@
                         {{-- Grade Jabatan (Wajib) --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Grade Jabatan <span class="text-danger">*</span></label>
-                            <select id="gradeSelect" name="struktur_jabatan_id"
-                                class="form-select @error('struktur_jabatan_id') is-invalid @enderror" disabled required>
+                            <select id="gradeSelect" name="jabatan_id"
+                                class="form-select @error('jabatan_id') is-invalid @enderror" disabled required>
                                 <option value="">-- Pilih Jenis Jabatan Terlebih Dahulu --</option>
                             </select>
-                            @error('struktur_jabatan_id')
+                            @error('jabatan_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -200,10 +200,10 @@
                                         <div class="col-md-5">
                                             <div class="form-check">
                                                 <input class="form-check-input tugas-checkbox" type="checkbox"
-                                                    name="tugas[{{ $ft->id_tugas }}][id]" value="{{ $ft->id_tugas }}"
-                                                    id="tugas_{{ $ft->id_tugas }}"
-                                                    data-index="{{ $ft->id_tugas }}">
-                                                <label class="form-check-label fw-bold" for="tugas_{{ $ft->id_tugas }}">
+                                                    name="tugas[{{ $ft->id }}][id]" value="{{ $ft->id }}"
+                                                    id="tugas_{{ $ft->id }}"
+                                                    data-index="{{ $ft->id }}">
+                                                <label class="form-check-label fw-bold" for="tugas_{{ $ft->id }}">
                                                     {{ $ft->nama_tugas }}
                                                 </label>
                                             </div>
@@ -211,15 +211,15 @@
                                         <div class="col-md-4">
                                             <div class="input-group input-group-sm">
                                                 <span class="input-group-text bg-light text-muted" title="Tanggal Mulai Tugas"><i class="bi bi-calendar"></i></span>
-                                                <input type="date" name="tugas[{{ $ft->id_tugas }}][tgl_mulai]" 
-                                                    class="form-control" id="tgl_tugas_{{ $ft->id_tugas }}" 
+                                                <input type="date" name="tugas[{{ $ft->id }}][tgl_mulai]" 
+                                                    class="form-control" id="tgl_tugas_{{ $ft->id }}" 
                                                     value="{{ date('Y-m-d') }}" disabled>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <select name="tugas[{{ $ft->id_tugas }}][status]"
+                                            <select name="tugas[{{ $ft->id }}][status]"
                                                 class="form-select form-select-sm status-select"
-                                                id="status_{{ $ft->id_tugas }}" disabled>
+                                                id="status_{{ $ft->id }}" disabled>
                                                 <option value="aktif">Aktif</option>
                                                 <option value="non_aktif">Non Aktif</option>
                                             </select>
@@ -236,7 +236,7 @@
                                 <select name="tugas_internal_id" class="form-select">
                                     <option value="">-- Tidak Ada --</option>
                                     @foreach ($rangkapInternals as $ri)
-                                        <option value="{{ $ri->id_tugas }}">{{ $ri->nama_tugas }}</option>
+                                        <option value="{{ $ri->id }}">{{ $ri->nama_tugas }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -253,7 +253,7 @@
                                 <select name="tugas_eksternal_id" class="form-select">
                                     <option value="">-- Tidak Ada --</option>
                                     @foreach ($rangkapEksternals as $re)
-                                        <option value="{{ $re->id_tugas }}">{{ $re->nama_tugas }}</option>
+                                        <option value="{{ $re->id }}">{{ $re->nama_tugas }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -292,26 +292,19 @@
                                 <select name="pendidikan_id" class="form-select">
                                     <option value="">-- Pilih --</option>
                                     @foreach ($pendidikans as $pd)
-                                        <option value="{{ $pd->id_pendidikan }}"
-                                            {{ old('pendidikan_id') == $pd->id_pendidikan ? 'selected' : '' }}>
+                                        <option value="{{ $pd->id }}"
+                                            {{ old('pendidikan_id') == $pd->id ? 'selected' : '' }}>
                                             {{ $pd->nama_pendidikan }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold">Angkatan</label>
-                                <select name="angkatan_id" class="form-select">
-                                    <option value="">-- Pilih --</option>
-                                    @foreach ($angkatans as $ag)
-                                        <option value="{{ $ag->id_angkatan }}"
-                                            {{ old('angkatan_id') == $ag->id_angkatan ? 'selected' : '' }}>
-                                            {{ $ag->angkatan }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <label class="form-label fw-semibold">Tgl Mulai Pendidikan</label>
+                                <input type="date" name="tanggal_mulai_pendidikan" value="{{ old('tanggal_mulai_pendidikan', date('Y-m-d')) }}" class="form-control">
                             </div>
                         </div>
+
 
                         <hr class="my-4">
                         <h6 class="mb-3 fw-bold text-success">Berkas & Foto</h6>
@@ -395,10 +388,10 @@
 
                 $.get(`/master/domisili/get-daerah/${encodeURIComponent(wilayahId)}`)
                     .done(function(data) {
-                        let html = '<option value="">-- Pilih Daerah --</option>';
+                        let html = '<option value="" data-entitas="">-- Pilih Daerah --</option>';
                         data.forEach(d => {
                             let isSelected = (selectedDaerahId == d.daerah) ? 'selected' : '';
-                            html += `<option value="${d.daerah}" ${isSelected}>${d.daerah}</option>`;
+                            html += `<option value="${d.daerah}" data-entitas="${d.entitas_daerah || ''}" ${isSelected}>${d.daerah}</option>`;
                         });
                         $('#daerahSelect').html(html).prop('disabled', false);
                     })
@@ -419,10 +412,23 @@
                 loadDaerah(initialWilayahId, oldDaerahId);
             }
 
-            // Daerah -> Kamar
+            // Daerah -> Kamar & Entitas Daerah
             $('#daerahSelect').on('change', function() {
                 const daerahId = $(this).val();
                 const wilayahId = $('#wilayahSelect').val();
+                
+                // Auto-fill entitas daerah based on selected daerah
+                const entitasDaerah = $(this).find(':selected').data('entitas');
+                if (entitasDaerah) {
+                    // Check if the option exists, if not, append it
+                    if ($('#entitasDaerahSelect option[value="' + entitasDaerah + '"]').length === 0) {
+                        $('#entitasDaerahSelect').append(new Option(entitasDaerah, entitasDaerah));
+                    }
+                    $('#entitasDaerahSelect').val(entitasDaerah);
+                } else {
+                    $('#entitasDaerahSelect').val('');
+                }
+
                 $('#kamarSelect').prop('disabled', true).html('<option value="">Memuat...</option>');
 
                 if (!daerahId || !wilayahId) {

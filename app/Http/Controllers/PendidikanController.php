@@ -46,9 +46,9 @@ class PendidikanController extends Controller
     /**
      * Form edit pendidikan
      */
-    public function edit($id_pendidikan)
+    public function edit($id)
     {
-        $pendidikan = Pendidikan::findOrFail($id_pendidikan);
+        $pendidikan = Pendidikan::findOrFail($id);
 
         return view('master.pendidikan.edit', compact('pendidikan'));
     }
@@ -56,14 +56,14 @@ class PendidikanController extends Controller
     /**
      * Update data pendidikan
      */
-    public function update(Request $request, $id_pendidikan)
+    public function update(Request $request, $id)
     {
         $request->validate([
-            'nama_pendidikan' => 'required|string|max:50',
+            'nama_pendidikan' => 'required|string|max:255',
         ]);
 
         try {
-            $pendidikan = Pendidikan::findOrFail($id_pendidikan);
+            $pendidikan = Pendidikan::findOrFail($id);
 
             $pendidikan->update([
                 'nama_pendidikan' => $request->nama_pendidikan,
@@ -76,10 +76,10 @@ class PendidikanController extends Controller
         }
     }
 
-    public function destroy($id_pendidikan)
+    public function destroy($id)
     {
         try {
-            $item = Pendidikan::findOrFail($id_pendidikan);
+            $item = Pendidikan::findOrFail($id);
             $item->delete();
             return redirect()->route('master.pendidikan.index')->with('success', 'Data berhasil dihapus.');
         } catch (\Exception $e) {

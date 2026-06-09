@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AngkatanController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DaerahController;
 use App\Http\Controllers\DashboardController;
@@ -105,11 +104,15 @@ Route::middleware('auth')->group(function () {
 
             // Ajax Routes Domisili
             Route::get('/get-daerah/{wilayah}', function ($wilayah) {
-                return \App\Models\Domisili::where('wilayah', $wilayah)->select('daerah')->distinct()->get();
+                return \App\Models\Daerah::whereHas('wilayah', function($q) use ($wilayah) {
+                    $q->where('nama_wilayah', $wilayah);
+                })->select('nama_daerah as daerah', 'entitas_daerah')->distinct()->get();
             })->name('ajax.daerah');
 
             Route::get('/get-kamar/{wilayah}/{daerah}', function ($wilayah, $daerah) {
-                return \App\Models\Domisili::where('wilayah', $wilayah)->where('daerah', $daerah)->get();
+                return \App\Models\Kamar::whereHas('daerah', function($q) use ($daerah) {
+                    $q->where('nama_daerah', $daerah);
+                })->select('id', 'nomor_kamar as kamar')->get();
             })->name('ajax.kamar');
         });
 
@@ -169,14 +172,6 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{id_pendidikan}', [PendidikanController::class, 'destroy'])->name('destroy');
         });
 
-        Route::prefix('angkatan')->name('angkatan.')->group(function () {
-            Route::get('/', [AngkatanController::class, 'index'])->name('index');
-            Route::get('/create', [AngkatanController::class, 'create'])->name('create');
-            Route::post('/store', [AngkatanController::class, 'store'])->name('store');
-            Route::get('/{id_angkatan}/edit', [AngkatanController::class, 'edit'])->name('edit');
-            Route::put('/{id_angkatan}', [AngkatanController::class, 'update'])->name('update');
-            Route::delete('/{id_angkatan}', [AngkatanController::class, 'destroy'])->name('destroy');
-        });
 
         // --- BERKAS ---
         // Route::get('/berkas', [JenisBerkasController::class, 'index'])->name('berkas.index');

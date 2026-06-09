@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class MasterTugas extends Model
 {
-    protected $table = 'master_tugas';
-    protected $primaryKey = 'id_tugas';
+    protected $table = 'tugas';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'nama_tugas',
@@ -18,10 +18,10 @@ class MasterTugas extends Model
     {
         return $this->belongsToMany(
             Pengurus::class,
-            'detail_tugas',
-            'master_tugas_id',
+            'tugas_detail',
+            'tugas_id',
             'pengurus_id',
-            'id_tugas',
+            'id',
             'id'
         )
         ->withPivot('status')

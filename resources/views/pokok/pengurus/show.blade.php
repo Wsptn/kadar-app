@@ -190,11 +190,11 @@
                     {{-- BAGIAN 1: LOKASI --}}
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Wilayah</div>
-                        <div class="col-sm-8 fw-bold text-dark">: {{ $pengurus->domisili?->wilayah ?? '-' }}</div>
+                        <div class="col-sm-8 fw-bold text-dark">: {{ $pengurus->kamar?->daerah?->wilayah?->nama_wilayah ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Daerah</div>
-                        <div class="col-sm-8 fw-bold text-dark">: {{ $pengurus->domisili?->daerah ?? '-' }}</div>
+                        <div class="col-sm-8 fw-bold text-dark">: {{ $pengurus->kamar?->daerah?->nama_daerah ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Entitas Daerah</div>
@@ -202,7 +202,7 @@
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4 fw-semibold text-muted">Kamar</div>
-                        <div class="col-sm-8">: {{ $pengurus->domisili?->kamar ?? '-' }}</div>
+                        <div class="col-sm-8">: {{ $pengurus->kamar?->nomor_kamar ?? '-' }}</div>
                     </div>
 
                     <hr class="my-3 text-muted opacity-50">
@@ -265,10 +265,6 @@
                         <div class="col-sm-4 fw-semibold text-muted">Pendidikan</div>
                         <div class="col-sm-8">: {{ $pengurus->pendidikan->nama_pendidikan ?? '-' }}</div>
                     </div>
-                    <div class="row mb-2">
-                        <div class="col-sm-4 fw-semibold text-muted">Angkatan</div>
-                        <div class="col-sm-8">: {{ $pengurus->angkatan->angkatan ?? '-' }}</div>
-                    </div>
 
                     <hr class="my-3 text-muted opacity-50">
                     <h6 class="fw-bold text-success mb-3">Berkas Lampiran</h6>
@@ -317,6 +313,11 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link px-4" id="tugas-tab" data-bs-toggle="tab" data-bs-target="#tugas-tab-pane" type="button" role="tab" aria-controls="tugas-tab-pane" aria-selected="false">
                                 <i class="bi bi-card-checklist me-2"></i>Penugasan
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link px-4" id="pendidikan-tab" data-bs-toggle="tab" data-bs-target="#pendidikan-tab-pane" type="button" role="tab" aria-controls="pendidikan-tab-pane" aria-selected="false">
+                                <i class="bi bi-mortarboard me-2"></i>Pendidikan
                             </button>
                         </li>
                     </ul>
@@ -392,6 +393,42 @@
                                             </tr>
                                         @empty
                                             <tr><td colspan="6" class="text-center text-muted fst-italic py-3">Belum ada riwayat penugasan.</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {{-- Tab Panel: Riwayat Pendidikan --}}
+                        <div class="tab-pane fade" id="pendidikan-tab-pane" role="tabpanel" aria-labelledby="pendidikan-tab" tabindex="0">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="5%" class="text-center">No</th>
+                                            <th>Nama Pendidikan</th>
+                                            <th>Tanggal Mulai</th>
+                                            <th>Tanggal Selesai</th>
+                                            <th width="15%" class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($pengurus->riwayatPendidikan as $index => $rp)
+                                            <tr>
+                                                <td class="text-center">{{ $index + 1 }}</td>
+                                                <td class="fw-semibold">{{ $rp->pendidikan->nama_pendidikan ?? '-' }}</td>
+                                                <td>{{ $rp->tanggal_mulai ? \Carbon\Carbon::parse($rp->tanggal_mulai)->translatedFormat('d F Y') : '-' }}</td>
+                                                <td>{{ $rp->tanggal_selesai ? \Carbon\Carbon::parse($rp->tanggal_selesai)->translatedFormat('d F Y') : 'Sekarang' }}</td>
+                                                <td class="text-center">
+                                                    @if($rp->status == 'aktif')
+                                                        <span class="badge bg-success bg-opacity-75 px-3 py-2 rounded-pill">Aktif Studi</span>
+                                                    @else
+                                                        <span class="badge bg-secondary bg-opacity-75 px-3 py-2 rounded-pill">Selesai</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr><td colspan="5" class="text-center text-muted fst-italic py-3">Belum ada riwayat pendidikan.</td></tr>
                                         @endforelse
                                     </tbody>
                                 </table>

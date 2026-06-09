@@ -93,16 +93,16 @@
                                 <option value="">-- Pilih Wilayah --</option>
                                 @foreach ($wilayahs as $w)
                                     <option value="{{ $w }}"
-                                        {{ old('wilayah', $pengurus->domisili?->wilayah) == $w ? 'selected' : '' }}>
+                                        {{ old('wilayah', $pengurus->kamar?->daerah?->wilayah?->nama_wilayah) == $w ? 'selected' : '' }}>
                                         {{ $w }}
                                     </option>
                                 @endforeach
                             </select>
                         @else
                             {{-- Readonly untuk user Wilayah/Daerah --}}
-                            <input type="hidden" id="wilayahSelect" name="wilayah" value="{{ $pengurus->domisili?->wilayah }}">
+                            <input type="hidden" id="wilayahSelect" name="wilayah" value="{{ $pengurus->kamar?->daerah?->wilayah?->nama_wilayah }}">
                             <input type="text" class="form-control bg-light"
-                                value="{{ $pengurus->domisili?->wilayah ?? '-' }}" readonly>
+                                value="{{ $pengurus->kamar?->daerah?->wilayah?->nama_wilayah ?? '-' }}" readonly>
                         @endif
                     </div>
 
@@ -114,22 +114,22 @@
                                 <option value="">-- Pilih Daerah --</option>
                                 @foreach ($daerahs as $d)
                                     <option value="{{ $d }}"
-                                        {{ old('daerah', $pengurus->domisili?->daerah) == $d ? 'selected' : '' }}>
+                                        {{ old('daerah', $pengurus->kamar?->daerah?->nama_daerah) == $d ? 'selected' : '' }}>
                                         {{ $d }}
                                     </option>
                                 @endforeach
                             </select>
                         @else
-                            <input type="hidden" name="daerah" value="{{ $pengurus->domisili?->daerah }}">
+                            <input type="hidden" name="daerah" value="{{ $pengurus->kamar?->daerah?->nama_daerah }}">
                             <input type="text" class="form-control bg-light"
-                                value="{{ $pengurus->domisili?->daerah ?? '-' }}" readonly>
+                                value="{{ $pengurus->kamar?->daerah?->nama_daerah ?? '-' }}" readonly>
                         @endif
                     </div>
 
                     {{-- ENTITAS DAERAH (DYNAMIC) --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Entitas Daerah</label>
-                        <select name="entitas_daerah" class="form-select @error('entitas_daerah') is-invalid @enderror">
+                        <select name="entitas_daerah" id="entitasDaerahSelect" class="form-select @error('entitas_daerah') is-invalid @enderror">
                             <option value="">-- Pilih Entitas Daerah (Opsional) --</option>
                             @foreach ($entitasDaerahs as $ed)
                                 <option value="{{ $ed }}"
@@ -150,8 +150,8 @@
                             <option value="">-- Pilih Kamar --</option>
                             @foreach ($kamars as $k)
                                 <option value="{{ $k->id }}"
-                                    {{ old('domisili_id', $pengurus->domisili_id) == $k->id ? 'selected' : '' }}>
-                                    {{ $k->kamar }}
+                                    {{ old('domisili_id', $pengurus->kamar_id) == $k->id ? 'selected' : '' }}>
+                                    {{ $k->nomor_kamar }}
                                 </option>
                             @endforeach
                         </select>
@@ -205,11 +205,11 @@
                     {{-- GRADE --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Grade Jabatan</label>
-                        <select name="struktur_jabatan_id" id="gradeSelect" class="form-select">
+                        <select name="jabatan_id" id="gradeSelect" class="form-select">
                             <option value="">-- Pilih Grade --</option>
                             @foreach ($grade_jabatans as $g)
                                 <option value="{{ $g->id }}"
-                                    {{ (old('struktur_jabatan_id', $pengurus->struktur_jabatan_id) == $g->id) ? 'selected' : '' }}>
+                                    {{ (old('jabatan_id', $pengurus->jabatan_id) == $g->id) ? 'selected' : '' }}>
                                     {{ $g->grade }}
                                 </option>
                             @endforeach
@@ -244,22 +244,22 @@
                         <div class="card p-3 bg-light border">
                             @foreach ($fungsionalTugas as $index => $ft)
                                 @php
-                                    $pivotRecord = $pengurus->tugas->firstWhere('id_tugas', $ft->id_tugas);
+                                    $pivotRecord = $pengurus->tugas->firstWhere('id_tugas', $ft->id);
                                     $isChecked = !is_null($pivotRecord);
                                     $currentStatus = $isChecked ? $pivotRecord->pivot->status : 'aktif';
                                     
                                     // Cari tanggal mulai aktifnya
-                                    $activeTugas = $pengurus->riwayatTugas->where('master_tugas_id', $ft->id_tugas)->where('status', 'aktif')->first();
+                                    $activeTugas = $pengurus->riwayatTugas->where('master_tugas_id', $ft->id)->where('status', 'aktif')->first();
                                     $defaultTglTugas = $activeTugas ? \Carbon\Carbon::parse($activeTugas->tgl_mulai)->format('Y-m-d') : date('Y-m-d');
                                 @endphp
                                 <div class="row align-items-center mb-2 pb-2 border-bottom">
                                     <div class="col-md-5">
                                         <div class="form-check">
                                             <input class="form-check-input tugas-checkbox" type="checkbox"
-                                                name="tugas[{{ $ft->id_tugas }}][id]" value="{{ $ft->id_tugas }}"
-                                                id="tugas_{{ $ft->id_tugas }}" data-index="{{ $ft->id_tugas }}"
+                                                name="tugas[{{ $ft->id }}][id]" value="{{ $ft->id }}"
+                                                id="tugas_{{ $ft->id }}" data-index="{{ $ft->id }}"
                                                 {{ $isChecked ? 'checked' : '' }}>
-                                            <label class="form-check-label fw-bold" for="tugas_{{ $ft->id_tugas }}">
+                                            <label class="form-check-label fw-bold" for="tugas_{{ $ft->id }}">
                                                 {{ $ft->nama_tugas }}
                                             </label>
                                         </div>
@@ -267,15 +267,15 @@
                                     <div class="col-md-4">
                                         <div class="input-group input-group-sm">
                                             <span class="input-group-text bg-light text-muted" title="Tanggal Mulai Tugas"><i class="bi bi-calendar"></i></span>
-                                            <input type="date" name="tugas[{{ $ft->id_tugas }}][tgl_mulai]" 
-                                                class="form-control" id="tgl_tugas_{{ $ft->id_tugas }}" 
+                                            <input type="date" name="tugas[{{ $ft->id }}][tgl_mulai]" 
+                                                class="form-control" id="tgl_tugas_{{ $ft->id }}" 
                                                 value="{{ $defaultTglTugas }}" {{ $isChecked ? 'required' : 'disabled' }}>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <select name="tugas[{{ $ft->id_tugas }}][status]"
+                                        <select name="tugas[{{ $ft->id }}][status]"
                                             class="form-select form-select-sm status-select"
-                                            id="status_{{ $ft->id_tugas }}" {{ $isChecked ? '' : 'disabled' }}>
+                                            id="status_{{ $ft->id }}" {{ $isChecked ? '' : 'disabled' }}>
                                             <option value="aktif" {{ $currentStatus == 'aktif' ? 'selected' : '' }}>Aktif</option>
                                             <option value="non_aktif" {{ $currentStatus == 'non_aktif' ? 'selected' : '' }}>Non Aktif</option>
                                         </select>
@@ -289,7 +289,7 @@
                     <div class="row mb-3">
                         @php
                             $internalRecord = $pengurus->internalTugas->first();
-                            $activeInternal = $internalRecord ? $pengurus->riwayatTugas->where('master_tugas_id', $internalRecord->id_tugas)->where('status', 'aktif')->first() : null;
+                            $activeInternal = $internalRecord ? $pengurus->riwayatTugas->where('master_tugas_id', $internalRecord->id)->where('status', 'aktif')->first() : null;
                             $defaultTglInternal = $activeInternal ? \Carbon\Carbon::parse($activeInternal->tgl_mulai)->format('Y-m-d') : date('Y-m-d');
                         @endphp
                         <div class="col-md-7">
@@ -297,7 +297,7 @@
                             <select name="tugas_internal_id" class="form-select">
                                 <option value="">-- Tidak Ada --</option>
                                 @foreach ($rangkapInternals as $ri)
-                                    <option value="{{ $ri->id_tugas }}" {{ ($internalRecord && $internalRecord->id_tugas == $ri->id_tugas) ? 'selected' : '' }}>
+                                    <option value="{{ $ri->id }}" {{ ($internalRecord && $internalRecord->id == $ri->id) ? 'selected' : '' }}>
                                         {{ $ri->nama_tugas }}
                                     </option>
                                 @endforeach
@@ -313,7 +313,7 @@
                     <div class="row mb-3">
                         @php
                             $eksternalRecord = $pengurus->eksternalTugas->first();
-                            $activeEksternal = $eksternalRecord ? $pengurus->riwayatTugas->where('master_tugas_id', $eksternalRecord->id_tugas)->where('status', 'aktif')->first() : null;
+                            $activeEksternal = $eksternalRecord ? $pengurus->riwayatTugas->where('master_tugas_id', $eksternalRecord->id)->where('status', 'aktif')->first() : null;
                             $defaultTglEksternal = $activeEksternal ? \Carbon\Carbon::parse($activeEksternal->tgl_mulai)->format('Y-m-d') : date('Y-m-d');
                         @endphp
                         <div class="col-md-7">
@@ -321,7 +321,7 @@
                             <select name="tugas_eksternal_id" class="form-select">
                                 <option value="">-- Tidak Ada --</option>
                                 @foreach ($rangkapEksternals as $re)
-                                    <option value="{{ $re->id_tugas }}" {{ ($eksternalRecord && $eksternalRecord->id_tugas == $re->id_tugas) ? 'selected' : '' }}>
+                                    <option value="{{ $re->id }}" {{ ($eksternalRecord && $eksternalRecord->id == $re->id) ? 'selected' : '' }}>
                                         {{ $re->nama_tugas }}
                                     </option>
                                 @endforeach
@@ -339,26 +339,24 @@
                             <select name="pendidikan_id" class="form-select">
                                 <option value="">-- Pilih --</option>
                                 @foreach ($pendidikans as $pd)
-                                    <option value="{{ $pd->id_pendidikan }}"
-                                        {{ old('pendidikan_id', $pengurus->pendidikan_id) == $pd->id_pendidikan ? 'selected' : '' }}>
+                                    <option value="{{ $pd->id }}"
+                                        {{ old('pendidikan_id', $pengurus->pendidikan_id) == $pd->id ? 'selected' : '' }}>
                                         {{ $pd->nama_pendidikan }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
+                        
+                        @php
+                            $activePendidikan = $pengurus->riwayatPendidikan->where('status', 'aktif')->first();
+                            $tglPendidikan = $activePendidikan ? $activePendidikan->tanggal_mulai : date('Y-m-d');
+                        @endphp
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Angkatan</label>
-                            <select name="angkatan_id" class="form-select">
-                                <option value="">-- Pilih --</option>
-                                @foreach ($angkatans as $ag)
-                                    <option value="{{ $ag->id_angkatan }}"
-                                        {{ old('angkatan_id', $pengurus->angkatan_id) == $ag->id_angkatan ? 'selected' : '' }}>
-                                        {{ $ag->angkatan }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label class="form-label fw-semibold">Tgl Mulai Pendidikan</label>
+                            <input type="date" name="tanggal_mulai_pendidikan" value="{{ old('tanggal_mulai_pendidikan', $tglPendidikan) }}" class="form-control">
                         </div>
                     </div>
+
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Status Pengurus</label>
@@ -485,9 +483,9 @@
             }
         }
 
-        const oldWilayah = "{{ old('wilayah', $pengurus->domisili?->wilayah) }}";
-        const oldDaerah = "{{ old('daerah', $pengurus->domisili?->daerah) }}";
-        const oldKamar = "{{ old('domisili_id', $pengurus->domisili_id) }}";
+        const oldWilayah = "{{ old('wilayah', $pengurus->kamar?->daerah?->wilayah?->nama_wilayah) }}";
+        const oldDaerah = "{{ old('daerah', $pengurus->kamar?->daerah?->nama_daerah) }}";
+        const oldKamar = "{{ old('domisili_id', $pengurus->kamar_id) }}";
 
         // Load Daerah
         async function loadDaerah(wid, selectedId = null) {
@@ -501,7 +499,7 @@
                 let html = '<option value="">-- Pilih Daerah --</option>';
                 data.forEach(d => {
                     let sel = (selectedId == d.daerah) ? 'selected' : '';
-                    html += `<option value="${d.daerah}" ${sel}>${d.daerah}</option>`;
+                    html += `<option value="${d.daerah}" data-entitas="${d.entitas_daerah || ''}" ${sel}>${d.daerah}</option>`;
                 });
                 el.innerHTML = html;
                 el.disabled = false;
@@ -539,6 +537,25 @@
 
         document.getElementById('daerahSelect')?.addEventListener('change', function() {
             const wid = document.getElementById('wilayahSelect').value;
+            
+            // Auto-fill entitas daerah based on selected daerah
+            const selectedOption = this.options[this.selectedIndex];
+            const entitasDaerah = selectedOption ? selectedOption.getAttribute('data-entitas') : null;
+            const entitasSelect = document.getElementById('entitasDaerahSelect');
+            
+            if (entitasSelect) {
+                if (entitasDaerah) {
+                    // Check if the option exists, if not, append it
+                    let optionExists = Array.from(entitasSelect.options).some(opt => opt.value === entitasDaerah);
+                    if (!optionExists) {
+                        entitasSelect.appendChild(new Option(entitasDaerah, entitasDaerah));
+                    }
+                    entitasSelect.value = entitasDaerah;
+                } else {
+                    entitasSelect.value = '';
+                }
+            }
+
             loadKamar(wid, this.value);
         });
 

@@ -46,11 +46,11 @@
                                     <td class="text-center">
                                         @if (!Auth::user()->isDaerah())
                                             <div class="btn-group">
-                                                <a href="{{ route('master.tugas.edit', $item->id_tugas) }}"
+                                                <a href="{{ route('master.tugas.edit', $item->id) }}"
                                                     class="btn btn-outline-warning btn-sm">
                                                     <i data-feather="edit-2" style="width: 14px;"></i>
                                                 </a>
-                                                <form action="{{ route('master.tugas.destroy', $item->id_tugas) }}" class="d-inline" method="POST" onsubmit="return confirm('Hapus data ini?')">
+                                                <form action="{{ route('master.tugas.destroy', $item->id) }}" class="d-inline" method="POST" onsubmit="return confirm('Hapus data ini?')">
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="btn btn-outline-danger btn-sm"><i
                                                             data-feather="trash-2" style="width: 14px;"></i></button>

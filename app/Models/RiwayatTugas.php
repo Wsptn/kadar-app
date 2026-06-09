@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class RiwayatTugas extends Model
 {
-    protected $table = 'riwayat_tugas';
+    protected $table = 'tugas_detail';
 
     protected $fillable = [
         'pengurus_id',
-        'master_tugas_id',
+        'tugas_id',
         'tgl_mulai',
         'tgl_selesai',
         'status',
@@ -23,6 +23,6 @@ class RiwayatTugas extends Model
 
     public function masterTugas()
     {
-        return $this->belongsTo(MasterTugas::class, 'master_tugas_id', 'id_tugas');
+        return $this->belongsTo(MasterTugas::class, 'tugas_id', 'id');
     }
 }

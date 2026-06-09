@@ -17,7 +17,7 @@
 
             <div class="card-body">
 
-                <form action="{{ route('master.pendidikan.update', $pendidikan->id_pendidikan) }}" method="POST">
+                <form action="{{ route('master.pendidikan.update', $pendidikan->id) }}" method="POST">
                     @csrf
                     @method('PUT')
 

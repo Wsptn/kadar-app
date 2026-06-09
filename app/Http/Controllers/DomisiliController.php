@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Domisili;
+use App\Models\Wilayah;
+use App\Models\Daerah;
+use App\Models\Kamar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,10 +15,17 @@ class DomisiliController extends Controller
         $userLevel = Auth::user()->level;
         $hasAccess = $userLevel == 'Admin' || $userLevel == 'Wilayah';
 
-        $domisilis = Domisili::orderBy('wilayah')
-            ->orderBy('daerah')
-            ->orderBy('kamar')
-            ->get();
+        $kamars = Kamar::with('daerah.wilayah')->get();
+
+        $domisilis = $kamars->map(function($k) {
+            return (object) [
+                'id' => $k->id,
+                'wilayah' => $k->daerah->wilayah->nama_wilayah ?? '-',
+                'daerah' => $k->daerah->nama_daerah ?? '-',
+                'entitas_daerah' => $k->daerah->entitas_daerah ?? '-',
+                'kamar' => $k->nomor_kamar
+            ];
+        })->sortBy(['wilayah', 'daerah', 'kamar'])->values();
 
         return view('master.domisili.index', compact('domisilis', 'hasAccess'));
     }
@@ -41,17 +50,34 @@ class DomisiliController extends Controller
             'kamar'   => 'required|string|max:255',
         ]);
 
+        $wilayah = Wilayah::firstOrCreate(['nama_wilayah' => $request->wilayah]);
+        $daerah = Daerah::where('nama_daerah', $request->daerah)
+            ->where('wilayah_id', $wilayah->id)
+            ->first();
+
+        if (!$daerah) {
+            $daerah = Daerah::create([
+                'nama_daerah' => $request->daerah,
+                'wilayah_id' => $wilayah->id,
+                'entitas_daerah' => $request->entitas_daerah
+            ]);
+        } elseif ($request->filled('entitas_daerah') && $daerah->entitas_daerah !== $request->entitas_daerah) {
+            $daerah->update(['entitas_daerah' => $request->entitas_daerah]);
+        }
+
         // Cek duplikasi
-        $exists = Domisili::where('wilayah', $request->wilayah)
-            ->where('daerah', $request->daerah)
-            ->where('kamar', $request->kamar)
+        $exists = Kamar::where('nomor_kamar', $request->kamar)
+            ->where('daerah_id', $daerah->id)
             ->exists();
 
         if ($exists) {
             return back()->withErrors(['kamar' => 'Domisili dengan Wilayah, Daerah, dan Kamar ini sudah ada.'])->withInput();
         }
 
-        Domisili::create($request->only('wilayah', 'daerah', 'entitas_daerah', 'kamar'));
+        Kamar::create([
+            'nomor_kamar' => $request->kamar,
+            'daerah_id' => $daerah->id
+        ]);
 
         return redirect()->route('master.domisili.index')->with('success', 'Data Domisili berhasil ditambahkan.');
     }
@@ -61,7 +87,14 @@ class DomisiliController extends Controller
         $userLevel = Auth::user()->level;
         abort_if(!in_array($userLevel, ['Admin', 'Wilayah']), 403, 'Unauthorized action.');
 
-        $domisili = Domisili::findOrFail($id);
+        $kamarModel = Kamar::with('daerah.wilayah')->findOrFail($id);
+        $domisili = (object) [
+            'id' => $kamarModel->id,
+            'wilayah' => $kamarModel->daerah->wilayah->nama_wilayah ?? '',
+            'daerah' => $kamarModel->daerah->nama_daerah ?? '',
+            'entitas_daerah' => $kamarModel->daerah->entitas_daerah ?? '',
+            'kamar' => $kamarModel->nomor_kamar
+        ];
         return view('master.domisili.edit', compact('domisili'));
     }
 
@@ -70,19 +103,26 @@ class DomisiliController extends Controller
         $userLevel = Auth::user()->level;
         abort_if(!in_array($userLevel, ['Admin', 'Wilayah']), 403, 'Unauthorized action.');
 
-        $domisili = Domisili::findOrFail($id);
+        $kamarModel = Kamar::findOrFail($id);
 
-        $request->validate([
-            'wilayah' => 'required|string|max:255',
-            'daerah'  => 'required|string|max:255',
-            'entitas_daerah' => 'nullable|string|max:255',
-            'kamar'   => 'required|string|max:255',
-        ]);
+        $wilayah = Wilayah::firstOrCreate(['nama_wilayah' => $request->wilayah]);
+        $daerah = Daerah::where('nama_daerah', $request->daerah)
+            ->where('wilayah_id', $wilayah->id)
+            ->first();
+
+        if (!$daerah) {
+            $daerah = Daerah::create([
+                'nama_daerah' => $request->daerah,
+                'wilayah_id' => $wilayah->id,
+                'entitas_daerah' => $request->entitas_daerah
+            ]);
+        } elseif ($request->filled('entitas_daerah') && $daerah->entitas_daerah !== $request->entitas_daerah) {
+            $daerah->update(['entitas_daerah' => $request->entitas_daerah]);
+        }
 
         // Cek duplikasi selain id ini
-        $exists = Domisili::where('wilayah', $request->wilayah)
-            ->where('daerah', $request->daerah)
-            ->where('kamar', $request->kamar)
+        $exists = Kamar::where('nomor_kamar', $request->kamar)
+            ->where('daerah_id', $daerah->id)
             ->where('id', '!=', $id)
             ->exists();
 
@@ -90,7 +130,10 @@ class DomisiliController extends Controller
             return back()->withErrors(['kamar' => 'Domisili dengan Wilayah, Daerah, dan Kamar ini sudah ada.'])->withInput();
         }
 
-        $domisili->update($request->only('wilayah', 'daerah', 'entitas_daerah', 'kamar'));
+        $kamarModel->update([
+            'nomor_kamar' => $request->kamar,
+            'daerah_id' => $daerah->id
+        ]);
 
         return redirect()->route('master.domisili.index')->with('success', 'Data Domisili berhasil diupdate.');
     }
@@ -100,8 +143,8 @@ class DomisiliController extends Controller
         $userLevel = Auth::user()->level;
         abort_if(!in_array($userLevel, ['Admin', 'Wilayah']), 403, 'Unauthorized action.');
 
-        $domisili = Domisili::findOrFail($id);
-        $domisili->delete();
+        $kamarModel = Kamar::findOrFail($id);
+        $kamarModel->delete();
 
         return redirect()->route('master.domisili.index')->with('success', 'Data Domisili berhasil dihapus.');
     }

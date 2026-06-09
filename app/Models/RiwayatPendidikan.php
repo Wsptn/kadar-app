@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class RiwayatJabatan extends Model
+class RiwayatPendidikan extends Model
 {
-    protected $table = 'jabatan_detail';
+    protected $table = 'pendidikan_detail';
 
     protected $fillable = [
         'pengurus_id',
-        'jabatan_id',
-        'tgl_mulai',
-        'tgl_selesai',
+        'pendidikan_id',
+        'tanggal_mulai',
+        'tanggal_selesai',
         'status',
     ];
 
@@ -21,8 +21,8 @@ class RiwayatJabatan extends Model
         return $this->belongsTo(Pengurus::class, 'pengurus_id');
     }
 
-    public function strukturJabatan()
+    public function pendidikan()
     {
-        return $this->belongsTo(MasterStrukturJabatan::class, 'jabatan_id');
+        return $this->belongsTo(Pendidikan::class, 'pendidikan_id', 'id');
     }
 }

@@ -9,6 +9,7 @@ class KinerjaDetail extends Model
 {
     use HasFactory;
 
+    protected $table = 'detail_penilaian_kinerja';
     protected $guarded = [];
 
     public function kinerja()

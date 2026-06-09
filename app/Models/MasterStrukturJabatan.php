@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MasterStrukturJabatan extends Model
 {
-    protected $table = 'master_struktur_jabatans';
+    protected $table = 'jabatan';
 
     protected $fillable = [
         'entitas',

@@ -81,7 +81,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-3">Belum ada data domisili.
+                                    <td colspan="5" class="text-center text-muted py-3">Belum ada data domisili.
                                     </td>
                                 </tr>
                             @endforelse

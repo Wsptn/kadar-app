@@ -11,7 +11,7 @@ class PengajarController extends Controller
     {
         $search = $request->input('search');
 
-        $pengajar = \App\Models\Pengurus::with(['fungsionalTugas', 'domisili'])
+        $pengajar = \App\Models\Pengurus::with(['fungsionalTugas', 'kamar.daerah.wilayah'])
             ->whereHas('fungsionalTugas', function ($q) {
                 $q->where('nama_tugas', "Pengajar");
             })

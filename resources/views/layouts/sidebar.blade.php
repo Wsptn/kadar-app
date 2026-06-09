@@ -90,12 +90,6 @@
                 </a>
             </li>
 
-            <li class="sidebar-item {{ request()->routeIs('master.angkatan.*') ? 'active' : '' }}">
-                <a class="sidebar-link" href="{{ route('master.angkatan.index') }}">
-                    <i class="align-middle" data-feather="layers"></i>
-                    <span class="align-middle">Master Angkatan</span>
-                </a>
-            </li>
 
             {{-- <li class="sidebar-item {{ request()->routeIs('master.berkas.*') ? 'active' : '' }}">
                 <a class="sidebar-link" href="{{ route('master.berkas.index') }}">

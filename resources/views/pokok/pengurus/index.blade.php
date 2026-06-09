@@ -156,8 +156,8 @@
                         <select name="tugas" class="form-select filter-select auto-submit">
                             <option value="">-- Fungsional --</option>
                             @foreach ($fungsionalList as $ft)
-                                <option value="{{ $ft->id_tugas }}"
-                                    {{ request('tugas') == $ft->id_tugas ? 'selected' : '' }}>
+                                <option value="{{ $ft->id }}"
+                                    {{ request('tugas') == $ft->id ? 'selected' : '' }}>
                                     {{ $ft->nama_tugas }}
                                 </option>
                             @endforeach
@@ -167,8 +167,8 @@
                         <select name="internal" class="form-select filter-select auto-submit">
                             <option value="">-- Internal --</option>
                             @foreach ($internalList as $ti)
-                                <option value="{{ $ti->id_tugas }}"
-                                    {{ request('internal') == $ti->id_tugas ? 'selected' : '' }}>
+                                <option value="{{ $ti->id }}"
+                                    {{ request('internal') == $ti->id ? 'selected' : '' }}>
                                     {{ $ti->nama_tugas }}
                                 </option>
                             @endforeach
@@ -178,8 +178,8 @@
                         <select name="eksternal" class="form-select filter-select auto-submit">
                             <option value="">-- Eksternal --</option>
                             @foreach ($eksternalList as $te)
-                                <option value="{{ $te->id_tugas }}"
-                                    {{ request('eksternal') == $te->id_tugas ? 'selected' : '' }}>
+                                <option value="{{ $te->id }}"
+                                    {{ request('eksternal') == $te->id ? 'selected' : '' }}>
                                     {{ $te->nama_tugas }}
                                 </option>
                             @endforeach
@@ -189,23 +189,14 @@
                         <select name="pendidikan" class="form-select filter-select auto-submit">
                             <option value="">-- Pendidikan --</option>
                             @foreach ($pendidikanList as $p)
-                                <option value="{{ $p->id_pendidikan }}"
-                                    {{ request('pendidikan') == $p->id_pendidikan ? 'selected' : '' }}>
+                                <option value="{{ $p->id }}"
+                                    {{ request('pendidikan') == $p->id ? 'selected' : '' }}>
                                     {{ $p->nama_pendidikan }}
                                 </option>
                             @endforeach
                         </select>
 
-                        {{-- 10. ANGKATAN --}}
-                        <select name="angkatan" class="form-select filter-select auto-submit">
-                            <option value="">-- Angkatan --</option>
-                            @foreach ($angkatanList as $a)
-                                <option value="{{ $a->id_angkatan }}"
-                                    {{ request('angkatan') == $a->id_angkatan ? 'selected' : '' }}>
-                                    {{ $a->angkatan }}
-                                </option>
-                            @endforeach
-                        </select>
+
 
                         {{-- 11. STATUS --}}
                         <select name="status" class="form-select filter-select auto-submit">
@@ -294,7 +285,7 @@
                                         </div>
                                         <div class="small text-muted">
                                             <i data-feather="map-pin" style="width: 12px;" class="me-1"></i>
-                                            {{ $p->domisili?->daerah ?? '-' }}
+                                            {{ $p->kamar?->daerah?->nama_daerah ?? '-' }}
                                         </div>
                                     </div>
                                 </div>

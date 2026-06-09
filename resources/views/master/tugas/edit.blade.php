@@ -25,7 +25,7 @@
                     // Controller saat ini belum mengirim variable $tugas ke view edit, mari asumsikan namanya $tugas.
                 @endphp
 
-                <form action="{{ route('master.tugas.update', $tugas->id_tugas ?? 0) }}" method="POST">
+                <form action="{{ route('master.tugas.update', $tugas->id ?? 0) }}" method="POST">
                     @csrf
                     @method('PUT')
                     
