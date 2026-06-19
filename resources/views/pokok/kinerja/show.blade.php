@@ -230,8 +230,20 @@
                                         <div class="detail-content text-start">
                                             <div
                                                 class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                                                <h6 class="fw-bold text-success mb-0"><i data-feather="list"
-                                                        style="width: 14px;"></i> Rincian Penilaian per Aspek</h6>
+                                                <div>
+                                                    <h6 class="fw-bold text-success mb-1"><i data-feather="list"
+                                                            style="width: 14px;"></i> Rincian Penilaian per Aspek</h6>
+                                                    <small class="text-muted fw-bold" style="font-size: 0.8rem;">
+                                                        <i data-feather="tag" style="width: 12px; margin-bottom: 2px;"></i> Kapasitas: 
+                                                        @if($k->jabatan_id && $k->riwayatJabatan && $k->riwayatJabatan->strukturJabatan)
+                                                            {{ $k->riwayatJabatan->strukturJabatan->jabatan }} ({{ $k->riwayatJabatan->strukturJabatan->entitas }})
+                                                        @elseif($k->tugas_id && $k->riwayatTugas && $k->riwayatTugas->masterTugas)
+                                                            {{ $k->riwayatTugas->masterTugas->nama_tugas }} ({{ ucfirst($k->riwayatTugas->masterTugas->jenis_tugas ?? 'Tugas') }})
+                                                        @else
+                                                            <span class="fst-italic text-secondary">Tidak Spesifik / Umum</span>
+                                                        @endif
+                                                    </small>
+                                                </div>
                                                 <span class="badge bg-dark fs-6 px-3">Total Skor:
                                                     {{ $k->nilai_total }}</span>
                                             </div>

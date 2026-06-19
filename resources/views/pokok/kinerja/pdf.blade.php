@@ -108,6 +108,17 @@
             @endif
             | Tanggal: {{ \Carbon\Carbon::parse($k->tanggal_penilaian)->translatedFormat('d F Y') }}
         </div>
+        
+        <div style="padding: 5px; background-color: #e9ecef; border: 1px solid #999; border-top: none; font-size: 10px;">
+            <strong>Dievaluasi pada kapasitas sebagai:</strong>
+            @if($k->jabatan_id && $k->riwayatJabatan && $k->riwayatJabatan->strukturJabatan)
+                {{ $k->riwayatJabatan->strukturJabatan->jabatan }} ({{ $k->riwayatJabatan->strukturJabatan->entitas }})
+            @elseif($k->tugas_id && $k->riwayatTugas && $k->riwayatTugas->masterTugas)
+                {{ $k->riwayatTugas->masterTugas->nama_tugas }} ({{ ucfirst($k->riwayatTugas->masterTugas->jenis_tugas ?? 'Tugas') }})
+            @else
+                <span style="color: #666; font-style: italic;">Tidak Spesifik / Pengurus Umum</span>
+            @endif
+        </div>
 
         <table>
             <thead>

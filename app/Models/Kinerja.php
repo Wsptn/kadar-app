@@ -12,7 +12,6 @@ class Kinerja extends Model
     protected $table = 'penilaian_kinerja';
     protected $guarded = [];
 
-
     public function pengurus()
     {
         return $this->belongsTo(Pengurus::class, 'pengurus_id');
@@ -21,5 +20,15 @@ class Kinerja extends Model
     public function kinerjaDetails()
     {
         return $this->hasMany(KinerjaDetail::class, 'kinerja_id');
+    }
+
+    public function riwayatJabatan()
+    {
+        return $this->belongsTo(RiwayatJabatan::class, 'jabatan_id');
+    }
+
+    public function riwayatTugas()
+    {
+        return $this->belongsTo(RiwayatTugas::class, 'tugas_id');
     }
 }

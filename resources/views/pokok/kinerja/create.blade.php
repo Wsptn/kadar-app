@@ -8,10 +8,10 @@
                 <form action="{{ route('pokok.kinerja.store') }}" method="POST">
                     @csrf
                     <div class="row mb-4">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-bold">Nama Pengurus <span class="text-danger">*</span></label>
                             {{-- Dropdown otomatis terkunci jika $selected_id dikirim dari controller --}}
-                            <select name="pengurus_id" class="form-select" required
+                            <select name="pengurus_id" id="pengurus_id" class="form-select" required
                                 {{ isset($selected_id) ? 'style=pointer-events:none;background-color:#e9ecef;' : '' }}>
                                 <option value="">-- Pilih Pengurus --</option>
                                 @foreach ($pengurus as $p)
@@ -27,17 +27,23 @@
                             @endif
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-bold">Tanggal Penilaian <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold">Kapasitas Penilaian <span class="text-danger">*</span></label>
+                            <select name="kapasitas" id="kapasitas" class="form-select" required>
+                                <option value="">-- Pilih Kapasitas --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Tanggal <span class="text-danger">*</span></label>
                             <input type="date" name="tanggal_penilaian" class="form-control" value="{{ date('Y-m-d') }}"
                                 required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label fw-bold">Triwulan <span class="text-danger">*</span></label>
                             <select name="triwulan" class="form-select" required>
-                                <option value="1" {{ ceil(date('m') / 3) == 1 ? 'selected' : '' }}>Triwulan 1 (Jan-Mar)</option>
-                                <option value="2" {{ ceil(date('m') / 3) == 2 ? 'selected' : '' }}>Triwulan 2 (Apr-Jun)</option>
-                                <option value="3" {{ ceil(date('m') / 3) == 3 ? 'selected' : '' }}>Triwulan 3 (Jul-Sep)</option>
-                                <option value="4" {{ ceil(date('m') / 3) == 4 ? 'selected' : '' }}>Triwulan 4 (Okt-Des)</option>
+                                <option value="1" {{ ceil(date('m') / 3) == 1 ? 'selected' : '' }}>Triwulan 1</option>
+                                <option value="2" {{ ceil(date('m') / 3) == 2 ? 'selected' : '' }}>Triwulan 2</option>
+                                <option value="3" {{ ceil(date('m') / 3) == 3 ? 'selected' : '' }}>Triwulan 3</option>
+                                <option value="4" {{ ceil(date('m') / 3) == 4 ? 'selected' : '' }}>Triwulan 4</option>
                             </select>
                         </div>
                         <div class="col-md-2">
@@ -114,6 +120,55 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (window.feather) feather.replace();
+
+            @php
+                $pengurusMapped = $pengurus->mapWithKeys(function($p) {
+                    return [$p->id => [
+                        'jabatans' => $p->riwayatJabatans->map(function($j) {
+                            return ['id' => 'jabatan_' . $j->id, 'nama' => '[Jabatan] ' . ($j->strukturJabatan->jabatan ?? '') . ' - ' . ($j->strukturJabatan->entitas ?? '')];
+                        }),
+                        'tugas' => $p->riwayatTugas->map(function($t) {
+                            $jenis = ucfirst($t->masterTugas->jenis_tugas ?? 'Tugas');
+                            return ['id' => 'tugas_' . $t->id, 'nama' => '[' . $jenis . '] ' . ($t->masterTugas->nama_tugas ?? '')];
+                        })
+                    ]];
+                });
+            @endphp
+            
+            const pengurusData = @json($pengurusMapped);
+
+            const selectPengurus = document.getElementById('pengurus_id');
+            const selectKapasitas = document.getElementById('kapasitas');
+
+            function updateKapasitas() {
+                const id = selectPengurus.value;
+                selectKapasitas.innerHTML = '<option value="">-- Pilih Kapasitas --</option>';
+
+                if (id && pengurusData[id]) {
+                    const data = pengurusData[id];
+                    let hasOptions = false;
+                    
+                    data.jabatans.forEach(j => {
+                        selectKapasitas.innerHTML += `<option value="${j.id}">${j.nama}</option>`;
+                        hasOptions = true;
+                    });
+                    data.tugas.forEach(t => {
+                        selectKapasitas.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
+                        hasOptions = true;
+                    });
+
+                    if (!hasOptions) {
+                        selectKapasitas.innerHTML = '<option value="">-- Tidak Ada Peran Aktif --</option>';
+                    }
+                }
+            }
+
+            selectPengurus.addEventListener('change', updateKapasitas);
+
+            // Trigger on load if pre-selected
+            if (selectPengurus.value) {
+                updateKapasitas();
+            }
         });
     </script>
 @endsection

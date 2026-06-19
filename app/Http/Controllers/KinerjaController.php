@@ -6,6 +6,8 @@ use App\Models\Kinerja;
 use App\Models\Pengurus;
 use App\Models\MasterInstrumen;
 use App\Models\KinerjaDetail;
+use App\Models\RiwayatJabatan;
+use App\Models\RiwayatTugas;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -91,7 +93,14 @@ class KinerjaController extends Controller
                 });
         }
 
-        $pengurus = $query->get();
+        $pengurus = $query->with([
+            'riwayatJabatans' => function($q) {
+                $q->where('status', 'aktif')->with('strukturJabatan');
+            },
+            'riwayatTugas' => function($q) {
+                $q->where('status', 'aktif')->with('masterTugas');
+            }
+        ])->get();
 
         // Validasi Akses via URL
         if ($selected_id && !$pengurus->contains('id', $selected_id)) {
@@ -121,13 +130,45 @@ class KinerjaController extends Controller
             'tanggal_penilaian' => 'required|date',
             'triwulan' => 'required|integer|min:1|max:4',
             'tahun' => 'required|integer|min:2000',
+            'kapasitas' => 'required',
         ];
         
         foreach ($instrumens as $instrumen) {
             $rules['skor_' . $instrumen->id] = 'required|numeric|min:0|max:100';
         }
 
-        $request->validate($rules);
+        $request->validate($rules, [
+            'kapasitas.required' => 'Kapasitas (Jabatan/Tugas) wajib dipilih.',
+        ]);
+
+        $jabatan_id = null;
+        $tugas_id = null;
+
+        if (str_starts_with($request->kapasitas, 'jabatan_')) {
+            $jabatan_id = str_replace('jabatan_', '', $request->kapasitas);
+            
+            // Validasi Eksistensi, Kepemilikan, & Status Aktif Jabatan
+            $validJabatan = RiwayatJabatan::where('id', $jabatan_id)
+                ->where('pengurus_id', $request->pengurus_id)
+                ->where('status', 'aktif')
+                ->exists();
+                
+            if (!$validJabatan) {
+                return redirect()->back()->withInput()->with('error', 'Validasi Gagal: Jabatan tidak ditemukan, bukan milik pengurus ini, atau sudah tidak aktif.');
+            }
+        } elseif (str_starts_with($request->kapasitas, 'tugas_')) {
+            $tugas_id = str_replace('tugas_', '', $request->kapasitas);
+            
+            // Validasi Eksistensi, Kepemilikan, & Status Aktif Tugas
+            $validTugas = RiwayatTugas::where('id', $tugas_id)
+                ->where('pengurus_id', $request->pengurus_id)
+                ->where('status', 'aktif')
+                ->exists();
+                
+            if (!$validTugas) {
+                return redirect()->back()->withInput()->with('error', 'Validasi Gagal: Tugas tidak ditemukan, bukan milik pengurus ini, atau sudah tidak aktif.');
+            }
+        }
 
         // Hitung Bobot
         $total = 0;
@@ -157,6 +198,8 @@ class KinerjaController extends Controller
         // Simpan ke Database Induk
         $kinerja = Kinerja::create([
             'pengurus_id' => $request->pengurus_id,
+            'jabatan_id' => $jabatan_id,
+            'tugas_id' => $tugas_id,
             'tanggal_penilaian' => $request->tanggal_penilaian,
             'triwulan' => $request->triwulan,
             'tahun' => $request->tahun,
@@ -191,7 +234,7 @@ class KinerjaController extends Controller
             if ($request->filled('tahun')) {
                 $q->where('tahun', $request->tahun);
             }
-            $q->with(['kinerjaDetails.instrumen'])->latest();
+            $q->with(['kinerjaDetails.instrumen', 'riwayatJabatan.strukturJabatan', 'riwayatTugas.masterTugas'])->latest();
         }])->findOrFail($id);
 
         return view('pokok.kinerja.show', compact('pengurus'));
@@ -239,7 +282,7 @@ class KinerjaController extends Controller
             if ($request->filled('tahun')) {
                 $q->where('tahun', $request->tahun);
             }
-            $q->with(['kinerjaDetails.instrumen'])->latest();
+            $q->with(['kinerjaDetails.instrumen', 'riwayatJabatan.strukturJabatan', 'riwayatTugas.masterTugas'])->latest();
         }])->findOrFail($id);
 
         // 2. Load view khusus PDF (kita buat di langkah 4)
