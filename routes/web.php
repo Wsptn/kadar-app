@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
     // PENGURUS
     Route::prefix('pengurus')->name('pokok.pengurus.')->group(function () {
         Route::get('/', [PengurusController::class, 'index'])->name('index');
+        Route::get('/arsip', [PengurusController::class, 'arsip'])->name('arsip');
         Route::get('/create', [PengurusController::class, 'create'])->name('create');
         Route::post('/store', [PengurusController::class, 'store'])->name('store');
         Route::get('/export', [PengurusController::class, 'export'])->name('export');

@@ -218,6 +218,7 @@ class KinerjaController extends Controller
                 'kinerja_id' => $kinerja->id,
                 'instrumen_id' => $instrumen->id,
                 'skor' => $skorInput,
+                'bobot_saat_dinilai' => $instrumen->bobot,
             ]);
         }
 
@@ -227,7 +228,7 @@ class KinerjaController extends Controller
     // 4. HALAMAN RIWAYAT (DETAIL)
     public function show(Request $request, $id)
     {
-        $pengurus = Pengurus::with(['kinerja' => function ($q) use ($request) {
+        $pengurus = Pengurus::withTrashed()->with(['kinerja' => function ($q) use ($request) {
             if ($request->filled('triwulan')) {
                 $q->where('triwulan', $request->triwulan);
             }
@@ -275,7 +276,7 @@ class KinerjaController extends Controller
     public function exportPdf(Request $request, $id)
     {
         // 1. Ambil data pengurus beserta riwayat kinerjanya, dengan filter
-        $pengurus = \App\Models\Pengurus::with(['kinerja' => function($q) use ($request) {
+        $pengurus = \App\Models\Pengurus::withTrashed()->with(['kinerja' => function($q) use ($request) {
             if ($request->filled('triwulan')) {
                 $q->where('triwulan', $request->triwulan);
             }

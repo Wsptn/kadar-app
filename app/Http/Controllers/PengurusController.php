@@ -119,6 +119,17 @@ class PengurusController extends Controller
         ));
     }
 
+    public function arsip(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->isAdmin() && !$user->isBiktren()) abort(403, 'Akses ditolak. Hanya Admin dan Biktren yang dapat mengakses arsip.');
+
+        $pengurus = Pengurus::onlyTrashed()->with(['kamar.daerah.wilayah', 'strukturJabatan', 'tugas', 'kinerja'])->paginate(12);
+
+        return view('pokok.pengurus.arsip', compact('pengurus'));
+    }
+
     public function create()
     {
         /** @var \App\Models\User $user */
@@ -516,9 +527,28 @@ class PengurusController extends Controller
         $fileFields = ['foto', 'berkas_sk_pengurus', 'berkas_surat_tugas', 'berkas_plt', 'berkas_lain'];
         foreach ($fileFields as $field) {
             if ($pengurus->{$field} && Storage::disk('public')->exists($pengurus->{$field})) {
-                Storage::disk('public')->delete($pengurus->{$field});
+                // Jangan hapus fisik file karena kita menggunakan Soft Deletes.
+                // Arsip butuh foto dan berkas.
+                // Storage::disk('public')->delete($pengurus->{$field}); 
             }
         }
+
+        // Set status pengurus menjadi non_aktif
+        $pengurus->update(['status' => 'non_aktif']);
+
+        // Tutup semua riwayat yang masih aktif
+        RiwayatJabatan::where('pengurus_id', $pengurus->id)->where('status', 'aktif')->update([
+            'status' => 'non_aktif',
+            'tgl_selesai' => date('Y-m-d')
+        ]);
+        RiwayatTugas::where('pengurus_id', $pengurus->id)->where('status', 'aktif')->update([
+            'status' => 'non_aktif',
+            'tgl_selesai' => date('Y-m-d')
+        ]);
+        RiwayatPendidikan::where('pengurus_id', $pengurus->id)->where('status', 'aktif')->update([
+            'status' => 'non_aktif',
+            'tanggal_selesai' => date('Y-m-d')
+        ]);
 
         $pengurus->delete();
 

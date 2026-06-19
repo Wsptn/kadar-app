@@ -245,6 +245,11 @@
                     class="btn btn-success d-flex align-items-center shadow-sm">
                     <i data-feather="file-text" class="me-1"></i> Excel
                 </a>
+                @if (Auth::user()->isAdmin() || Auth::user()->isBiktren())
+                    <a href="{{ route('pokok.pengurus.arsip') }}" class="btn btn-secondary d-flex align-items-center shadow-sm">
+                        <i data-feather="archive" class="me-1"></i> Arsip
+                    </a>
+                @endif
             </div>
             <div class="text-muted small">
                 Menampilkan <strong>{{ $pengurus->count() }}</strong> dari total <strong>{{ $pengurus->total() }}</strong>

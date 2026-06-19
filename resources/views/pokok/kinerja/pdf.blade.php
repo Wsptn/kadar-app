@@ -102,7 +102,7 @@
     @forelse($pengurus->kinerja as $index => $k)
         <div
             style="background-color: #28a745; color: white; padding: 4px 8px; margin-top: 15px; font-weight: bold; font-size: 10px;">
-            Penilaian ke-{{ $index + 1 }} 
+            Penilaian ke-{{ $loop->count - $loop->index }} 
             @if($k->triwulan && $k->tahun)
                 | Periode: Triwulan {{ $k->triwulan }} - {{ $k->tahun }}
             @endif
@@ -129,7 +129,6 @@
                     <th style="width: 15%;">Skor</th>
                 </tr>
             </thead>
-            <tbody>
                 @php
                     $groupedDetails = $k->kinerjaDetails->groupBy(function($detail) {
                         return $detail->instrumen->aspek ?? 'Lainnya';
@@ -138,24 +137,30 @@
                 @endphp
 
                 @forelse($groupedDetails as $aspek => $details)
-                    @foreach($details as $index => $detail)
+                <tbody style="page-break-inside: avoid;">
+                    @foreach($details as $detail)
                         <tr>
-                            @if($index == 0)
-                                <td rowspan="{{ count($details) }}">{{ $noAspek++ }}</td>
-                                <td rowspan="{{ count($details) }}" class="bg-light text-start">{{ $aspek }}</td>
+                            @if($loop->first)
+                                <td>{{ $noAspek++ }}</td>
+                                <td class="bg-light text-start" style="vertical-align: top;">{{ $aspek }}</td>
+                            @else
+                                <td style="border-top: none; border-bottom: none;"></td>
+                                <td class="bg-light text-start" style="border-top: none; border-bottom: none;"></td>
                             @endif
-                            <td class="text-start">{{ $detail->instrumen->indikator ?? '-' }} ({{ $detail->instrumen->bobot ?? 0 }}%)</td>
+                            <td class="text-start">{{ $detail->instrumen->indikator ?? '-' }} ({{ $detail->bobot_saat_dinilai ?? $detail->instrumen->bobot ?? 0 }}%)</td>
                             <td class="{{ $detail->skor < 60 ? 'text-danger' : 'text-success' }}">
                                 {{ $detail->skor }}
                             </td>
                         </tr>
                     @endforeach
+                </tbody>
                 @empty
+                <tbody>
                     <tr>
                         <td colspan="4">Detail skor tidak tersedia.</td>
                     </tr>
+                </tbody>
                 @endforelse
-            </tbody>
         </table>
 
         <table style="margin-top: 0; border-top: none;">
