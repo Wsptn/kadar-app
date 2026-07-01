@@ -60,6 +60,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/arsip', [PengurusController::class, 'arsip'])->name('arsip');
         Route::get('/create', [PengurusController::class, 'create'])->name('create');
         Route::post('/store', [PengurusController::class, 'store'])->name('store');
+        Route::post('/import', [PengurusController::class, 'import'])->name('import');
+        Route::get('/template-import', [PengurusController::class, 'downloadTemplate'])->name('template_import');
         Route::get('/export', [PengurusController::class, 'export'])->name('export');
 
         Route::get('/{id}/edit', [PengurusController::class, 'edit'])->name('edit');
@@ -99,6 +101,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [DomisiliController::class, 'index'])->name('index');
             Route::get('/create', [DomisiliController::class, 'create'])->name('create');
             Route::post('/store', [DomisiliController::class, 'store'])->name('store');
+            Route::post('/import', [DomisiliController::class, 'import'])->name('import');
+            Route::get('/template-import', [DomisiliController::class, 'downloadTemplate'])->name('template_import');
             Route::get('/{id}/edit', [DomisiliController::class, 'edit'])->name('edit');
             Route::put('/{id}/update', [DomisiliController::class, 'update'])->name('update');
             Route::delete('/{id}/destroy', [DomisiliController::class, 'destroy'])->name('destroy');
@@ -132,6 +136,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'index'])->name('index');
             Route::get('/create', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'create'])->name('create');
             Route::post('/store', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'store'])->name('store');
+            Route::post('/import', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'import'])->name('import');
+            Route::get('/template-import', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'downloadTemplate'])->name('template_import');
             Route::get('/{id}/edit', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'edit'])->name('edit');
             Route::put('/{id}/update', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'update'])->name('update');
             Route::delete('/{id}/destroy', [\App\Http\Controllers\MasterStrukturJabatanController::class, 'destroy'])->name('destroy');
@@ -185,9 +191,13 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('user')->name('user.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
+        
         Route::middleware(['role:Admin,Biktren'])->group(function () {
+            Route::get('/export', [UserController::class, 'export'])->name('export');
             Route::get('/create', [UserController::class, 'create'])->name('create');
             Route::post('/store', [UserController::class, 'store'])->name('store');
+            Route::post('/generate-struktur', [UserController::class, 'generateStruktur'])->name('generate-struktur');
+            
             Route::get('/{id}/reset-password', [UserController::class, 'resetPasswordForm'])
                 ->name('reset-password');
             Route::put('/{id}/reset-password', [UserController::class, 'processResetPassword'])

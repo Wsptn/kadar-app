@@ -214,17 +214,15 @@
             @endforelse
         </div>
 
-        {{-- Area Info Data & Paginasi --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-2 mb-5">
             <div class="text-muted small mb-3 mb-md-0">
                 Menampilkan <span class="fw-bold">{{ $pengurus->firstItem() ?? 0 }}</span>
                 sampai <span class="fw-bold">{{ $pengurus->lastItem() ?? 0 }}</span>
                 dari total <span class="fw-bold text-success">{{ $pengurus->total() }}</span> data
             </div>
-
             @if ($pengurus->hasPages())
                 <div>
-                    {{ $pengurus->appends(request()->query())->links('pagination::bootstrap-5') }}
+                    {{ $pengurus->appends(request()->query())->links('vendor.pagination.custom') }}
                 </div>
             @endif
         </div>

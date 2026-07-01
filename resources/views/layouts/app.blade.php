@@ -8,7 +8,7 @@
 
     <link rel="shortcut icon" href="{{ asset('template-admin/img/logo-kiper.png') }}" />
     <link href="{{ asset('template-admin/css/app.css') }}" rel="stylesheet">
-    <link href="{{ asset('template-admin/css/custom.css') }}" rel="stylesheet">
+    <link href="{{ asset('template-admin/css/custom.css') }}?v={{ time() }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('template-admin/img/logo-kiper.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">

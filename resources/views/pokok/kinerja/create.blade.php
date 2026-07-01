@@ -1,5 +1,20 @@
 @extends('layouts.app')
 
+@section('this-page-style')
+<style>
+    .btn-gradient-green {
+        background: linear-gradient(135deg, #198754, #146c43) !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 6px rgba(25, 135, 84, 0.2) !important;
+    }
+    .btn-gradient-green:hover {
+        background: linear-gradient(135deg, #146c43, #0f5132) !important;
+        box-shadow: 0 6px 8px rgba(25, 135, 84, 0.3) !important;
+    }
+</style>
+@endsection
+
 @section('this-page-contain')
     <div class="container-fluid px-4">
         <div class="card shadow-sm border-0 mt-4">
@@ -83,8 +98,17 @@
                                                 <small class="text-muted">{{ $item->keterangan }}</small>
                                             </td>
                                             <td class="text-center fw-bold">{{ $item->bobot }}%</td>
-                                            <td><input type="number" name="skor_{{ $item->id }}" class="form-control text-center"
-                                                    min="0" max="100" placeholder="0" required></td>
+                                            <td>
+                                                <input type="number" name="skor_{{ $item->id }}" 
+                                                    class="form-control text-center @error('skor_' . $item->id) is-invalid @enderror"
+                                                    placeholder="0" required 
+                                                    value="{{ old('skor_' . $item->id) }}"
+                                                    oninvalid="this.setCustomValidity('Skor wajib diisi.')" 
+                                                    oninput="this.setCustomValidity(''); checkSkor(this);">
+                                                @error('skor_' . $item->id)
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </td>
                                         </tr>
                                     @endforeach
                                 @empty
@@ -139,6 +163,43 @@
 
             const selectPengurus = document.getElementById('pengurus_id');
             const selectKapasitas = document.getElementById('kapasitas');
+
+            window.checkSkor = function(input) {
+                if (input.value !== '') {
+                    let val = parseInt(input.value);
+                    if (val > 100) {
+                        input.value = 100;
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Peringatan',
+                                text: 'Skor tidak boleh lebih dari 100!',
+                                confirmButtonText: 'Mengerti',
+                                customClass: {
+                                    confirmButton: 'btn-gradient-green'
+                                }
+                            });
+                        } else {
+                            alert('Skor tidak boleh lebih dari 100!');
+                        }
+                    } else if (val < 0) {
+                        input.value = 0;
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Peringatan',
+                                text: 'Skor tidak boleh kurang dari 0!',
+                                confirmButtonText: 'Mengerti',
+                                customClass: {
+                                    confirmButton: 'btn-gradient-green'
+                                }
+                            });
+                        } else {
+                            alert('Skor tidak boleh kurang dari 0!');
+                        }
+                    }
+                }
+            };
 
             function updateKapasitas() {
                 const id = selectPengurus.value;

@@ -192,30 +192,56 @@ a.sidebar-link svg {
 .navbar .sidebar-toggle:hover .hamburger:after {
   background: #ffffff !important;
 } 
-/* Reset alert-success biar mirip Bootstrap default */
+/* Reset alert padding dan perbaiki posisi tombol X (Close) secara global */
+.alert-dismissible {
+    padding-right: 3rem !important; /* Ruang untuk tombol X */
+    position: relative;
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem !important; /* Jarak dengan elemen di bawahnya */
+}
+
+.alert-dismissible .btn-close {
+    position: absolute !important;
+    top: 50% !important;
+    right: 0.75rem !important;
+    transform: translateY(-50%) !important;
+    padding: 0.5rem !important;
+    margin: 0 !important;
+    box-sizing: content-box;
+    width: 1em;
+    height: 1em;
+    border: 0;
+    opacity: 0.5;
+    z-index: 2;
+    transition: opacity 0.15s ease-in-out;
+    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z' fill='%23000'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
+}
+
+.alert-dismissible .btn-close:hover {
+    opacity: 0.8;
+}
+
+/* Warna dan background alert default Bootstrap */
 .alert-success {
     color: #0f5132 !important;
     background-color: #d1e7dd !important;
     border-color: #badbcc !important;
-    border-radius: 0.375rem;
-    padding: 0.75rem 1.25rem;
 }
 
-/* Close button sesuai Bootstrap */
+.alert-danger {
+    color: #842029 !important;
+    background-color: #f8d7da !important;
+    border-color: #f5c2c7 !important;
+}
+
+/* Mengatur warna ikon X agar menyesuaikan dengan warna teks alert (success/danger) */
 .alert-success .btn-close {
-    box-sizing: content-box;
-    width: 1em;
-    height: 1em;
-    padding: 0.25em 0.25em;
-    color: #0f5132;
-    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z' fill='%230f5132'/%3e%3c/svg%3e") center/1em auto no-repeat;
-    border: 0;
-    border-radius: 0.25rem;
-    opacity: .5;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z' fill='%230f5132'/%3e%3c/svg%3e") !important;
 }
 
-.alert-success .btn-close:hover {
-    opacity: .75;
+.alert-danger .btn-close {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z' fill='%23842029'/%3e%3c/svg%3e") !important;
 }
 
 .navbar .dropdown-menu {

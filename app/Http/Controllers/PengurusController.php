@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PengurusExport;
+use App\Imports\PengurusImport;
 use App\Models\MasterTugas;
 use App\Models\MasterStrukturJabatan;
 use App\Models\RiwayatJabatan;
@@ -559,5 +560,63 @@ class PengurusController extends Controller
     public function export(Request $request)
     {
         return Excel::download(new PengurusExport($request), 'pengurus.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        if (!Auth::user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Hanya admin yang dapat mengimport data.');
+        }
+
+        $request->validate([
+            'file' => 'required|mimes:xlsx,csv,xls',
+        ]);
+
+        try {
+            $import = new PengurusImport();
+            Excel::import($import, $request->file('file'));
+            
+            $msg = 'Selesai memproses import. ';
+            if ($import->successRows > 0) $msg .= $import->successRows . ' data berhasil masuk. ';
+            if ($import->failedRows > 0) $msg .= $import->failedRows . ' data dilewati karena kamar/jabatan tidak ada. ';
+            
+            $failures = $import->failures();
+            if (count($failures) > 0) {
+                $msg .= count($failures) . ' baris gagal (contoh: NIUP ganda/kosong). ';
+                return redirect()->back()->with('warning', $msg);
+            }
+            
+            return redirect()->back()->with($import->failedRows > 0 ? 'warning' : 'success', $msg);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        if (!Auth::user()->isAdmin()) {
+            abort(403);
+        }
+        
+        $filePath = public_path('template_import_pengurus.xlsx');
+        
+        // Buat template jika belum ada secara fisik
+        if (!file_exists($filePath)) {
+            // Karena butuh file fisik, kita bisa pakai PhpSpreadsheet untuk men-generate
+            // atau menggunakan Excel::download dengan array export.
+            $export = new class implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
+                public function array(): array {
+                    return [
+                        ['1122334455', 'Ahmad Budi', 'Kamar A1', 'Pusat', 'Ketua Daerah', 'SK-123', 'S1 Teknik', '2023-01-01']
+                    ];
+                }
+                public function headings(): array {
+                    return ['NIUP', 'Nama Lengkap', 'Nama Kamar', 'Entitas Daerah', 'Nama Jabatan', 'SK Kepengurusan', 'Pendidikan Terakhir', 'Tanggal Mulai Tugas'];
+                }
+            };
+            return Excel::download($export, 'template_import_pengurus.xlsx');
+        }
+
+        return response()->download($filePath);
     }
 }

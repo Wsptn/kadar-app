@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterFungsionalTugas;
 use App\Models\Pengurus;
+use App\Models\Wilayah;
+use App\Models\Daerah;
+use App\Models\User;
+use App\Models\Kinerja;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -110,6 +114,69 @@ class DashboardController extends Controller
         $jumlahNonAktif = Pengurus::where('pengurus.status', 'non_aktif')->count();
 
         // ===============================
+        // 6. SISTEM AGREGAT
+        // ===============================
+        $totalWilayah = Wilayah::count();
+        $totalDaerah = Daerah::count();
+        $totalUser = User::count();
+
+        // ===============================
+        // 7. STATISTIK KINERJA & MASA PENILAIAN
+        // ===============================
+        $kinerjaA = Kinerja::where('huruf_mutu', 'A')->count();
+        $kinerjaB = Kinerja::where('huruf_mutu', 'B')->count();
+        $kinerjaC = Kinerja::where('huruf_mutu', 'C')->count();
+        $kinerjaD = Kinerja::where('huruf_mutu', 'D')->count();
+        $kinerjaE = Kinerja::where('huruf_mutu', 'E')->count();
+        $totalKinerja = Kinerja::count();
+
+        $now = \Carbon\Carbon::now();
+        $month = $now->month;
+        $year = $now->year;
+
+        if ($month >= 1 && $month <= 3) {
+            $triwulan = 1;
+            $deadline = "15 April $year";
+        } elseif ($month >= 4 && $month <= 6) {
+            $triwulan = 2;
+            $deadline = "15 Juli $year";
+        } elseif ($month >= 7 && $month <= 9) {
+            $triwulan = 3;
+            $deadline = "15 Oktober $year";
+        } else {
+            $triwulan = 4;
+            $nextYear = $year + 1;
+            $deadline = "15 Januari $nextYear";
+        }
+
+        $masaPenilaian = "Triwulan $triwulan - Tahun $year";
+        $masaPengisian = "Batas: $deadline";
+
+        // ===============================
+        // 8. LEADERBOARD (TOP 5 WILAYAH & DAERAH)
+        // ===============================
+        $topWilayah = DB::table('penilaian_kinerja')
+            ->join('pengurus', 'penilaian_kinerja.pengurus_id', '=', 'pengurus.id')
+            ->join('kamar', 'pengurus.kamar_id', '=', 'kamar.id')
+            ->join('daerah', 'kamar.daerah_id', '=', 'daerah.id')
+            ->join('wilayah', 'daerah.wilayah_id', '=', 'wilayah.id')
+            ->select('wilayah.nama_wilayah', DB::raw('AVG(penilaian_kinerja.nilai_total) as rata_rata'))
+            ->groupBy('wilayah.id', 'wilayah.nama_wilayah')
+            ->orderByDesc('rata_rata')
+            ->limit(5)
+            ->get();
+
+        $topDaerah = DB::table('penilaian_kinerja')
+            ->join('pengurus', 'penilaian_kinerja.pengurus_id', '=', 'pengurus.id')
+            ->join('kamar', 'pengurus.kamar_id', '=', 'kamar.id')
+            ->join('daerah', 'kamar.daerah_id', '=', 'daerah.id')
+            ->select('daerah.nama_daerah', DB::raw('AVG(penilaian_kinerja.nilai_total) as rata_rata'))
+            ->groupBy('daerah.id', 'daerah.nama_daerah')
+            ->orderByDesc('rata_rata')
+            ->limit(5)
+            ->get();
+
+        // ===============================
         // RETURN VIEW
         // ===============================
         return view('dashboard.index', [
@@ -131,6 +198,22 @@ class DashboardController extends Controller
 
             'labelFungsional'  => $labelFungsional,
             'dataFungsional'   => $dataFungsional,
+
+            'totalWilayah'     => $totalWilayah,
+            'totalDaerah'      => $totalDaerah,
+            'totalUser'        => $totalUser,
+            
+            'kinerjaA'         => $kinerjaA,
+            'kinerjaB'         => $kinerjaB,
+            'kinerjaC'         => $kinerjaC,
+            'kinerjaD'         => $kinerjaD,
+            'kinerjaE'         => $kinerjaE,
+            'totalKinerja'     => $totalKinerja,
+            'masaPenilaian'    => $masaPenilaian,
+            'masaPengisian'    => $masaPengisian,
+
+            'topWilayah'       => $topWilayah,
+            'topDaerah'        => $topDaerah,
         ]);
     }
 }

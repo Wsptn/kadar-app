@@ -5,12 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Wilayah;
 use App\Models\Daerah;
+use App\Models\Pengurus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UserExport;
 
 class UserController extends Controller
 {
+    public function export()
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->isAdmin() && !$user->isBiktren()) {
+            abort(403, 'Anda tidak diizinkan melakukan export data user.');
+        }
+
+        return Excel::download(new UserExport, 'Data_Akun_Pengurus_' . date('Ymd_His') . '.xlsx');
+    }
 
     public function index(Request $request)
     {
@@ -56,8 +69,8 @@ class UserController extends Controller
         // Hanya Admin dan Biktren yang boleh akses form ini
         if ($user->isAdmin() || $user->isBiktren()) {
             // KIRIM DATA WILAYAH & DAERAH UNTUK DROPDOWN
-            $wilayahs = \App\Models\Domisili::select('wilayah')->distinct()->pluck('wilayah');
-            $daerahs  = \App\Models\Domisili::select('daerah')->distinct()->pluck('daerah');
+            $wilayahs = \App\Models\Wilayah::select('nama_wilayah')->distinct()->orderBy('nama_wilayah')->pluck('nama_wilayah');
+            $daerahs  = \App\Models\Daerah::select('nama_daerah')->distinct()->orderBy('nama_daerah')->pluck('nama_daerah');
 
             return view('user.create', compact('wilayahs', 'daerahs'));
         }
@@ -173,5 +186,108 @@ class UserController extends Controller
         ]);
         return redirect()->route('user.index')
             ->with('success', 'Password untuk pengguna "' . $userToReset->name . '" berhasil diubah.');
+    }
+
+    /**
+     * Helper method to generate a readable username from a full name
+     */
+    private function generateReadableUsername($fullName)
+    {
+        $nameParts = explode(' ', trim($fullName));
+        $skipWords = ['muhammad', 'mohammad', 'moh', 'moch', 'm.', 'm', 'ahmad', 'ustadz', 'ust.', 'ust', 'kh', 'kh.', 'k.', 'nyai', 'lor'];
+        
+        $username = '';
+        foreach ($nameParts as $part) {
+            $cleanPart = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $part));
+            if (!empty($cleanPart) && !in_array($cleanPart, $skipWords)) {
+                $username = $cleanPart;
+                break;
+            }
+        }
+
+        // Fallback jika semua kata ternyata skip word (misal namanya cuma "Muhammad")
+        if (empty($username)) {
+            $username = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $nameParts[0]));
+        }
+
+        // Pastikan username unik
+        $originalUsername = $username;
+        $counter = 1;
+        while (User::where('username', $username)->exists()) {
+            $username = $originalUsername . $counter;
+            $counter++;
+        }
+
+        return $username;
+    }
+
+    /**
+     * Generate otomatis akun user berdasarkan Pengurus yang menjabat sebagai Kepala Wilayah & Daerah
+     */
+    public function generateStruktur()
+    {
+        $currentUser = Auth::user();
+
+        // Keamanan: Hanya Admin dan Biktren yang boleh menjalankan fitur ini
+        if (!$currentUser->isAdmin() && !$currentUser->isBiktren()) {
+            abort(403, 'Anda tidak memiliki izin untuk menggenerate akun struktur.');
+        }
+
+        // Ambil semua pengurus aktif dengan jabatan Kepala Wilayah atau Kepala Daerah
+        $penguruses = Pengurus::where('status', 'aktif')
+            ->whereHas('strukturJabatan', function($q) {
+                $q->whereIn('jabatan', ['Kepala Wilayah', 'Kepala Daerah']);
+            })
+            ->with(['kamar.daerah.wilayah', 'strukturJabatan'])
+            ->get();
+
+        $countWilayah = 0;
+        $countDaerah = 0;
+
+        foreach ($penguruses as $p) {
+            $jabatan = $p->strukturJabatan->jabatan;
+            $username = $this->generateReadableUsername($p->nama);
+
+            if ($jabatan === 'Kepala Wilayah') {
+                $wilayahName = $p->kamar->daerah->wilayah->nama_wilayah ?? null;
+                if ($wilayahName) {
+                    // Cek apakah Wilayah ini sudah memiliki akun yang aktif
+                    if (User::where('level', 'Wilayah')->where('wilayah', $wilayahName)->where('status', 'aktif')->exists()) {
+                        continue;
+                    }
+
+                    User::create([
+                        'name'     => $p->nama, // Menggunakan nama asli
+                        'username' => $username,
+                        'password' => 'nuruljadid123',
+                        'level'    => 'Wilayah',
+                        'status'   => 'aktif',
+                        'wilayah'  => $wilayahName,
+                    ]);
+                    $countWilayah++;
+                }
+            } elseif ($jabatan === 'Kepala Daerah') {
+                $daerahName = $p->kamar->daerah->nama_daerah ?? null;
+                if ($daerahName) {
+                    // Cek apakah Daerah ini sudah memiliki akun yang aktif
+                    if (User::where('level', 'Daerah')->where('daerah', $daerahName)->where('status', 'aktif')->exists()) {
+                        continue;
+                    }
+
+                    User::create([
+                        'name'     => $p->nama, // Menggunakan nama asli
+                        'username' => $username,
+                        'password' => 'nuruljadid123',
+                        'level'    => 'Daerah',
+                        'status'   => 'aktif',
+                        'daerah'   => $daerahName,
+                    ]);
+                    $countDaerah++;
+                }
+            }
+        }
+
+        return redirect()->route('user.index')
+            ->with('success', "Sinkronisasi selesai! Berhasil men-generate {$countWilayah} Akun Wilayah dan {$countDaerah} Akun Daerah baru berdasarkan data Pengurus Aktif.");
     }
 }

@@ -10,7 +10,7 @@
 
     {{-- CSS Template --}}
     <link rel="stylesheet" href="{{ asset('template-admin/css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('template-admin/css/custom.css') }}">
+    <link rel="stylesheet" href="{{ asset('template-admin/css/custom.css') }}?v={{ time() }}">
 
     {{-- Bootstrap --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">

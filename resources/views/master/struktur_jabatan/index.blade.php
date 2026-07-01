@@ -26,9 +26,16 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-semibold mb-0">Data Struktur Jabatan (Flat)</h5>
                     @if ($hasAccess)
-                        <a href="{{ route('master.struktur_jabatan.create') }}" class="btn btn-success btn-sm">
-                            <i data-feather="plus-circle" class="me-1"></i>Tambah Struktur Jabatan
-                        </a>
+                        <div class="d-flex gap-2">
+                            @if (Auth::user()->isAdmin())
+                                <button type="button" id="openImportBtn" class="btn btn-warning btn-sm d-flex align-items-center fw-semibold shadow-sm text-dark">
+                                    <i data-feather="upload" class="me-1"></i> Import Excel
+                                </button>
+                            @endif
+                            <a href="{{ route('master.struktur_jabatan.create') }}" class="btn btn-success btn-sm">
+                                <i data-feather="plus-circle" class="me-1"></i>Tambah Struktur Jabatan
+                            </a>
+                        </div>
                     @endif
                 </div>
 
@@ -86,6 +93,81 @@
             </div>
         </div>
     </div>
+
+    {{-- MODAL IMPORT EXCEL (VANILLA JS/CSS) --}}
+    @if (Auth::user()->isAdmin())
+    <style>
+        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalSlideDown { from { opacity: 0; transform: translateY(-40px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-animated-overlay { animation: modalFadeIn 0.25s ease-out forwards; }
+        .modal-animated-content { animation: modalSlideDown 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    </style>
+
+    <div id="importModal" class="custom-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="custom-modal-content bg-white rounded shadow-lg" style="width: 100%; max-width: 500px; padding: 20px; position: relative;">
+            <form action="{{ route('master.struktur_jabatan.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                    <h5 class="mb-0 d-flex align-items-center"><i data-feather="upload" class="me-2 text-warning"></i> Import Struktur Jabatan</h5>
+                    <button type="button" id="closeImportBtn" class="btn-close" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6c757d; transition: color 0.2s;" onmouseover="this.style.color='#dc3545'" onmouseout="this.style.color='#6c757d'">&times;</button>
+                </div>
+                
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">
+                        Gunakan fitur ini untuk menambahkan data Master Jabatan secara massal. Sistem otomatis melewatkan data yang sudah ada di sistem.
+                    </p>
+                    
+                    <div class="mb-3 p-3 bg-light rounded border">
+                        <label class="form-label fw-bold d-block">1. Unduh Template</label>
+                        <a href="{{ route('master.struktur_jabatan.template_import') }}" class="btn btn-sm btn-outline-success">
+                            <i data-feather="download" style="width: 14px;" class="me-1"></i> Download Template .xlsx
+                        </a>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="file" class="form-label fw-bold d-block">2. Unggah File</label>
+                        <input class="form-control" type="file" id="file" name="file" accept=".xlsx, .xls, .csv" required>
+                        <div class="form-text small mt-1">Maksimal 2MB. Format: .xlsx atau .csv</div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                    <button type="button" id="cancelImportBtn" class="btn btn-secondary">Batal</button>
+                    <button type="submit" class="btn btn-success">Proses Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const openBtn = document.getElementById('openImportBtn');
+            const closeBtn = document.getElementById('closeImportBtn');
+            const cancelBtn = document.getElementById('cancelImportBtn');
+            const modal = document.getElementById('importModal');
+            const modalContent = modal ? modal.querySelector('.custom-modal-content') : null;
+
+            if (openBtn && modal && modalContent) {
+                openBtn.addEventListener('click', function() {
+                    modal.style.display = 'flex';
+                    modal.classList.remove('modal-animated-overlay');
+                    modalContent.classList.remove('modal-animated-content');
+                    void modal.offsetWidth; // Trigger reflow
+                    modal.classList.add('modal-animated-overlay');
+                    modalContent.classList.add('modal-animated-content');
+                });
+            }
+
+            function closeModal() {
+                if(!modal) return;
+                modal.style.display = 'none';
+            }
+
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+        });
+    </script>
+    @endif
 @endsection
 
 @push('page-scripts')

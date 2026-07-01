@@ -7,6 +7,8 @@ use App\Models\Daerah;
 use App\Models\Kamar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Imports\DomisiliImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DomisiliController extends Controller
 {
@@ -147,5 +149,54 @@ class DomisiliController extends Controller
         $kamarModel->delete();
 
         return redirect()->route('master.domisili.index')->with('success', 'Data Domisili berhasil dihapus.');
+    }
+
+    public function import(Request $request)
+    {
+        abort_if(!Auth::user()->isAdmin(), 403, 'Unauthorized action.');
+
+        $request->validate([
+            'file' => 'required|mimes:xlsx,csv,xls',
+        ]);
+
+        try {
+            $import = new DomisiliImport();
+            Excel::import($import, $request->file('file'));
+            
+            $msg = 'Data Domisili berhasil diimport. ';
+            if ($import->successRows > 0) {
+                $msg .= $import->successRows . ' data kamar baru ditambahkan (termasuk wilayah/daerah jika belum ada).';
+            } else {
+                $msg .= 'Semua data di file sudah ada di sistem.';
+            }
+            
+            return redirect()->back()->with('success', $msg);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        abort_if(!Auth::user()->isAdmin(), 403, 'Unauthorized action.');
+        
+        $filePath = public_path('template_import_domisili.xlsx');
+        
+        if (!file_exists($filePath)) {
+            $export = new class implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
+                public function array(): array {
+                    return [
+                        ['Pusat', 'Pusat', 'Pusat', 'Pusat 1'],
+                        ['Wilayah Zaid', 'Daerah Timur', 'Daerah', 'Kamar B1']
+                    ];
+                }
+                public function headings(): array {
+                    return ['Wilayah', 'Daerah', 'Entitas Daerah', 'Kamar'];
+                }
+            };
+            return Excel::download($export, 'template_import_domisili.xlsx');
+        }
+
+        return response()->download($filePath);
     }
 }

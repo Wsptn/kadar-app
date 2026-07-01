@@ -163,38 +163,14 @@
                                             @if ($bolehTanganin)
                                                 {{-- Tombol muncul untuk semua mutu A-E selama belum ditangani --}}
                                                 <button type="button" class="btn btn-danger btn-sm w-100 shadow-sm"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalTangani{{ $k->id }}">
+                                                    onclick="beriCatatan('{{ $k->id }}')">
                                                     <i data-feather="edit-3" style="width:14px"></i> Beri Catatan
                                                 </button>
 
-                                                {{-- Modal Input Deskripsi --}}
-                                                <div class="modal fade" id="modalTangani{{ $k->id }}" tabindex="-1"
-                                                    aria-hidden="true">
-                                                    <div class="modal-dialog modal-dialog-centered">
-                                                        <div class="modal-content text-start">
-                                                            <form
-                                                                action="{{ route('pokok.kinerja.mark_handled', $k->id) }}"
-                                                                method="POST">
-                                                                @csrf @method('PUT')
-                                                                <div class="modal-header bg-danger text-white">
-                                                                    <h5 class="modal-title">Respons Atasan</h5>
-                                                                    <button type="button" class="btn-close btn-close-white"
-                                                                        data-bs-dismiss="modal"></button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    <p class="small text-muted">Berikan catatan pembinaan
-                                                                        atau apresiasi untuk pengurus ini.</p>
-                                                                    <textarea name="deskripsi_tindak_lanjut" class="form-control" rows="3" placeholder="Tuliskan catatan..." required></textarea>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="submit" class="btn btn-danger">Simpan
-                                                                        Catatan</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <form id="form-catatan-{{ $k->id }}" action="{{ route('pokok.kinerja.mark_handled', $k->id) }}" method="POST" class="d-none">
+                                                    @csrf @method('PUT')
+                                                    <input type="hidden" name="deskripsi_tindak_lanjut" id="input-catatan-{{ $k->id }}">
+                                                </form>
                                             @else
                                                 <div
                                                     class="border border-secondary rounded p-2 bg-light text-muted text-center">
@@ -310,5 +286,37 @@
         document.addEventListener('DOMContentLoaded', function() {
             if (window.feather) feather.replace();
         });
+
+        window.beriCatatan = function(id) {
+            Swal.fire({
+                title: 'Respons Atasan',
+                text: 'Berikan catatan pembinaan atau apresiasi untuk pengurus ini.',
+                input: 'textarea',
+                inputPlaceholder: 'Tuliskan catatan di sini...',
+                inputAttributes: {
+                    'aria-label': 'Tuliskan catatan'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Simpan Catatan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#dc3545',
+                customClass: {
+                    confirmButton: 'btn btn-danger shadow-sm px-4 me-2',
+                    cancelButton: 'btn btn-secondary px-4'
+                },
+                buttonsStyling: false,
+                preConfirm: (catatan) => {
+                    if (!catatan || catatan.trim() === '') {
+                        Swal.showValidationMessage('Catatan tidak boleh kosong!')
+                    }
+                    return catatan;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('input-catatan-' + id).value = result.value;
+                    document.getElementById('form-catatan-' + id).submit();
+                }
+            });
+        };
     </script>
 @endsection

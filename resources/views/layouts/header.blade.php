@@ -8,6 +8,13 @@
     <div class="navbar-collapse collapse">
         <ul class="navbar-nav navbar-align">
 
+            {{-- TOMBOL TEMA GELAP/TERANG --}}
+            <li class="nav-item d-flex align-items-center me-3">
+                <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary rounded-circle" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;" title="Ganti Tema">
+                    <i data-feather="moon" id="themeIcon"></i>
+                </button>
+            </li>
+
             {{-- Cek apakah user sedang login --}}
             @auth
                 <li class="nav-item dropdown">

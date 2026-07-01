@@ -44,20 +44,29 @@
                 <div class="row gy-3 align-items-center">
 
                     {{-- 1. Tombol Tambah (Kiri) --}}
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-xl-8 d-flex flex-wrap gap-2">
                         @auth
                             @if (auth()->user()->isAdmin() || auth()->user()->isBiktren())
                                 <a href="{{ route('user.create') }}" class="btn btn-success d-inline-flex align-items-center">
-                                    <i data-feather="plus" class="me-1"></i> Tambah Pengguna
+                                    <i data-feather="plus" class="me-1"></i> Tambah
+                                </a>
+                                <form action="{{ route('user.generate-struktur') }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin men-generate akun untuk seluruh Wilayah dan Daerah yang belum memiliki akun?')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-warning text-dark d-inline-flex align-items-center shadow-sm" title="Generate Akun Struktur Otomatis">
+                                        <i data-feather="refresh-cw" class="me-1"></i> Sinkronisasi
+                                    </button>
+                                </form>
+                                <a href="{{ route('user.export') }}" class="btn btn-outline-success d-inline-flex align-items-center shadow-sm" title="Export Data Akun">
+                                    <i data-feather="file-text" class="me-1"></i> Export
                                 </a>
                             @endif
                         @endauth
                     </div>
 
                     {{-- 2. Form Pencarian (Kanan) --}}
-                    <div class="col-12 col-md-8 d-flex justify-content-md-end">
-                        <form action="{{ route('user.index') }}" method="GET" id="searchForm">
-                            <div class="input-group" style="max-width: 230px;">
+                    <div class="col-12 col-xl-4 d-flex justify-content-xl-end mt-3 mt-xl-0">
+                        <form action="{{ route('user.index') }}" method="GET" id="searchForm" class="w-100">
+                            <div class="input-group">
                                 <span class="input-group-text bg-white">
                                     <i data-feather="search" style="width: 16px; height: 16px;"></i>
                                 </span>

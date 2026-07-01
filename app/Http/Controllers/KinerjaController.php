@@ -133,13 +133,19 @@ class KinerjaController extends Controller
             'kapasitas' => 'required',
         ];
         
+        $messages = [
+            'kapasitas.required' => 'Kapasitas (Jabatan/Tugas) wajib dipilih.',
+        ];
+
         foreach ($instrumens as $instrumen) {
             $rules['skor_' . $instrumen->id] = 'required|numeric|min:0|max:100';
+            $messages['skor_' . $instrumen->id . '.min'] = 'Skor tidak boleh kurang dari 0.';
+            $messages['skor_' . $instrumen->id . '.max'] = 'Skor tidak boleh lebih dari 100.';
+            $messages['skor_' . $instrumen->id . '.required'] = 'Skor wajib diisi.';
+            $messages['skor_' . $instrumen->id . '.numeric'] = 'Skor harus berupa angka.';
         }
 
-        $request->validate($rules, [
-            'kapasitas.required' => 'Kapasitas (Jabatan/Tugas) wajib dipilih.',
-        ]);
+        $request->validate($rules, $messages);
 
         $jabatan_id = null;
         $tugas_id = null;

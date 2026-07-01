@@ -105,4 +105,73 @@
         background-color: #fff;
         border-color: #dee2e6;
     }
+
+    /* === CUSTOM NAVBAR HEADER (LIGHT MODE) === */
+    .navbar-bg {
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+    }
+    /* Mengubah ikon hamburger agar putih */
+    .hamburger, .hamburger:before, .hamburger:after {
+        background: #ffffff !important;
+    }
+
+    /* === DARK MODE === */
+    body.dark-mode, .dark-mode .main, .dark-mode .content, .dark-mode .wrapper {
+        background-color: #121212 !important;
+        background-image: radial-gradient(#2d2d2d 1.5px, transparent 1.5px) !important;
+        color: #e0e0e0;
+    }
+    .dark-mode .sidebar, .dark-mode .sidebar-content {
+        background-color: #1a1a1a !important;
+    }
+    .dark-mode .sidebar-link, 
+    .dark-mode .sidebar-link span, 
+    .dark-mode .sidebar-link i, 
+    .dark-mode .sidebar-link svg, 
+    .dark-mode .sidebar-header, 
+    .dark-mode .sidebar-brand {
+        color: #cccccc !important;
+    }
+    .dark-mode .sidebar-link:hover, 
+    .dark-mode .sidebar-link:hover span,
+    .dark-mode .sidebar-link:hover svg,
+    .dark-mode .sidebar-item.active .sidebar-link,
+    .dark-mode .sidebar-item.active .sidebar-link span,
+    .dark-mode .sidebar-item.active .sidebar-link svg {
+        color: #ffffff !important;
+        background-color: #2d2d2d !important;
+    }
+    .dark-mode .navbar, .dark-mode .navbar-bg {
+        background: #1a1a1a !important;
+        border-bottom: 1px solid #333 !important;
+    }
+    .dark-mode .card, .dark-mode .portal-card, .dark-mode .dropdown-menu {
+        background-color: #1e1e1e !important;
+        color: #e0e0e0 !important;
+        border-color: #333 !important;
+    }
+    .dark-mode .text-dark { color: #e0e0e0 !important; }
+    .dark-mode .text-muted { color: #aaaaaa !important; }
+    .dark-mode .bg-white { background-color: #1e1e1e !important; }
+    .dark-mode .table { color: #e0e0e0 !important; }
+    .dark-mode .table thead th { background-color: #2c2c2c !important; color: #fff !important; }
+    .dark-mode .table-hover tbody tr:hover { background-color: #2d2d2d !important; }
+    .dark-mode .pill-soft, .dark-mode .prayer-box { background: #2c2c2c !important; color: #e0e0e0 !important; border: 1px solid #444; }
+    .dark-mode .pill-icon { background: #3d3d3d !important; }
+    .dark-mode .prayer-box.active { background: #28a745 !important; color: white !important; }
+    .dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode h4, .dark-mode h5, .dark-mode h6, .dark-mode .card-title, .dark-mode .stat-value, .dark-mode .section-title {
+        color: #f8f9fa !important;
+    }
+    .dark-mode .time-header {
+        background: linear-gradient(135deg, #0f3d1b 0%, #1e7e34 100%) !important;
+    }
+    .dark-mode .time-clock, .dark-mode .fw-bolder { color: #e0e0e0 !important; }
+    .dark-mode .section-icon { background: #2c2c2c !important; }
+    .dark-mode .form-control, .dark-mode .form-select {
+        background-color: #2c2c2c;
+        border-color: #444;
+        color: #fff;
+    }
+    .dark-mode .btn-outline-secondary { border-color: #555; color: #ccc; }
+    .dark-mode .btn-outline-secondary:hover { background-color: #444; color: #fff; }
 </style>

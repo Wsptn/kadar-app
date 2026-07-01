@@ -83,7 +83,7 @@
                         <select name="wilayah" id="selectWilayah"
                             class="form-select @error('wilayah') is-invalid @enderror">
                             <option value="">-- Pilih Wilayah --</option>
-                            @foreach (\App\Models\Domisili::select('wilayah')->distinct()->orderBy('wilayah')->pluck('wilayah') as $w)
+                            @foreach ($wilayahs as $w)
                                 <option value="{{ $w }}">{{ $w }}</option>
                             @endforeach
                         </select>
@@ -99,7 +99,7 @@
                             class="form-select @error('daerah') is-invalid @enderror">
                             <option value="">-- Pilih Daerah --</option>
                             {{-- Data Daerah akan di-load via AJAX atau load semua jika data sedikit --}}
-                            @foreach (\App\Models\Domisili::select('daerah')->distinct()->orderBy('daerah')->pluck('daerah') as $d)
+                            @foreach ($daerahs as $d)
                                 <option value="{{ $d }}">{{ $d }}</option>
                             @endforeach
                         </select>
