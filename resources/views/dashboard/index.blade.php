@@ -305,8 +305,8 @@
                                 <div style="font-size: 0.75rem; opacity: 0.9;">Pantau aktivitas hari ini</div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center bg-white bg-opacity-25 rounded-pill px-3 py-1 gap-1">
-                            <i data-feather="sun" style="width: 14px; height: 14px;"></i> <span class="fw-bold fs-6">Cerah</span>
+                        <div id="weatherWidget" class="d-flex align-items-center bg-white bg-opacity-25 rounded-pill px-3 py-1 gap-1" title="Mengambil data suhu...">
+                            <i data-feather="loader" class="fa-spin" style="width: 14px; height: 14px;"></i> <span class="fw-bold fs-6">Memuat...</span>
                         </div>
                     </div>
                     <div class="time-body">
@@ -616,6 +616,41 @@
             }
             setInterval(updateClock, 1000);
             updateClock();
+
+            // LOGIKA CUACA (SUHU KE KATEGORI) MENGGUNAKAN IP GEOLOCATION (FREE & NO API KEY)
+            fetch('https://get.geojs.io/v1/ip/geo.json')
+                .then(response => response.json())
+                .then(geo => {
+                    return fetch(`https://api.open-meteo.com/v1/forecast?latitude=${geo.latitude}&longitude=${geo.longitude}&current_weather=true`);
+                })
+                .then(response => response.json())
+                .then(weather => {
+                    const temp = weather.current_weather.temperature;
+                    let text = 'Cerah';
+                    let icon = 'sun';
+                    let colorClass = 'text-white';
+
+                    if (temp >= 35) { text = 'Panas Ekstrem'; icon = 'sun'; colorClass = 'text-danger'; }
+                    else if (temp >= 30) { text = 'Panas'; icon = 'sun'; colorClass = 'text-warning'; }
+                    else if (temp >= 26) { text = 'Hangat'; icon = 'sun'; colorClass = 'text-warning'; }
+                    else if (temp >= 20) { text = 'Sejuk'; icon = 'cloud'; colorClass = 'text-info'; }
+                    else if (temp >= 15) { text = 'Dingin'; icon = 'cloud-snow'; colorClass = 'text-primary'; }
+                    else { text = 'Dingin Ekstrem'; icon = 'cloud-snow'; colorClass = 'text-primary'; }
+
+                    const widget = document.getElementById('weatherWidget');
+                    if (widget) {
+                        widget.innerHTML = `<i data-feather="${icon}" class="${colorClass}" style="width: 14px; height: 14px;"></i> <span class="fw-bold fs-6">${text}</span>`;
+                        if (typeof feather !== 'undefined') feather.replace();
+                    }
+                })
+                .catch(error => {
+                    console.error('Gagal mengambil data cuaca:', error);
+                    const widget = document.getElementById('weatherWidget');
+                    if (widget) {
+                        widget.innerHTML = `<i data-feather="cloud" class="text-white" style="width: 14px; height: 14px;"></i> <span class="fw-bold fs-6">Sejuk</span>`;
+                        if (typeof feather !== 'undefined') feather.replace();
+                    }
+                });
 
             // KONFIGURASI CHART.JS (Aesthetic Modern / iPhone Style)
             
